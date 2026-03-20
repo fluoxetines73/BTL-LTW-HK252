@@ -26,4 +26,24 @@ class Controller {
         header("Location: " . $target);
         exit();
     }
+
+
+    // Kiểm tra xem người dùng đã đăng nhập chưa
+    protected function middlewareAuth(): void {
+        if (!isset($_SESSION['auth_user'])) {
+            $this->redirect('auth/login');
+            exit();
+        }
+    }
+
+    // Kiểm tra xem có phải Admin không
+    protected function middlewareAdmin(): void {
+        $this->middlewareAuth();
+        if ($_SESSION['auth_user']['role'] !== 'admin') {
+            // Nếu không phải admin, chuyển về trang chủ [cite: 5]
+            $this->redirect('home/index');
+            exit();
+        }
+    }
+
 }
