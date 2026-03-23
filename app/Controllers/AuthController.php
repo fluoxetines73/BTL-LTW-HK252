@@ -27,6 +27,7 @@ class AuthController extends Controller {
                         'id' => $user['id'],
                         'name' => $user['name'],
                         'email' => $user['email'],
+                        'avatar' => $user['avatar'] ?? null,
                         'role' => $user['role'] // 'admin' hoặc 'member' [cite: 5]
                     ];
                     $this->redirect('home/index');
@@ -57,6 +58,9 @@ class AuthController extends Controller {
                     'name' => $name,
                     'email' => $email,
                     'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+                    'phone' => null,
+                    'address' => null,
+                    'avatar' => null,
                     'role' => 'member'
                 ]);
 

@@ -1,0 +1,130 @@
+/* CGV Cinema FAQ Page Styles */
+
+.faq-container {
+    background-color: #FFFFFF;
+    color: #1A1A2E;
+}
+
+.faq-category-group {
+    margin-bottom: 2.5rem;
+}
+
+.faq-category-group h3 {
+    font-weight: 700;
+    color: #1A1A2E;
+    letter-spacing: 0.5px;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #E71A0F;
+    display: inline-block;
+}
+
+/* Accordion Styling */
+.accordion-item {
+    border: 1px solid #DDDDDD;
+    margin-bottom: 0.5rem;
+    border-radius: 0 !important;
+    background-color: #FFFFFF;
+}
+
+.accordion-button {
+    padding: 1.25rem 1.5rem;
+    font-weight: 600;
+    color: #1A1A2E;
+    background-color: #F8F9FA;
+    border: none;
+    border-radius: 0 !important;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #e71a0f;
+    color: #FFFFFF;
+    box-shadow: none;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    outline: 2px solid #E71A0F;
+    outline-offset: -2px;
+}
+
+.accordion-button::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%231A1A2E'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+}
+
+.accordion-button:not(.collapsed)::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23FFFFFF'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+}
+
+/* Accordion collapse animation - ensure visibility when expanded */
+.accordion-collapse {
+    transition: height 0.35s ease, opacity 0.35s ease;
+}
+
+.accordion-collapse.collapse:not(.show) {
+    display: none;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.accordion-collapse.collapse.show {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.accordion-body {
+    padding: 1.5rem;
+    color: #333333;
+    line-height: 1.8;
+    background-color: #FFFFFF;
+    border-top: 1px solid #DDDDDD;
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Search Input */
+.faq-search-wrapper {
+    margin-bottom: 3rem;
+}
+
+#faq-search {
+    padding: 1rem 1.5rem;
+    border: 2px solid #DDDDDD;
+    border-radius: 0;
+    color: #1A1A2E;
+    font-size: 1.1rem;
+    transition: border-color 0.2s ease;
+}
+
+#faq-search:focus {
+    border-color: #E71A0F;
+    box-shadow: none;
+    outline: none;
+}
+
+.input-group-text {
+    background-color: #F8F9FA;
+    border: 2px solid #DDDDDD;
+    border-left: none;
+    color: #E71A0F;
+    border-radius: 0;
+}
+
+#faq-search:focus + .input-group-text {
+    border-color: #E71A0F;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .accordion-button {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+    
+    .accordion-body {
+        padding: 1rem;
+        font-size: 0.95rem;
+    }
+}

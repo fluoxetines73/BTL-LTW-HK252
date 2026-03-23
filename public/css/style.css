@@ -1,1 +1,172 @@
+/* CGV Cinema Navbar Styles - Global Protection Against Bootstrap & Tailwind Override */
+
+:root {
+    /* CGV Brand Colors */
+    --cgv-red: #E71A0F;
+    --cgv-dark: #1A1A2E;
+    --cgv-white: #FFFFFF;
+    
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    
+    /* Border Radius */
+    --radius-md: 8px;
+}
+
+/* ============================================================================
+   NAVBAR STYLES - Override Tailwind + Bootstrap
+   These rules use !important to override:
+   1. Tailwind's utility classes (hover:text-teal-700, text-slate-700, etc.)
+   2. Bootstrap's navbar styles (when injected on About/FAQ pages)
+   ============================================================================ */
+
+/* Header Container - Reset Tailwind bg-white/95 and backdrop-blur */
+header {
+    background-color: var(--cgv-white) !important;
+    border-bottom: 1px solid #E5E5E5 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1030 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+/* Nav Container - Reset Tailwind flex classes */
+nav {
+    background-color: transparent !important;
+    border: none !important;
+    padding: var(--spacing-md) 0 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+/* Nav Links Container */
+#main-nav .nav-links {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: var(--spacing-md) !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+}
+
+/* ALL nav-links <a> elements - CRITICAL: Override Tailwind hover:text-teal-700 and text-slate-700 */
+#main-nav .nav-links a {
+    color: var(--cgv-dark) !important;
+    background-color: transparent !important;
+    text-decoration: none !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    transition: color 0.3s ease, background-color 0.3s ease !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+    border: none !important;
+    border-radius: 0 !important;
+    line-height: normal !important;
+}
+
+/* Override Tailwind hover:text-teal-700 class */
+#main-nav .nav-links a:hover {
+    color: var(--cgv-red) !important;
+    text-decoration: none !important;
+    background-color: transparent !important;
+}
+
+#main-nav .nav-links a.active {
+    color: var(--cgv-red) !important;
+    font-weight: 600 !important;
+    background-color: transparent !important;
+}
+
+/* Brand/Logo Link (first <a> in nav) - Hide Tailwind text-teal-700 */
+#main-nav > a {
+    color: var(--cgv-dark) !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+    margin-right: auto !important;
+    margin-bottom: 0 !important;
+    background-color: transparent !important;
+}
+
+#main-nav > a:hover {
+    color: var(--cgv-red) !important;
+    text-decoration: none !important;
+    background-color: transparent !important;
+}
+
+/* Login Button - Override Tailwind bg-teal-600 and Tailwind classes */
+#main-nav .nav-links a[href*="login"],
+#main-nav .nav-links a[href*="auth"] {
+    background-color: var(--cgv-red) !important;
+    color: var(--cgv-white) !important;
+    padding: var(--spacing-sm) var(--spacing-md) !important;
+    border-radius: var(--radius-md) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    font-weight: 500 !important;
+}
+
+#main-nav .nav-links a[href*="login"]:hover,
+#main-nav .nav-links a[href*="auth"]:hover {
+    background-color: #C41408 !important;
+    color: var(--cgv-white) !important;
+    text-decoration: none !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Force remove Tailwind text color utilities that conflict */
+#main-nav a {
+    --tw-text-opacity: 1 !important;
+}
+
+/* Reset Bootstrap Button Styles (when loaded on About/FAQ pages) */
+#main-nav .nav-links a.btn,
+#main-nav .nav-links .btn-primary,
+#main-nav .nav-links .btn-secondary {
+    background-color: var(--cgv-red) !important;
+    color: var(--cgv-white) !important;
+    border: none !important;
+    padding: var(--spacing-sm) var(--spacing-md) !important;
+}
+
+/* Responsive Navbar */
+@media (max-width: 768px) {
+    #main-nav {
+        flex-direction: column !important;
+        gap: var(--spacing-sm) !important;
+        align-items: flex-start !important;
+    }
+    
+    #main-nav .nav-links {
+        flex-direction: column !important;
+        gap: var(--spacing-sm) !important;
+        width: 100% !important;
+    }
+    
+    #main-nav .nav-links a {
+        padding: var(--spacing-sm) 0 !important;
+        border-bottom: 1px solid #F0F0F0 !important;
+        width: 100% !important;
+    }
+    
+    #main-nav .nav-links a:last-child {
+        border-bottom: none !important;
+    }
+    
+    #main-nav > a {
+        margin-right: 0 !important;
+        margin-bottom: var(--spacing-sm) !important;
+    }
+}
 
