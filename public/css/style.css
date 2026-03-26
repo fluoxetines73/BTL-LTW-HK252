@@ -170,3 +170,67 @@ nav {
     }
 }
 
+/* ============================================================================
+   BASIC FORM/PANEL STYLES
+   ============================================================================ */
+
+.panel.narrow {
+    max-width: 640px;
+    margin: 24px auto;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 24px;
+}
+
+.panel.narrow h1 {
+    margin: 0 0 16px;
+    color: #1e293b;
+}
+
+.form-grid {
+    display: block;
+}
+
+.form-fieldset {
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 0 0 16px;
+}
+
+.form-fieldset legend {
+    padding: 0 8px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 14px;
+    color: #1e293b;
+    line-height: 1.6;
+}
+
+.form-label input {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.form-grid button[type="submit"],
+.panel.narrow .btn {
+    display: inline-block;
+    background: #0f766e;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+    text-decoration: none;
+}
+

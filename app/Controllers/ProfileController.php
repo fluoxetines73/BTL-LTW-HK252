@@ -37,10 +37,11 @@ class ProfileController extends Controller {
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $name = trim($_POST['name'] ?? '');
             $phone = trim($_POST['phone'] ?? '');
-            $address = trim($_POST['address'] ?? '');
 
-            if ($name === '') {
+            if ($name === '' || strlen($name) < 2) {
                 $flash = ['type' => 'error', 'message' => 'Vui long nhap ho ten.'];
+            } elseif ($phone !== '' && !preg_match('/^[0-9\-\+\s]{10,}$/', $phone)) {
+                $flash = ['type' => 'error', 'message' => 'So dien thoai khong hop le.'];
             } else {
                 $avatarPath = null;
                 if (isset($_FILES['avatar']) && ($_FILES['avatar']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
@@ -55,7 +56,6 @@ class ProfileController extends Controller {
                     $this->userModel->updateProfile((int)$user['id'], [
                         'name' => $name,
                         'phone' => $phone,
-                        'address' => $address,
                         'avatar' => $avatarPath,
                     ]);
                     $_SESSION['auth_user']['name'] = $name;
@@ -91,7 +91,7 @@ class ProfileController extends Controller {
         $confirm = $_POST['new_password_confirmation'] ?? '';
 
         $user = $this->userModel->findById((int)$_SESSION['auth_user']['id']);
-        if (!$user || !password_verify($current, $user['password_hash'])) {
+        if (!$user || !password_verify($current, $user['password'])) {
             $flash = ['type' => 'error', 'message' => 'Mat khau hien tai khong dung.'];
         } elseif (strlen($new) < 6) {
             $flash = ['type' => 'error', 'message' => 'Mat khau moi phai co it nhat 6 ky tu.'];

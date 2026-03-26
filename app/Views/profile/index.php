@@ -1,15 +1,15 @@
 <section class="panel">
     <h1>Thong tin tai khoan</h1>
 
-    <p><strong>Ho ten:</strong> <?= htmlspecialchars($user['name']) ?></p>
+    <p><strong>Ho ten:</strong> <?= htmlspecialchars($user['full_name'] ?? '') ?></p>
     <p><strong>Email:</strong> <?= htmlspecialchars($user['email']) ?></p>
     <p><strong>So dien thoai:</strong> <?= htmlspecialchars($user['phone'] ?? '') ?></p>
-    <p><strong>Dia chi:</strong> <?= htmlspecialchars($user['address'] ?? '') ?></p>
     <p><strong>Avatar:</strong>
         <?php if (!empty($user['avatar'])): ?>
-            <img src="<?= BASE_URL . htmlspecialchars($user['avatar']) ?>" alt="Avatar" style="width:96px;height:96px;object-fit:cover;border-radius:50%;vertical-align:middle;">
+            <?php $avatarPath = (string)$user['avatar']; if (!str_starts_with($avatarPath, 'public/')) { $avatarPath = 'public/' . ltrim($avatarPath, '/'); } ?>
+            <img src="<?= BASE_URL . htmlspecialchars($avatarPath) ?>" alt="Avatar" style="width:96px;height:96px;object-fit:cover;border-radius:50%;vertical-align:middle;">
         <?php else: ?>
-            Chua cap nhat
+            <img src="<?= BASE_URL ?>public/uploads/avatars/default-avatar.svg" alt="Avatar mac dinh" style="width:96px;height:96px;object-fit:cover;border-radius:50%;vertical-align:middle;">
         <?php endif; ?>
     </p>
 
