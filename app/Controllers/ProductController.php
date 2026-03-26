@@ -16,7 +16,14 @@ class ProductController extends Controller {
 	}
 
 	public function index(): void {
-		$products = $this->productModel ? $this->productModel->findAll() : $this->seedProducts();
+		$products = $this->seedProducts();
+		if ($this->productModel) {
+			try {
+				$products = $this->productModel->findAll();
+			} catch (Throwable $e) {
+				$products = $this->seedProducts();
+			}
+		}
 
 		$this->view('layouts/main', [
 			'title' => 'San pham',
@@ -26,7 +33,14 @@ class ProductController extends Controller {
 	}
 
 	public function detail(int $id = 0): void {
-		$product = $this->productModel ? $this->productModel->findById($id) : $this->findSeedById($id);
+		$product = $this->findSeedById($id);
+		if ($this->productModel) {
+			try {
+				$product = $this->productModel->findById($id);
+			} catch (Throwable $e) {
+				$product = $this->findSeedById($id);
+			}
+		}
 
 		if (!$product) {
 			http_response_code(404);

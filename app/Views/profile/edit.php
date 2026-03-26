@@ -10,15 +10,11 @@
     <form method="post" enctype="multipart/form-data" class="form-grid">
         <label>
             Ho ten
-            <input type="text" name="name" value="<?= htmlspecialchars($user['name']) ?>" required>
+            <input type="text" name="name" value="<?= htmlspecialchars($user['full_name'] ?? '') ?>" required>
         </label>
         <label>
             So dien thoai
             <input type="text" name="phone" value="<?= htmlspecialchars($user['phone'] ?? '') ?>">
-        </label>
-        <label>
-            Dia chi
-            <input type="text" name="address" value="<?= htmlspecialchars($user['address'] ?? '') ?>">
         </label>
         <label>
             Avatar

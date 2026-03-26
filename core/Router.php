@@ -57,6 +57,26 @@ class Router {
             $parts = explode('/', $raw);
             return array_values(array_filter($parts, static fn($part) => $part !== ''));
         }
+
+        // Fallback for PHP built-in server (no .htaccess rewrite)
+        $uri = $_SERVER['REQUEST_URI'] ?? '/';
+        $path = parse_url($uri, PHP_URL_PATH) ?: '/';
+
+        $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
+        $basePath = rtrim($basePath, '/');
+        if ($basePath !== '' && str_starts_with($path, $basePath)) {
+            $path = substr($path, strlen($basePath));
+        }
+
+        $path = trim($path, '/');
+        if ($path === '' || $path === 'index.php') {
+            return [];
+        }
+
+        $raw = filter_var($path, FILTER_SANITIZE_URL);
+        $parts = explode('/', $raw);
+        return array_values(array_filter($parts, static fn($part) => $part !== ''));
+
         return [];
     }
 }

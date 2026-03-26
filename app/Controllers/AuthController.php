@@ -16,20 +16,29 @@ class AuthController extends Controller {
             $email = trim($_POST['email'] ?? '');
             $password = $_POST['password'] ?? '';
 
-            $user = $this->userModel->findByEmail($email);
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $flash = ['type' => 'error', 'message' => 'Email không hợp lệ.'];
+            } elseif (strlen($password) < 6) {
+                $flash = ['type' => 'error', 'message' => 'Mật khẩu phải có ít nhất 6 ký tự.'];
+            }
 
-            if ($user && password_verify($password, $user['password_hash'])) {
-                if ($user['status'] === 'locked') {
+            $user = $flash ? false : $this->userModel->findByEmail($email);
+
+            if ($user && password_verify($password, $user['password'])) {
+                if ($user['status'] === 'inactive') {
                     $flash = ['type' => 'error', 'message' => 'Tài khoản của bạn đã bị khóa.'];
                 } else {
                     // Lưu thông tin vào Session để phân quyền [cite: 32]
                     $_SESSION['auth_user'] = [
                         'id' => $user['id'],
-                        'name' => $user['name'],
+                        'name' => $user['full_name'],
                         'email' => $user['email'],
                         'avatar' => $user['avatar'] ?? null,
                         'role' => $user['role'] // 'admin' hoặc 'member' [cite: 5]
                     ];
+                    if ($user['role'] === 'admin') {
+                        $this->redirect('admin/admin_dashboard');
+                    }
                     $this->redirect('home/index');
                 }
             } else {
@@ -51,7 +60,13 @@ class AuthController extends Controller {
             $email = trim($_POST['email'] ?? '');
             $password = $_POST['password'] ?? '';
 
-            if ($this->userModel->findByEmail($email)) {
+            if ($name === '' || strlen($name) < 2) {
+                $flash = ['type' => 'error', 'message' => 'Họ tên phải có ít nhất 2 ký tự.'];
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $flash = ['type' => 'error', 'message' => 'Email không hợp lệ.'];
+            } elseif (strlen($password) < 6) {
+                $flash = ['type' => 'error', 'message' => 'Mật khẩu phải có ít nhất 6 ký tự.'];
+            } elseif ($this->userModel->findByEmail($email)) {
                 $flash = ['type' => 'error', 'message' => 'Email này đã được sử dụng.'];
             } else {
                 $success = $this->userModel->create([
@@ -59,7 +74,6 @@ class AuthController extends Controller {
                     'email' => $email,
                     'password_hash' => password_hash($password, PASSWORD_DEFAULT),
                     'phone' => null,
-                    'address' => null,
                     'avatar' => null,
                     'role' => 'member'
                 ]);
