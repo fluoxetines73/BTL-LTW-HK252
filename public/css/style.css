@@ -234,3 +234,322 @@ nav {
     text-decoration: none;
 }
 
+/* ============================================================================
+   CGV FOOTER STYLES
+   ============================================================================ */
+
+/* Global Footer Styles */
+.cgv-footer {
+    background-color: #fdfcf0;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #333;
+    line-height: 1.5;
+    border-top: 1px solid #e5e5e5;
+}
+
+.cgv-container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* TOP SECTION - Cinema Brands */
+.cgv-footer-brands {
+    border-bottom: 1px solid #dcdcdc;
+    padding: 20px 0;
+}
+
+.cgv-brand-list {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 15px;
+}
+
+.cgv-brand-list li a {
+    background-image: url('../images/footer/brand-type-film-footer_ver2.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    display: block;
+    height: 28px;
+    text-indent: -99999px;
+    white-space: nowrap;
+    opacity: 0.85;
+    transition: opacity 0.3s ease;
+}
+
+.cgv-brand-list li a:hover {
+    opacity: 1;
+}
+
+/* Cinema brand logos with precise positioning from sprite */
+.brand-4dx {
+    background-position: -391px 6px;
+    width: 45px;
+}
+
+.brand-imax {
+    background-position: -160px 5px;
+    width: 77px;
+}
+
+.brand-starium {
+    background-position: -236px 5px;
+    width: 57px;
+}
+
+.brand-goldclass {
+    background-position: -292px 4px;
+    width: 105px;
+}
+
+.brand-lamour {
+    background-position: -82px 3px;
+    width: 83px;
+}
+
+.brand-sweetbox {
+    background-position: 2px 3px;
+    width: 86px;
+}
+
+.brand-premium {
+    background-position: -435px 2px;
+    width: 115px;
+}
+
+.brand-screenx {
+    background-position: -604px -2px;
+    width: 74px;
+}
+
+.brand-cineforet {
+    background-position: -675px 3px;
+    width: 113px;
+}
+
+.brand-cineliving {
+    background-position: -785px 3px;
+    width: 110px;
+}
+
+.brand-cinesuite {
+    background-position: -891px 2px;
+    width: 73px;
+}
+
+/* MIDDLE SECTION - Policy Grid */
+.cgv-footer-policy {
+    background-color: #fdfcf0;
+    padding: 30px 0;
+}
+
+.cgv-policy-grid {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.cgv-col-policy {
+    flex: 1;
+    min-width: 200px;
+    margin-bottom: 20px;
+    padding-right: 15px;
+}
+
+.cgv-col-policy h3 {
+    font-size: 14px;
+    color: #333;
+    font-weight: 700;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+.cgv-col-policy ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.cgv-col-policy li {
+    margin-bottom: 8px;
+}
+
+.cgv-col-policy a {
+    color: #666;
+    font-size: 13px;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.cgv-col-policy a:hover {
+    color: #e71a0f;
+    text-decoration: underline;
+}
+
+.cgv-customer-care p {
+    color: #666;
+    font-size: 13px;
+    margin: 0 0 10px;
+    line-height: 1.6;
+}
+
+.cgv-customer-care strong {
+    color: #333;
+}
+
+/* Social Icons (Sprite bg-social-footer-40.png) */
+.cgv-social-icons {
+    list-style: none;
+    margin: 0 !important;
+    padding: 0 !important;
+    margin-bottom: 15px !important;
+    display: block !important;
+    overflow: auto;
+}
+
+.cgv-social-icons li {
+    float: left;
+    margin: 0 !important;
+    margin-right: 3px !important;
+    padding: 0 !important;
+}
+
+.cgv-social-icons a {
+    background: url('../images/footer/bg-social-footer-40.png') no-repeat;
+    display: block;
+    height: 39px;
+    width: 39px;
+    text-indent: -9999px;
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+    border-radius: 0;
+    opacity: 0.9;
+}
+
+.cgv-social-icons a:hover {
+    opacity: 1;
+}
+
+/* Social media icon background positions */
+.cgv-social-icons a.soc-fb {
+    background-position: -9px -3px;
+}
+
+.cgv-social-icons a.soc-yt {
+    background-position: -54px -3px;
+}
+
+.cgv-social-icons a.soc-ig {
+    background-position: -98px -3px;
+}
+
+.cgv-social-icons a.soc-zl {
+    background-position: -191px -3px;
+}
+
+.cgv-gov-cert {
+    clear: both;
+    display: block;
+    margin-top: 10px;
+}
+
+.cgv-gov-cert img {
+    height: 40px;
+    width: auto;
+    margin-top: 10px;
+    display: block;
+}
+
+/* BOTTOM SECTION - Company Info */
+.cgv-footer-bottom {
+    background-color: #fdfcf0;
+    padding-top: 20px;
+    border-top: 1px solid #dcdcdc;
+    position: relative;
+}
+
+.cgv-bottom-grid {
+    display: flex;
+    align-items: flex-start;
+    padding-bottom: 40px; /* Space for the bottom brick background */
+    gap: 20px;
+}
+
+.cgv-logo-wrapper {
+    flex-shrink: 0;
+    margin-top: 5px;
+}
+
+/* CJ CGV Logo from common_sprite_area.png at -145px -319px */
+.cgv-sprite-logo {
+    display: block;
+    width: 120px; /* approx logo width */
+    height: 43px;
+    margin-top: 30px;
+    background-image: url('../images/footer/common_sprite_area.png');
+    background-repeat: no-repeat;
+    background-position: -145px -319px;
+}
+
+.cgv-company-info {
+    flex-grow: 1;
+}
+
+.cgv-company-info h3 {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.cgv-company-info p {
+    color: #666;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 0 0 5px;
+}
+
+.cgv-company-info .copyright {
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+/* Bottom Brick Pattern */
+.cgv-bottom-brick {
+    height: 114px;
+    background-image: url('../images/footer/bg-bottom-footer.jpg');
+    background-repeat: repeat-x;
+    background-position: bottom center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .cgv-policy-grid {
+        flex-direction: column;
+    }
+    
+    .cgv-col-policy {
+        padding-right: 0;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+    }
+    
+    .cgv-col-policy:last-child {
+        border-bottom: none;
+    }
+    
+    .cgv-bottom-grid {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .cgv-sprite-logo {
+        margin: 0 auto 20px;
+    }
+}
