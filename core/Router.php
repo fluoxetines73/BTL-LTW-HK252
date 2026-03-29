@@ -19,8 +19,11 @@ class Router {
 
         $controllerFile = APPROOT . '/Controllers/' . $this->controller . '.php';
         if (!file_exists($controllerFile)) {
-            http_response_code(500);
-            die('Controller mặc định không tồn tại.');
+            http_response_code(404);
+            require_once APPROOT . '/Controllers/HomeController.php';
+            $fallbackController = new HomeController();
+            $fallbackController->notFound();
+            return;
         }
 
         require_once $controllerFile;
@@ -45,7 +48,7 @@ class Router {
             }
 
             http_response_code(404);
-            die('Method không tồn tại.');
+            throw new RuntimeException('Method không tồn tại.');
         }
 
         call_user_func_array([$controller, $this->method], $this->params);
