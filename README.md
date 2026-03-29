@@ -40,3 +40,5 @@ This folder is the shared foundation for all team members.
 2. Update DB credentials in `configs/database.php`.
 3. Serve project from Apache (for `.htaccess` rewrite support).
 4. Access app from browser using the MVC folder URL.
+
+

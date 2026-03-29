@@ -1,4 +1,4 @@
-// app/Controllers/AuthController.php
+
 <?php
 require_once ROOT . '/core/Controller.php';
 
@@ -25,7 +25,7 @@ class AuthController extends Controller {
             $user = $flash ? false : $this->userModel->findByEmail($email);
 
             if ($user && password_verify($password, $user['password'])) {
-                if ($user['status'] === 'inactive') {
+                if ($user['status'] === 'locked') {
                     $flash = ['type' => 'error', 'message' => 'Tài khoản của bạn đã bị khóa.'];
                 } else {
                     // Lưu thông tin vào Session để phân quyền [cite: 32]
