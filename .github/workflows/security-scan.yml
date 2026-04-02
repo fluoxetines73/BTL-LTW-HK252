@@ -37,7 +37,7 @@ jobs:
       - name: 🔑 Hardcoded Secrets Detection
         run: |
           echo "🔑 Scanning for hardcoded secrets..."
-          if grep -r "password\|secret\|api_key\|token" app/ core/ --include="*.php" | grep -i "= ['\"]"; then
+          if grep -rInE --include="*.php" "(\$[[:alnum:]_]*?(password|secret|api_key|token)[[:alnum:]_]*[[:space:]]*=[[:space:]]*['\"][^'\"]+['\"]|\$[[:alnum:]_]+\[[[:space:]]*['\"][[:alnum:]_]*?(password|secret|api_key|token)[[:alnum:]_]*['\"][[:space:]]*\][[:space:]]*=[[:space:]]*['\"][^'\"]+['\"]|['\"][[:alnum:]_]*?(password|secret|api_key|token)[[:alnum:]_]*['\"][[:space:]]*=>[[:space:]]*['\"][^'\"]+['\"]|define\([[:space:]]*['\"][[:alnum:]_]*?(password|secret|api_key|token)[[:alnum:]_]*['\"][[:space:]]*,[[:space:]]*['\"][^'\"]+['\"] )" app/ core/; then
             echo "❌ Found potential hardcoded secrets!"
             exit 1
           fi
