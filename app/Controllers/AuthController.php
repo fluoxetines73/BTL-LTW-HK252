@@ -11,6 +11,14 @@ class AuthController extends Controller {
     }
 
     public function login(): void {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET' && !empty($_SESSION['auth_user'])) {
+            $role = (string)($_SESSION['auth_user']['role'] ?? 'member');
+            if ($role === 'admin') {
+                $this->redirect('admin/admin_dashboard');
+            }
+            $this->redirect('home/index');
+        }
+
         $flash = null;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = trim($_POST['email'] ?? '');
@@ -49,7 +57,8 @@ class AuthController extends Controller {
         $this->view('layouts/main', [
             'title' => 'Đăng nhập',
             'content' => 'auth/login',
-            'flash' => $flash
+            'flash' => $flash,
+            'authUser' => $_SESSION['auth_user'] ?? null,
         ]);
     }
 
@@ -91,5 +100,26 @@ class AuthController extends Controller {
             'content' => 'auth/register',
             'flash' => $flash
         ]);
+    }
+
+    public function logout(): void {
+        // Xoa toan bo du lieu session cua nguoi dung hien tai
+        $_SESSION = [];
+
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params['path'],
+                $params['domain'],
+                $params['secure'],
+                $params['httponly']
+            );
+        }
+
+        session_destroy();
+        $this->redirect('auth/login');
     }
 }
