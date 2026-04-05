@@ -23,111 +23,109 @@
    2. Bootstrap's navbar styles (when injected on About/FAQ pages)
    ============================================================================ */
 
-/* Header Container - Reset Tailwind bg-white/95 and backdrop-blur */
+/* Header Container - CGV Brand Styles */
 header {
     background-color: var(--cgv-white) !important;
-    border-bottom: 1px solid #E5E5E5 !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 1030 !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
+    border-bottom: 1px solid #E5E5E5;
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* Nav Container - Reset Tailwind flex classes */
+/* Nav Container - CGV Styling */
 nav {
-    background-color: transparent !important;
-    border: none !important;
-    padding: var(--spacing-md) 0 !important;
-    display: flex !important;
-    flex-wrap: wrap !important;
-    align-items: center !important;
-    justify-content: space-between !important;
+    background-color: transparent;
+    border: none;
+    padding: var(--spacing-md) 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
 }
 
 /* Nav Links Container */
 #main-nav .nav-links {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: var(--spacing-md) !important;
-    align-items: center !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    list-style: none !important;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
-/* ALL nav-links <a> elements - CRITICAL: Override Tailwind hover:text-teal-700 and text-slate-700 */
+/* ALL nav-links <a> elements - CGV Brand Colors Only */
 #main-nav .nav-links a {
-    color: var(--cgv-dark) !important;
-    background-color: transparent !important;
-    text-decoration: none !important;
-    font-size: 0.9rem !important;
-    font-weight: 500 !important;
-    transition: color 0.3s ease, background-color 0.3s ease !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    white-space: nowrap !important;
-    border: none !important;
-    border-radius: 0 !important;
-    line-height: normal !important;
+    color: var(--cgv-dark);
+    background-color: transparent;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.3s ease, background-color 0.3s ease;
+    padding: 0;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    border: none;
+    border-radius: 0;
+    line-height: normal;
 }
 
-/* Override Tailwind hover:text-teal-700 class */
+/* Override link hover with CGV red */
 #main-nav .nav-links a:hover {
     color: var(--cgv-red) !important;
-    text-decoration: none !important;
-    background-color: transparent !important;
+    text-decoration: none;
+    background-color: transparent;
 }
 
 #main-nav .nav-links a.active {
     color: var(--cgv-red) !important;
-    font-weight: 600 !important;
-    background-color: transparent !important;
+    font-weight: 600;
+    background-color: transparent;
 }
 
-/* Brand/Logo Link (first <a> in nav) - Hide Tailwind text-teal-700 */
+/* Brand/Logo Link - CGV Brand Styling */
 #main-nav > a {
-    color: var(--cgv-dark) !important;
-    font-size: 1.1rem !important;
-    font-weight: 700 !important;
-    text-decoration: none !important;
-    margin-right: auto !important;
-    margin-bottom: 0 !important;
-    background-color: transparent !important;
+    color: var(--cgv-dark);
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-decoration: none;
+    margin-right: auto;
+    margin-bottom: 0;
+    background-color: transparent;
 }
 
 #main-nav > a:hover {
     color: var(--cgv-red) !important;
-    text-decoration: none !important;
-    background-color: transparent !important;
+    text-decoration: none;
+    background-color: transparent;
 }
 
-/* Login Button - Override Tailwind bg-teal-600 and Tailwind classes */
+/* Login Button - CGV Brand Red Override */
 #main-nav .nav-links a[href*="login"],
 #main-nav .nav-links a[href*="auth"] {
     background-color: var(--cgv-red) !important;
     color: var(--cgv-white) !important;
-    padding: var(--spacing-sm) var(--spacing-md) !important;
-    border-radius: var(--radius-md) !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    font-weight: 500 !important;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    font-weight: 500;
 }
 
 #main-nav .nav-links a[href*="login"]:hover,
 #main-nav .nav-links a[href*="auth"]:hover {
     background-color: #C41408 !important;
     color: var(--cgv-white) !important;
-    text-decoration: none !important;
-    transform: translateY(-1px) !important;
+    text-decoration: none;
+    transform: translateY(-1px);
 }
 
 /* Force remove Tailwind text color utilities that conflict */
 #main-nav a {
-    --tw-text-opacity: 1 !important;
+    --tw-text-opacity: 1;
 }
 
 /* Reset Bootstrap Button Styles (when loaded on About/FAQ pages) */
@@ -136,37 +134,37 @@ nav {
 #main-nav .nav-links .btn-secondary {
     background-color: var(--cgv-red) !important;
     color: var(--cgv-white) !important;
-    border: none !important;
-    padding: var(--spacing-sm) var(--spacing-md) !important;
+    border: none;
+    padding: var(--spacing-sm) var(--spacing-md);
 }
 
 /* Responsive Navbar */
 @media (max-width: 768px) {
     #main-nav {
-        flex-direction: column !important;
-        gap: var(--spacing-sm) !important;
-        align-items: flex-start !important;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        align-items: flex-start;
     }
     
     #main-nav .nav-links {
-        flex-direction: column !important;
-        gap: var(--spacing-sm) !important;
-        width: 100% !important;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        width: 100%;
     }
     
     #main-nav .nav-links a {
-        padding: var(--spacing-sm) 0 !important;
-        border-bottom: 1px solid #F0F0F0 !important;
-        width: 100% !important;
+        padding: var(--spacing-sm) 0;
+        border-bottom: 1px solid #F0F0F0;
+        width: 100%;
     }
     
     #main-nav .nav-links a:last-child {
-        border-bottom: none !important;
+        border-bottom: none;
     }
     
     #main-nav > a {
-        margin-right: 0 !important;
-        margin-bottom: var(--spacing-sm) !important;
+        margin-right: 0;
+        margin-bottom: var(--spacing-sm);
     }
 }
 
@@ -405,18 +403,18 @@ nav {
 /* Social Icons (Sprite bg-social-footer-40.png) */
 .cgv-social-icons {
     list-style: none;
-    margin: 0 !important;
-    padding: 0 !important;
-    margin-bottom: 15px !important;
-    display: block !important;
+    margin: 0;
+    padding: 0;
+    margin-bottom: 15px;
+    display: block;
     overflow: auto;
 }
 
 .cgv-social-icons li {
     float: left;
-    margin: 0 !important;
-    margin-right: 3px !important;
-    padding: 0 !important;
+    margin: 0;
+    margin-right: 3px;
+    padding: 0;
 }
 
 .cgv-social-icons a {
