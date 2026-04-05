@@ -238,4 +238,6 @@ Windows (PowerShell):
 
 Schema đã có câu lệnh drop table nên có thể reset dữ liệu về trạng thái sạch.
 
-data sai cho chó Danh
+NOTE:
+SMTP password trong mail.php
+password:6E736568207A716B64206576626A206B6F6B79
