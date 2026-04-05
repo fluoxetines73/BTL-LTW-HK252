@@ -9,11 +9,11 @@
     <?php if (!empty($extraHead)) echo $extraHead; ?>
     <link rel="stylesheet" href="<?= BASE_URL ?>public/css/style.css">
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-800">
+<body class="bg-light text-secondary" style="min-height: 100vh;">
 
     <?php include APPROOT . '/Views/layouts/header.php'; ?>
 
-    <main class="mx-auto w-full max-w-6xl px-4 py-6 md:px-6 lg:px-8">
+    <main class="mx-auto w-100 px-4 py-6 px-md-3 px-lg-5" style="max-width: 1280px;">
         <?php include APPROOT . '/Views/' . $content . '.php'; ?>
     </main>
 
