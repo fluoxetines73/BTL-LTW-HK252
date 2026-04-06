@@ -2,6 +2,7 @@
 // app/Controllers/AdminController.php
 
 require_once ROOT . '/core/Controller.php';
+require_once ROOT . '/core/Database.php';
 
 class AdminController extends Controller {
 
@@ -12,11 +13,46 @@ class AdminController extends Controller {
     public function admin_dashboard() {
         // Kiểm tra quyền Admin trước khi cho phép xem trang 
         $this->middlewareAdmin(); 
+
+        // Lấy dữ liệu thống kê
+        $pdo = Database::getInstance()->getPdo();
         
-        // Gọi View giao diện quản trị 
-        $this->view('layouts/main', [
+        $stats = [
+            'total_users' => 0,
+            'total_movies' => 0,
+            'total_news' => 0,
+            'locked_accounts' => 0,
+        ];
+
+        try {
+            $stats['total_users'] = (int)$pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
+        } catch (Throwable $e) {
+            $stats['total_users'] = 0;
+        }
+
+        try {
+            $stats['total_movies'] = (int)$pdo->query('SELECT COUNT(*) FROM movies')->fetchColumn();
+        } catch (Throwable $e) {
+            $stats['total_movies'] = 0;
+        }
+
+        try {
+            $stats['total_news'] = (int)$pdo->query("SELECT COUNT(*) FROM news WHERE status = 'published'")->fetchColumn();
+        } catch (Throwable $e) {
+            $stats['total_news'] = 0;
+        }
+
+        try {
+            $stats['locked_accounts'] = (int)$pdo->query("SELECT COUNT(*) FROM users WHERE status = 'inactive'")->fetchColumn();
+        } catch (Throwable $e) {
+            $stats['locked_accounts'] = 0;
+        }
+
+        // Gọi View giao diện quản trị (đồng bộ cùng layout với các trang admin khác)
+        $this->view('layouts/admin', [
             'title' => 'Bảng điều khiển Admin',
-            'content' => 'admin/dashboard'
+            'content' => 'admin/dashboard',
+            'stats' => $stats,
         ]);
     }
 
@@ -31,12 +67,19 @@ class AdminController extends Controller {
 
         $userModel = $this->model('User');
         $perPage = 10;
-        $data = $userModel->getUsersPaginated((int)$page, $perPage);
+        $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : (int)$page;
+        $sort = (string)($_GET['sort'] ?? 'id_asc');
+        $allowedSorts = ['id_asc', 'id_desc', 'created_desc', 'created_asc'];
+        if (!in_array($sort, $allowedSorts, true)) {
+            $sort = 'id_asc';
+        }
+
+        $data = $userModel->getUsersPaginated($currentPage, $perPage, $sort);
 
         // Tính url phân trang
         $baseUrl = BASE_URL . 'admin/users';
 
-        $this->view('layouts/main', [
+        $this->view('layouts/admin', [
             'title' => 'Quản lý Người dùng',
             'content' => 'admin/users/index',
             'users' => $data['users'],
@@ -44,6 +87,7 @@ class AdminController extends Controller {
             'total_pages' => $data['pages'],
             'total_users' => $data['total'],
             'base_url' => $baseUrl,
+            'sort' => $sort,
         ]);
     }
 
@@ -57,17 +101,22 @@ class AdminController extends Controller {
         $keyword = $_GET['q'] ?? '';
         $page = $_GET['page'] ?? 1;
         $perPage = 10;
+        $sort = (string)($_GET['sort'] ?? 'id_asc');
+        $allowedSorts = ['id_asc', 'id_desc', 'created_desc', 'created_asc'];
+        if (!in_array($sort, $allowedSorts, true)) {
+            $sort = 'id_asc';
+        }
 
         $userModel = $this->model('User');
         if (!empty($keyword)) {
-            $data = $userModel->search($keyword, (int)$page, $perPage);
+            $data = $userModel->search($keyword, (int)$page, $perPage, $sort);
         } else {
-            $data = $userModel->getUsersPaginated((int)$page, $perPage);
+            $data = $userModel->getUsersPaginated((int)$page, $perPage, $sort);
         }
 
-        $baseUrl = BASE_URL . 'admin/search?q=' . urlencode($keyword);
+        $baseUrl = BASE_URL . 'admin/search?q=' . urlencode($keyword) . '&sort=' . urlencode($sort);
 
-        $this->view('layouts/main', [
+        $this->view('layouts/admin', [
             'title' => 'Tìm kiếm Người dùng',
             'content' => 'admin/users/search',
             'users' => $data['users'],
@@ -76,6 +125,7 @@ class AdminController extends Controller {
             'total_users' => $data['total'],
             'keyword' => $keyword,
             'base_url' => $baseUrl,
+            'sort' => $sort,
         ]);
     }
 
@@ -91,7 +141,7 @@ class AdminController extends Controller {
 
         if (!$user) {
             http_response_code(404);
-            $this->view('layouts/main', [
+            $this->view('layouts/admin', [
                 'title' => 'Không tìm thấy',
                 'content' => 'home/not_found'
             ]);
@@ -104,7 +154,7 @@ class AdminController extends Controller {
             return;
         }
 
-        $this->view('layouts/main', [
+        $this->view('layouts/admin', [
             'title' => 'Chỉnh sửa Người dùng',
             'content' => 'admin/users/edit',
             'user' => $user,
@@ -298,5 +348,265 @@ class AdminController extends Controller {
         }
 
         $this->redirect('admin/edit_user/' . $user['id']);
+    }
+
+    // ===== NEWS MANAGEMENT =====
+
+    public function news() {
+        $this->middlewareAdmin();
+
+        $keyword = trim((string)($_GET['q'] ?? ''));
+        $newsModel = $this->model('News');
+
+        try {
+            $articles = $newsModel->getAdminList($keyword);
+        } catch (Throwable $e) {
+            $articles = [];
+            $_SESSION['error'] = 'Không thể tải danh sách tin tức. Hãy kiểm tra bảng news.';
+        }
+
+        $this->view('layouts/admin', [
+            'title' => 'Quản lý Tin tức',
+            'content' => 'admin/news/index',
+            'articles' => $articles,
+            'keyword' => $keyword,
+            'categories' => $this->newsCategories(),
+        ]);
+    }
+
+    public function create_news() {
+        $this->middlewareAdmin();
+
+        $newsModel = $this->model('News');
+        $flash = null;
+        $old = [
+            'title' => '',
+            'content' => '',
+            'category' => 'tin-tuc',
+            'status' => 'draft',
+        ];
+
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+            $title = trim((string)($_POST['title'] ?? ''));
+            $content = trim((string)($_POST['content'] ?? ''));
+            $category = (string)($_POST['category'] ?? 'tin-tuc');
+            $status = (string)($_POST['status'] ?? 'draft');
+
+            $old = [
+                'title' => $title,
+                'content' => $content,
+                'category' => $category,
+                'status' => $status,
+            ];
+
+            if ($title === '' || mb_strlen($title, 'UTF-8') < 5) {
+                $flash = ['type' => 'error', 'message' => 'Tiêu đề phải có ít nhất 5 ký tự.'];
+            } elseif ($content === '' || mb_strlen($content, 'UTF-8') < 20) {
+                $flash = ['type' => 'error', 'message' => 'Nội dung phải có ít nhất 20 ký tự.'];
+            } elseif (!array_key_exists($category, $this->newsCategories())) {
+                $flash = ['type' => 'error', 'message' => 'Danh mục không hợp lệ.'];
+            } elseif (!in_array($status, ['draft', 'published'], true)) {
+                $flash = ['type' => 'error', 'message' => 'Trạng thái không hợp lệ.'];
+            } else {
+                $imagePath = null;
+                if (!empty($_FILES['image']) && (($_FILES['image']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE)) {
+                    require_once APPROOT . '/Helpers/Upload.php';
+                    $upload = new Upload();
+                    $imagePath = $upload->handle($_FILES['image'], 'news');
+                    if ($imagePath === null && $upload->getError() !== '') {
+                        $flash = ['type' => 'error', 'message' => $upload->getError()];
+                    }
+                }
+
+                if (!$flash) {
+                    try {
+                        $saved = $newsModel->createNews([
+                            'title' => $title,
+                            'content' => $content,
+                            'category' => $category,
+                            'status' => $status,
+                            'image' => $imagePath,
+                            'author_id' => (int)($_SESSION['auth_user']['id'] ?? 0),
+                        ]);
+
+                        if ($saved) {
+                            $_SESSION['success'] = 'Đã tạo bài viết mới.';
+                            $this->redirect('admin/news');
+                        }
+
+                        $flash = ['type' => 'error', 'message' => 'Không thể tạo bài viết.'];
+                    } catch (Throwable $e) {
+                        $flash = ['type' => 'error', 'message' => 'Không thể tạo bài viết do lỗi dữ liệu.'];
+                    }
+                }
+            }
+        }
+
+        $this->view('layouts/admin', [
+            'title' => 'Thêm Tin tức',
+            'content' => 'admin/news/form',
+            'article' => $old,
+            'isEdit' => false,
+            'flash' => $flash,
+            'categories' => $this->newsCategories(),
+        ]);
+    }
+
+    public function edit_news($newsId) {
+        $this->middlewareAdmin();
+
+        $newsModel = $this->model('News');
+        $article = $newsModel->findByIdForAdmin((int)$newsId);
+
+        if (!$article) {
+            http_response_code(404);
+            $this->view('layouts/admin', [
+                'title' => 'Không tìm thấy',
+                'content' => 'home/not_found',
+            ]);
+            return;
+        }
+
+        $flash = null;
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+            $title = trim((string)($_POST['title'] ?? ''));
+            $content = trim((string)($_POST['content'] ?? ''));
+            $category = (string)($_POST['category'] ?? 'tin-tuc');
+            $status = (string)($_POST['status'] ?? 'draft');
+
+            if ($title === '' || mb_strlen($title, 'UTF-8') < 5) {
+                $flash = ['type' => 'error', 'message' => 'Tiêu đề phải có ít nhất 5 ký tự.'];
+            } elseif ($content === '' || mb_strlen($content, 'UTF-8') < 20) {
+                $flash = ['type' => 'error', 'message' => 'Nội dung phải có ít nhất 20 ký tự.'];
+            } elseif (!array_key_exists($category, $this->newsCategories())) {
+                $flash = ['type' => 'error', 'message' => 'Danh mục không hợp lệ.'];
+            } elseif (!in_array($status, ['draft', 'published'], true)) {
+                $flash = ['type' => 'error', 'message' => 'Trạng thái không hợp lệ.'];
+            } else {
+                $imagePath = null;
+                if (!empty($_FILES['image']) && (($_FILES['image']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE)) {
+                    require_once APPROOT . '/Helpers/Upload.php';
+                    $upload = new Upload();
+                    $imagePath = $upload->handle($_FILES['image'], 'news', $article['image'] ?? '');
+                    if ($imagePath === null && $upload->getError() !== '') {
+                        $flash = ['type' => 'error', 'message' => $upload->getError()];
+                    }
+                }
+
+                if (!$flash) {
+                    try {
+                        $updated = $newsModel->updateNews((int)$newsId, [
+                            'title' => $title,
+                            'content' => $content,
+                            'category' => $category,
+                            'status' => $status,
+                            'image' => $imagePath,
+                        ]);
+
+                        if ($updated) {
+                            $_SESSION['success'] = 'Cập nhật bài viết thành công.';
+                            $this->redirect('admin/news');
+                        }
+
+                        $flash = ['type' => 'error', 'message' => 'Không thể cập nhật bài viết.'];
+                    } catch (Throwable $e) {
+                        $flash = ['type' => 'error', 'message' => 'Không thể cập nhật bài viết do lỗi dữ liệu.'];
+                    }
+                }
+
+                $article = array_merge($article, [
+                    'title' => $title,
+                    'content' => $content,
+                    'category' => $category,
+                    'status' => $status,
+                ]);
+            }
+        }
+
+        $this->view('layouts/admin', [
+            'title' => 'Sửa Tin tức',
+            'content' => 'admin/news/form',
+            'article' => $article,
+            'isEdit' => true,
+            'flash' => $flash,
+            'categories' => $this->newsCategories(),
+        ]);
+    }
+
+    public function delete_news($newsId) {
+        $this->middlewareAdmin();
+
+        try {
+            $newsModel = $this->model('News');
+            $deleted = $newsModel->deleteNews((int)$newsId);
+            $_SESSION['success'] = $deleted ? 'Đã xóa bài viết.' : 'Không thể xóa bài viết.';
+        } catch (Throwable $e) {
+            $_SESSION['error'] = 'Không thể xóa bài viết lúc này.';
+        }
+
+        $this->redirect('admin/news');
+    }
+
+    // ===== NEWS REVIEWS MANAGEMENT =====
+
+    public function reviews() {
+        $this->middlewareAdmin();
+
+        $keyword = trim((string)($_GET['q'] ?? ''));
+        $status = trim((string)($_GET['status'] ?? ''));
+
+        $newsModel = $this->model('News');
+        try {
+            $reviews = $newsModel->getAdminReviews($keyword, $status);
+        } catch (Throwable $e) {
+            $reviews = [];
+            $_SESSION['error'] = 'Không thể tải danh sách bình luận/đánh giá. Hãy kiểm tra bảng news_reviews.';
+        }
+
+        $this->view('layouts/admin', [
+            'title' => 'Quản lý Bình luận/Đánh giá',
+            'content' => 'admin/reviews/index',
+            'reviews' => $reviews,
+            'keyword' => $keyword,
+            'statusFilter' => $status,
+        ]);
+    }
+
+    public function review_status($reviewId, $status) {
+        $this->middlewareAdmin();
+
+        $status = trim((string)$status);
+        $newsModel = $this->model('News');
+
+        try {
+            $updated = $newsModel->updateReviewStatus((int)$reviewId, $status);
+            $_SESSION['success'] = $updated ? 'Đã cập nhật trạng thái đánh giá.' : 'Không thể cập nhật trạng thái.';
+        } catch (Throwable $e) {
+            $_SESSION['error'] = 'Không thể cập nhật trạng thái bình luận/đánh giá.';
+        }
+
+        $this->redirect('admin/reviews');
+    }
+
+    public function delete_review($reviewId) {
+        $this->middlewareAdmin();
+
+        $newsModel = $this->model('News');
+        try {
+            $deleted = $newsModel->deleteReview((int)$reviewId);
+            $_SESSION['success'] = $deleted ? 'Đã xóa bình luận/đánh giá.' : 'Không thể xóa bình luận/đánh giá.';
+        } catch (Throwable $e) {
+            $_SESSION['error'] = 'Không thể xóa bình luận/đánh giá.';
+        }
+
+        $this->redirect('admin/reviews');
+    }
+
+    private function newsCategories(): array {
+        return [
+            'tin-tuc' => 'Tin tức',
+            'khuyen-mai' => 'Khuyến mãi',
+            'su-kien' => 'Sự kiện',
+        ];
     }
 }
