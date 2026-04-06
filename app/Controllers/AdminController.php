@@ -122,8 +122,9 @@ class AdminController extends Controller {
         $user = $userModel->findById((int)$userId);
 
         if (!$user) {
-            http_response_code(404);
-            die('Người dùng không tồn tại.');
+            $_SESSION['error'] = 'Người dùng không tồn tại.';
+            $this->redirect('admin/users');
+            return;
         }
 
         // Reset mật khẩu
@@ -149,8 +150,9 @@ class AdminController extends Controller {
         $user = $userModel->findById((int)$userId);
 
         if (!$user) {
-            http_response_code(404);
-            die('Người dùng không tồn tại.');
+            $_SESSION['error'] = 'Người dùng không tồn tại.';
+            $this->redirect('admin/users');
+            return;
         }
 
         if ($userModel->updateStatus((int)$userId, 'inactive')) {
@@ -173,8 +175,9 @@ class AdminController extends Controller {
         $user = $userModel->findById((int)$userId);
 
         if (!$user) {
-            http_response_code(404);
-            die('Người dùng không tồn tại.');
+            $_SESSION['error'] = 'Người dùng không tồn tại.';
+            $this->redirect('admin/users');
+            return;
         }
 
         if ($userModel->updateStatus((int)$userId, 'active')) {
@@ -197,8 +200,9 @@ class AdminController extends Controller {
         $user = $userModel->findById((int)$userId);
 
         if (!$user) {
-            http_response_code(404);
-            die('Người dùng không tồn tại.');
+            $_SESSION['error'] = 'Người dùng không tồn tại.';
+            $this->redirect('admin/users');
+            return;
         }
 
         // Không cho phép xóa chính mình
