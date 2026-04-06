@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS `combos`;
 DROP TABLE IF EXISTS `seat_types`;
 DROP TABLE IF EXISTS `cinemas`;
 DROP TABLE IF EXISTS `genres`;
+DROP TABLE IF EXISTS `user_registration_otps`;
 DROP TABLE IF EXISTS `users`;
 
 SET FOREIGN_KEY_CHECKS=1;
@@ -44,6 +45,23 @@ CREATE TABLE `users` (
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY `uk_email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table: user_registration_otps
+-- --------------------------------------------------------
+CREATE TABLE `user_registration_otps` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `email` VARCHAR(150) NOT NULL,
+    `full_name` VARCHAR(100) NOT NULL,
+    `password_hash` VARCHAR(255) NOT NULL,
+    `otp_hash` VARCHAR(255) NOT NULL,
+    `attempts` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    `expires_at` DATETIME NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY `uk_otp_email` (`email`),
+    INDEX `idx_otp_expires_at` (`expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

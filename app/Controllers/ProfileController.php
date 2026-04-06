@@ -20,7 +20,7 @@ class ProfileController extends Controller {
         }
 
         $this->view('layouts/main', [
-            'title' => 'Ho so ca nhan',
+            'title' => 'Hồ sơ cá nhân',
             'content' => 'profile/index',
             'user' => $user,
         ]);
@@ -39,9 +39,9 @@ class ProfileController extends Controller {
             $phone = trim($_POST['phone'] ?? '');
 
             if ($name === '' || strlen($name) < 2) {
-                $flash = ['type' => 'error', 'message' => 'Vui long nhap ho ten.'];
+                $flash = ['type' => 'error', 'message' => 'Vui lòng nhập họ tên.'];
             } elseif ($phone !== '' && !preg_match('/^[0-9\-\+\s]{10,}$/', $phone)) {
-                $flash = ['type' => 'error', 'message' => 'So dien thoai khong hop le.'];
+                $flash = ['type' => 'error', 'message' => 'Số điện thoại không hợp lệ.'];
             } else {
                 $avatarPath = null;
                 if (isset($_FILES['avatar']) && ($_FILES['avatar']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
@@ -68,7 +68,7 @@ class ProfileController extends Controller {
         }
 
         $this->view('layouts/main', [
-            'title' => 'Chinh sua ho so',
+            'title' => 'Chỉnh sửa hồ sơ',
             'content' => 'profile/edit',
             'user' => $user,
             'flash' => $flash ?? null,
@@ -78,7 +78,7 @@ class ProfileController extends Controller {
     public function changePassword(): void {
         $this->middlewareAuth();
         $this->view('layouts/main', [
-            'title' => 'Doi mat khau',
+            'title' => 'Đổi mật khẩu',
             'content' => 'profile/change_password',
         ]);
     }
@@ -92,18 +92,18 @@ class ProfileController extends Controller {
 
         $user = $this->userModel->findById((int)$_SESSION['auth_user']['id']);
         if (!$user || !password_verify($current, $user['password'])) {
-            $flash = ['type' => 'error', 'message' => 'Mat khau hien tai khong dung.'];
+            $flash = ['type' => 'error', 'message' => 'Mật khẩu hiện tại không đúng.'];
         } elseif (strlen($new) < 6) {
-            $flash = ['type' => 'error', 'message' => 'Mat khau moi phai co it nhat 6 ky tu.'];
+            $flash = ['type' => 'error', 'message' => 'Mật khẩu mới phải có ít nhất 6 ký tự.'];
         } elseif ($new !== $confirm) {
-            $flash = ['type' => 'error', 'message' => 'Xac nhan mat khau khong khop.'];
+            $flash = ['type' => 'error', 'message' => 'Xác nhận mật khẩu không khớp.'];
         } else {
             $this->userModel->updatePassword((int)$user['id'], password_hash($new, PASSWORD_DEFAULT));
             $this->redirect('profile/index');
         }
 
         $this->view('layouts/main', [
-            'title' => 'Doi mat khau',
+            'title' => 'Đổi mật khẩu',
             'content' => 'profile/change_password',
             'flash' => $flash ?? null,
         ]);
