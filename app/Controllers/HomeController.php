@@ -128,6 +128,27 @@ class HomeController extends Controller {
 		]);
 	}
 
+	public function privacy(): void {
+		$this->view('layouts/main', [
+			'title' => 'Chinh sach bao mat',
+			'content' => 'home/privacy',
+		]);
+	}
+
+	public function terms(): void {
+		$this->view('layouts/main', [
+			'title' => 'Dieu khoang su dung',
+			'content' => 'home/terms',
+		]);
+	}
+
+	public function regulations(): void {
+		$this->view('layouts/main', [
+			'title' => 'Quy dinh rap',
+			'content' => 'home/regulations',
+		]);
+	}
+
 	public function notFound(): void {
 		$this->view('layouts/main', [
 			'title' => '404',

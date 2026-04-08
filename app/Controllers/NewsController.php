@@ -44,6 +44,13 @@ class NewsController extends Controller {
         ]);
     }
 
+    public function promotions(): void {
+        $this->view('layouts/main', [
+            'title' => 'Khuyen mai va uu dai',
+            'content' => 'news/promotions',
+        ]);
+    }
+
     private function seedNews(): array {
         return [
             ['id' => 1, 'title' => 'Khoi dong du an BTL', 'summary' => 'Thong nhat kien truc va chia module.', 'content' => 'Tuan 1-2 tap trung xay dung nen tang MVC va template chung.'],
