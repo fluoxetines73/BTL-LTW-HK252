@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <section class="about-hero text-center" data-aos="fade-in">
     <div class="container">
         <span class="about-hero-kicker">Thông tin & hỗ trợ</span>
@@ -82,7 +82,7 @@
     </div>
 </section>
 
-<section class="counter-section text-white py-5">
+<section class="counter-section py-5">
     <div class="container">
         <div class="row text-center">
             <div class="col-md-3 col-6 mb-4 mb-md-0" data-aos="fade-up" data-aos-delay="100">
