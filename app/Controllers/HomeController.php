@@ -113,13 +113,13 @@ class HomeController extends Controller {
 		];
 
 		$extraHead = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link rel="stylesheet" href="' . BASE_URL . 'public/assets/css/faq.css">';
+					<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+					<link rel="stylesheet" href="' . BASE_URL . 'public/assets/css/faq.css">';
 		$extraScripts = '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>';
 
 		$this->view('layouts/main', [
 			'title' => 'Hỏi đáp',
-			'content' => 'faq/index',
+			'content' => 'pages/faq',
 			'pageTitle' => 'Câu hỏi thường gặp',
 			'grouped' => $grouped,
 			'total' => 30,
