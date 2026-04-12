@@ -3,6 +3,7 @@ require_once APPROOT . '/Models/Model.php';
 
 class User extends Model {
     protected string $table = 'users';
+	private string $otpTable = 'user_registration_otps';
 
     public function findByEmail(string $email): array|false {
         $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE email = ? LIMIT 1");
@@ -28,6 +29,43 @@ class User extends Model {
 		$stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE id = ? LIMIT 1");
 		$stmt->execute([$id]);
 		return $stmt->fetch();
+	}
+
+	public function saveRegistrationOtp(array $data): bool {
+		$sql = "INSERT INTO {$this->otpTable} (email, full_name, password_hash, otp_hash, attempts, expires_at)
+				VALUES (?, ?, ?, ?, 0, ?)
+				ON DUPLICATE KEY UPDATE
+					full_name = VALUES(full_name),
+					password_hash = VALUES(password_hash),
+					otp_hash = VALUES(otp_hash),
+					attempts = 0,
+					expires_at = VALUES(expires_at),
+					updated_at = CURRENT_TIMESTAMP";
+
+		$stmt = $this->db->prepare($sql);
+		return $stmt->execute([
+			$data['email'],
+			$data['name'],
+			$data['password_hash'],
+			$data['otp_hash'],
+			$data['expires_at'],
+		]);
+	}
+
+	public function findRegistrationOtpByEmail(string $email): array|false {
+		$stmt = $this->db->prepare("SELECT * FROM {$this->otpTable} WHERE email = ? LIMIT 1");
+		$stmt->execute([$email]);
+		return $stmt->fetch();
+	}
+
+	public function increaseOtpAttempt(string $email): bool {
+		$stmt = $this->db->prepare("UPDATE {$this->otpTable} SET attempts = attempts + 1, updated_at = CURRENT_TIMESTAMP WHERE email = ?");
+		return $stmt->execute([$email]);
+	}
+
+	public function deleteRegistrationOtp(string $email): bool {
+		$stmt = $this->db->prepare("DELETE FROM {$this->otpTable} WHERE email = ?");
+		return $stmt->execute([$email]);
 	}
 
 	public function updateProfile(int $id, array $data): bool {

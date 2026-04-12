@@ -1,0 +1,61 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly scan
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    name: Security Vulnerability Check
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔐 SQL Injection Detection
+        run: |
+          echo "🔐 Scanning for SQL injection vulnerabilities..."
+          if grep -r "SELECT\|INSERT\|UPDATE\|DELETE" app/ --include="*.php" | grep -i "\$_GET\|\$_POST\|\$_REQUEST" | grep -v "prepare\|bindParam\|execute"; then
+            echo "⚠️ Found potential SQL injection risk - use prepared statements!"
+          else
+            echo "✅ No obvious SQL injection patterns found"
+          fi
+
+      - name: 🛡️ XSS Prevention Check
+        run: |
+          echo "🛡️ Checking XSS prevention..."
+          if grep -r "echo\|print" app/Views --include="*.php" | grep -v "htmlspecialchars\|htmlentities\|esc_html" | wc -l; then
+            echo "⚠️ Some echo statements may need HTML escaping"
+          fi
+          echo "✅ Review code for proper output escaping"
+
+      - name: 🔑 Hardcoded Secrets Detection
+        run: |
+          echo "🔑 Scanning for hardcoded secrets..."
+          if grep -rInE --include="*.php" "(\$[[:alnum:]_]*?(password|secret|api_key|token)[[:alnum:]_]*[[:space:]]*=[[:space:]]*['\"][^'\"]+['\"]|\$[[:alnum:]_]+\[[[:space:]]*['\"][[:alnum:]_]*?(password|secret|api_key|token)[[:alnum:]_]*['\"][[:space:]]*\][[:space:]]*=[[:space:]]*['\"][^'\"]+['\"]|['\"][[:alnum:]_]*?(password|secret|api_key|token)[[:alnum:]_]*['\"][[:space:]]*=>[[:space:]]*['\"][^'\"]+['\"]|define\([[:space:]]*['\"][[:alnum:]_]*?(password|secret|api_key|token)[[:alnum:]_]*['\"][[:space:]]*,[[:space:]]*['\"][^'\"]+['\"] )" app/ core/; then
+            echo "❌ Found potential hardcoded secrets!"
+            exit 1
+          fi
+          echo "✅ No hardcoded secrets detected"
+
+      - name: 📝 Summary Report
+        if: always()
+        run: |
+          echo "## 🔐 Security Scan Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Security scan completed!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Checks Performed:" >> $GITHUB_STEP_SUMMARY
+          echo "- SQL Injection patterns" >> $GITHUB_STEP_SUMMARY
+          echo "- XSS vulnerabilities" >> $GITHUB_STEP_SUMMARY
+          echo "- Hardcoded secrets" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Recommendations:" >> $GITHUB_STEP_SUMMARY
+          echo "- Use prepared statements for all DB queries" >> $GITHUB_STEP_SUMMARY
+          echo "- Always escape output in views" >> $GITHUB_STEP_SUMMARY
+          echo "- Store secrets in environment variables" >> $GITHUB_STEP_SUMMARY

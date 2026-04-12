@@ -16,7 +16,7 @@ class Controller {
         if (file_exists($file)) {
             require_once $file;
         } else {
-            die("View không tồn tại: $view");
+            throw new RuntimeException("View không tồn tại: $view");
         }
     }
 
