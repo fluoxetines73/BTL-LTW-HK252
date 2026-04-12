@@ -236,9 +236,14 @@
                         <i class="fas fa-users"></i> Quản lý Người dùng
                     </a>
                 </li>
+               <li>
+                    <a href="<?= BASE_URL ?>admin/movie/index">
+                        <i class="fas fa-film"></i> Quản lý Phim
+                    </a>
+                </li>
                 <li>
-                    <a href="<?= BASE_URL ?>admin/products">
-                        <i class="fas fa-box"></i> Quản lý Sản phẩm
+                    <a href="<?= BASE_URL ?>admin/combo/index">
+                        <i class="fas fa-hamburger"></i> Quản lý Combo
                     </a>
                 </li>
                 <li>
