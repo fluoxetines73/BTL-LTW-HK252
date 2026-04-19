@@ -519,6 +519,108 @@
 	</div>
 </section>
 
+<!-- News Preview Grid Section -->
+<section class="news-section py-5 mb-5">
+	<div class="container-fluid px-4 px-md-5">
+		<!-- Section Title -->
+		<div class="row mb-4">
+			<div class="col-12">
+				<h2 class="news-title h3 mb-0">
+					Latest News & Updates
+				</h2>
+				<p class="text-muted small mt-1">
+					Stay informed with the latest news from CGV Cinema
+				</p>
+			</div>
+		</div>
+
+		<!-- News Grid -->
+		<?php if (!empty($news) && is_array($news) && count($news) > 0): ?>
+			<div class="row g-4">
+				<?php foreach ($news as $item): ?>
+					<div class="col-12 col-md-6 col-lg-3">
+						<div class="news-card h-100">
+							<!-- News Image -->
+							<div class="news-card-image-wrapper position-relative overflow-hidden">
+								<?php if (!empty($item['image'])): ?>
+									<img 
+										src="<?= htmlspecialchars($item['image']) ?>" 
+										alt="<?= htmlspecialchars($item['title'] ?? 'News') ?>" 
+										class="news-card-image img-fluid w-100" 
+										loading="lazy"
+										style="height: 200px; object-fit: cover; display: block;">
+								<?php else: ?>
+									<div class="news-card-image bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+										<span class="small">Chưa có hình ảnh</span>
+									</div>
+								<?php endif; ?>
+							</div>
+
+							<!-- News Info -->
+							<div class="news-card-content p-3">
+								<!-- Category Badge -->
+								<?php if (!empty($item['category'])): ?>
+									<span class="badge bg-info mb-2">
+										<?= htmlspecialchars($item['category']) ?>
+									</span>
+								<?php endif; ?>
+
+								<!-- Title -->
+								<h5 class="news-card-title mb-2">
+									<a 
+										href="<?= BASE_URL ?>news/<?= htmlspecialchars($item['slug'] ?? '') ?>" 
+										class="text-decoration-none"
+										title="<?= htmlspecialchars($item['title'] ?? 'News') ?>">
+										<?= htmlspecialchars(strlen($item['title'] ?? '') > 60 ? substr($item['title'], 0, 60) . '...' : ($item['title'] ?? 'News')) ?>
+									</a>
+								</h5>
+
+								<!-- Excerpt -->
+								<p class="news-card-excerpt text-muted small mb-3">
+									<?= htmlspecialchars(strlen($item['content'] ?? '') > 100 ? substr($item['content'], 0, 100) . '...' : ($item['content'] ?? '')) ?>
+								</p>
+
+								<!-- Published Date -->
+								<div class="news-card-meta">
+									<small class="text-muted">
+										<i class="fas fa-calendar-alt me-1"></i>
+										<?php if (!empty($item['published_at'])): ?>
+											<?= date('d/m/Y', strtotime($item['published_at'])) ?>
+										<?php else: ?>
+											N/A
+										<?php endif; ?>
+									</small>
+								</div>
+							</div>
+						</div>
+					</div>
+				<?php endforeach; ?>
+			</div>
+
+			<!-- View All News Button -->
+			<div class="row mt-5">
+				<div class="col-12 text-center">
+					<a 
+						href="<?= BASE_URL ?>news" 
+						class="btn btn-primary btn-lg">
+						<i class="fas fa-newspaper me-2"></i>View All News
+					</a>
+				</div>
+			</div>
+		<?php else: ?>
+			<!-- Fallback when no news -->
+			<div class="row">
+				<div class="col-12">
+					<div class="alert alert-info" role="alert">
+						<h5 class="alert-heading">Không có tin tức</h5>
+						<p class="mb-0">Vui lòng quay lại sau để xem các tin tức mới nhất.</p>
+					</div>
+				</div>
+			</div>
+		<?php endif; ?>
+	</div>
+</section>
+
 <!-- Additional Sections Placeholder -->
 <section class="panel">
 	<h2>Mục tiêu tuần này</h2>
