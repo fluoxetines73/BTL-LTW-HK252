@@ -67,15 +67,19 @@ class Movie extends Model {
      * Cập nhật thông tin phim
      */
     public function updateMovie($id, $data) {
-        // Cập nhật cơ bản không bao gồm poster để tránh rắc rối khi user không đổi ảnh
         $sql = "UPDATE {$this->table} SET 
                 title = :title, slug = :slug, description = :description, director = :director, 
                 cast = :cast, duration_min = :duration_min, release_date = :release_date, 
-                age_rating = :age_rating, status = :status 
-                WHERE id = :id";
-        
+                age_rating = :age_rating, status = :status";
+
+        if (!empty($data['poster'])) {
+            $sql .= ", poster = :poster";
+        }
+
+        $sql .= " WHERE id = :id";
+
         $stmt = $this->db->prepare($sql);
-        
+
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->bindParam(':title', $data['title']);
         $stmt->bindParam(':slug', $data['slug']);
@@ -86,6 +90,10 @@ class Movie extends Model {
         $stmt->bindParam(':release_date', $data['release_date']);
         $stmt->bindParam(':age_rating', $data['age_rating']);
         $stmt->bindParam(':status', $data['status']);
+
+        if (!empty($data['poster'])) {
+            $stmt->bindParam(':poster', $data['poster']);
+        }
 
         return $stmt->execute();
     }

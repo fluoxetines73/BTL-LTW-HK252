@@ -39,14 +39,14 @@
                                 <span class="badge bg-secondary fs-6"><i class="fas fa-clock me-1"></i><?= $movie['duration_min'] ?> phút</span>
                             </div>
                             
-                            <table class="table table-borderless text-light table-sm">
+                            <table class="table table-borderless table-sm">
                                 <tr>
-                                    <td width="120" class="text-muted">Đạo diễn:</td>
-                                    <td class="fw-bold"><?= htmlspecialchars($movie['director']) ?></td>
+                                    <td width="120">Đạo diễn:</td>
+                                    <td class="fw-bold"><?= htmlspecialchars(!empty($movie['director']) ? $movie['director'] : 'Không có thông tin') ?></td>
                                 </tr>
                                 <tr>
-                                    <td class="text-muted">Diễn viên:</td>
-                                    <td class="fw-bold"><?= htmlspecialchars($movie['cast']) ?></td>
+                                    <td>Diễn viên:</td>
+                                    <td class="fw-bold"><?= htmlspecialchars(!empty($movie['cast']) ? $movie['cast'] : 'Không có thông tin') ?></td>
                                 </tr>
                             </table>
 

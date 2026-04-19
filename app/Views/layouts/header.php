@@ -5,7 +5,7 @@ $homeHref = $isAdmin ? (BASE_URL . 'admin/admin_dashboard') : BASE_URL;
 ?>
 
 <header>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+    <nav id="main-nav" class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold text-success" href="<?= $homeHref ?>">ABC Company</a>
 
@@ -14,7 +14,7 @@ $homeHref = $isAdmin ? (BASE_URL . 'admin/admin_dashboard') : BASE_URL;
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav nav-links">
                     <li class="nav-item">
                         <a class="nav-link" href="<?= BASE_URL ?>">Trang chủ</a>
                     </li>
@@ -36,25 +36,30 @@ $homeHref = $isAdmin ? (BASE_URL . 'admin/admin_dashboard') : BASE_URL;
                     <li class="nav-item">
                         <a class="nav-link" href="<?= BASE_URL ?>home/contact">Liên hệ</a>
                     </li>
+                </ul>
 
+                <div class="nav-account ms-auto d-flex align-items-center gap-3">
                     <?php if (!empty($authUser)): ?>
                         <?php if ($isAdmin): ?>
-                            <li class="nav-item">
-                                <a class="nav-link" href="<?= BASE_URL ?>admin/admin_dashboard">Dashboard</a>
-                            </li>
+                            <a class="nav-link d-none d-lg-inline-flex" href="<?= BASE_URL ?>admin/admin_dashboard">Dashboard</a>
                         <?php endif; ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?= BASE_URL ?>profile/index"><?= htmlspecialchars((string)($authUser['name'] ?? 'Tài khoản')) ?></a>
-                        </li>
-                        <li class="nav-item ps-2">
-                            <a class="btn btn-dark btn-sm" href="<?= BASE_URL ?>auth/logout">Đăng xuất</a>
-                        </li>
+                        <a class="nav-user-link d-inline-flex align-items-center gap-2" href="<?= BASE_URL ?>profile/index">
+                            <?php
+                                $avatarPath = (string)($authUser['avatar'] ?? '');
+                                if ($avatarPath === '') {
+                                    $avatarPath = 'public/uploads/avatars/default-avatar.svg';
+                                } elseif (!str_starts_with($avatarPath, 'public/')) {
+                                    $avatarPath = 'public/' . ltrim($avatarPath, '/');
+                                }
+                            ?>
+                            <img class="nav-avatar" src="<?= BASE_URL . htmlspecialchars($avatarPath) ?>" alt="Avatar">
+                            <span><?= htmlspecialchars((string)($authUser['name'] ?? 'Tài khoản')) ?></span>
+                        </a>
+                        <a class="btn btn-dark btn-sm" href="<?= BASE_URL ?>auth/logout">Đăng xuất</a>
                     <?php else: ?>
-                        <li class="nav-item ps-2">
-                            <a class="btn btn-success btn-sm" href="<?= BASE_URL ?>auth/login">Đăng nhập</a>
-                        </li>
+                        <a class="btn btn-success btn-sm" href="<?= BASE_URL ?>auth/login">Đăng nhập</a>
                     <?php endif; ?>
-                </ul>
+                </div>
             </div>
         </div>
     </nav>

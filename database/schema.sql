@@ -6,6 +6,7 @@ SET FOREIGN_KEY_CHECKS=0;
 -- Drop tables in reverse FK order (dependent tables first)
 DROP TABLE IF EXISTS `booking_combos`;
 DROP TABLE IF EXISTS `tickets`;
+DROP TABLE IF EXISTS `news_reviews`;
 DROP TABLE IF EXISTS `news`;
 DROP TABLE IF EXISTS `reviews`;
 DROP TABLE IF EXISTS `bookings`;
@@ -385,6 +386,25 @@ CREATE TABLE `news` (
     INDEX `idx_author` (`author_id`),
     INDEX `idx_status` (`status`),
     CONSTRAINT `fk_n_author` FOREIGN KEY (`author_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table: news_reviews
+-- --------------------------------------------------------
+CREATE TABLE `news_reviews` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `news_id` INT NOT NULL,
+    `user_id` INT NOT NULL,
+    `rating` TINYINT NOT NULL CHECK (`rating` BETWEEN 1 AND 5),
+    `comment` TEXT NOT NULL,
+    `status` ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_news_id` (`news_id`),
+    INDEX `idx_user_id` (`user_id`),
+    INDEX `idx_status` (`status`),
+    CONSTRAINT `fk_nr_news` FOREIGN KEY (`news_id`) REFERENCES `news` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_nr_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

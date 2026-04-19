@@ -46,6 +46,7 @@ class AuthController extends Controller {
                         'avatar' => $user['avatar'] ?? null,
                         'role' => $user['role'] // 'admin' hoặc 'member' [cite: 5]
                     ];
+                    $_SESSION['last_activity'] = time();
                     if ($user['role'] === 'admin') {
                         $this->redirect('admin/admin_dashboard');
                     }

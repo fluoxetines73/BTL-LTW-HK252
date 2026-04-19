@@ -18,7 +18,7 @@
                 </div>
                 
                 <div class="card-body p-4">
-                    <form action="<?= BASE_URL ?>admin/movie/store" method="POST">
+                    <form action="<?= BASE_URL ?>admin/movie/store" method="POST" enctype="multipart/form-data">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Tên Phim <span class="text-danger">*</span></label>
@@ -76,6 +76,12 @@
                                         <label class="form-check-label text-danger fw-bold" for="status3">Đã kết thúc</label>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Ảnh poster</label>
+                                <input type="file" class="form-control" name="poster" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif">
+                                <small class="text-muted">Hỗ trợ: JPG, JPEG, PNG, WebP, GIF (tối đa 5MB).</small>
                             </div>
 
                             <div class="col-md-12">
