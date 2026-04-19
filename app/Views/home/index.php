@@ -304,6 +304,56 @@
 	</div>
 </section>
 
+<!-- Genre Filter Bar Section -->
+<section class="genre-filter-section py-5 mb-5">
+	<div class="container-fluid px-4 px-md-5">
+		<!-- Section Title -->
+		<div class="row mb-4">
+			<div class="col-12">
+				<h2 class="genre-title h3 mb-0">
+					Browse by Genre
+				</h2>
+				<p class="text-muted small mt-1">
+					Explore movies organized by your favorite genres
+				</p>
+			</div>
+		</div>
+
+		<!-- Genre Buttons/Chips -->
+		<?php if (!empty($genres) && is_array($genres) && count($genres) > 0): ?>
+			<div class="row">
+				<div class="col-12">
+					<div class="genre-chips-wrapper d-flex flex-wrap gap-3">
+						<?php foreach ($genres as $genre): ?>
+							<a 
+								href="<?= BASE_URL ?>movies/current?genre=<?= urlencode(htmlspecialchars($genre['slug'] ?? '')) ?>" 
+								class="genre-chip btn btn-outline-secondary"
+								title="<?= htmlspecialchars($genre['name'] ?? 'Unknown Genre') ?>">
+								<span class="genre-name">
+									<?= htmlspecialchars($genre['name'] ?? 'Unknown') ?>
+								</span>
+								<span class="genre-count text-muted ms-2">
+									(<?= (int)($genre['movie_count'] ?? 0) ?> <?= ((int)($genre['movie_count'] ?? 0) === 1) ? 'movie' : 'movies' ?>)
+								</span>
+							</a>
+						<?php endforeach; ?>
+					</div>
+				</div>
+			</div>
+		<?php else: ?>
+			<!-- Fallback when no genres -->
+			<div class="row">
+				<div class="col-12">
+					<div class="alert alert-info" role="alert">
+						<h5 class="alert-heading">No genres available</h5>
+						<p class="mb-0">Please check back later to browse movies by genre.</p>
+					</div>
+				</div>
+			</div>
+		<?php endif; ?>
+	</div>
+</section>
+
 <!-- Additional Sections Placeholder -->
 <section class="panel">
 	<h2>Mục tiêu tuần này</h2>
