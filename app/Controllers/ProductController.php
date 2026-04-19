@@ -32,29 +32,63 @@ class ProductController extends Controller {
 		]);
 	}
 
+	// public function detail(int $id = 0): void {
+	// 	$product = $this->findSeedById($id);
+	// 	if ($this->productModel) {
+	// 		try {
+	// 			$product = $this->productModel->findById($id);
+	// 		} catch (Throwable $e) {
+	// 			$product = $this->findSeedById($id);
+	// 		}
+	// 	}
+
+	// 	if (!$product) {
+	// 		http_response_code(404);
+	// 		$this->view('layouts/main', [
+	// 			'title' => 'Khong tim thay san pham',
+	// 			'content' => 'home/not_found',
+	// 		]);
+	// 		return;
+	// 	}
+
+	// 	$this->view('layouts/main', [
+	// 		'title' => 'Chi tiet san pham',
+	// 		'content' => 'product/detail',
+	// 		'product' => $product,
+	// 	]);
+	// }
 	public function detail(int $id = 0): void {
-		$product = $this->findSeedById($id);
-		if ($this->productModel) {
-			try {
-				$product = $this->productModel->findById($id);
-			} catch (Throwable $e) {
-				$product = $this->findSeedById($id);
-			}
+		if (!$id) {
+			header("Location: " . BASE_URL);
+			exit;
 		}
 
-		if (!$product) {
+		// Gọi 2 Model Phim và Combo mà bạn đã tạo
+		$movieModel = $this->model('Movie');
+		$comboModel = $this->model('Combo');
+
+		// Lấy thông tin phim từ Database
+		$movie = $movieModel->getMovieById($id);
+        
+		// Nếu ID phim không tồn tại (nhập bừa trên URL), dùng màn hình báo lỗi có sẵn của nhóm
+		if (!$movie) {
 			http_response_code(404);
 			$this->view('layouts/main', [
-				'title' => 'Khong tim thay san pham',
+				'title' => 'Không tìm thấy phim',
 				'content' => 'home/not_found',
 			]);
 			return;
 		}
 
+		// Lấy danh sách Combo bắp nước để đổ vào Giỏ hàng
+		$combos = $comboModel->getAllCombos();
+
+		// Đẩy dữ liệu ra view của bạn (vẫn giữ nguyên layout chung của nhóm)
 		$this->view('layouts/main', [
-			'title' => 'Chi tiet san pham',
+			'title' => 'Đặt vé: ' . $movie['title'],
 			'content' => 'product/detail',
-			'product' => $product,
+			'movie' => $movie,
+			'combos' => $combos
 		]);
 	}
 
