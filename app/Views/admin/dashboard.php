@@ -252,6 +252,9 @@
                     </a>
                 </li>
                 <li>
+                    <a href="<?= BASE_URL ?>admin/order/index"><i class="ti-receipt"></i><span>Quản lý Đơn hàng</span></a>
+                </li>
+                <li>
                     <a href="<?= BASE_URL ?>profile/edit">
                         <i class="fas fa-user-edit"></i> Hồ sơ cá nhân
                     </a>

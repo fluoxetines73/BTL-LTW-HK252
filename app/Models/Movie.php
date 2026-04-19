@@ -99,4 +99,25 @@ class Movie extends Model {
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
+    // Hàm lấy danh sách phim theo trạng thái (Đang chiếu / Sắp chiếu)
+    public function getMoviesByStatus($status) {
+        $stmt = $this->db->prepare("SELECT * FROM movies WHERE status = :status ORDER BY release_date DESC");
+        $stmt->bindParam(':status', $status);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Hàm tìm kiếm phim theo tên
+    public function searchMovies($keyword) {
+        $keyword = "%{$keyword}%";
+        // Chỉ tìm những phim đang chiếu hoặc sắp chiếu
+        $sql = "SELECT * FROM movies 
+                WHERE (status = 'now_showing' OR status = 'coming_soon') 
+                AND title LIKE :keyword 
+                ORDER BY release_date DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':keyword', $keyword);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

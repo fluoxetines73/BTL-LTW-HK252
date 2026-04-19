@@ -9,6 +9,12 @@
 <body class="bg-light">
 
 <div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/admin_dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Quản lý trang này</li>
+        </ol>
+    </nav>
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold text-dark"><i class="fas fa-hamburger text-primary me-2"></i>Quản lý Bắp & Nước</h2>
         <a href="<?= BASE_URL ?>admin/combo/create" class="btn btn-primary shadow-sm">

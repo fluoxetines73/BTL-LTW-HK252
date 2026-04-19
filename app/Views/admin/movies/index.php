@@ -15,7 +15,7 @@
 <div class="container-fluid py-4">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/admin_dashboard">Dashboard</a></li>
             <li class="breadcrumb-item active" aria-current="page">Quản lý Phim</li>
         </ol>
     </nav>
