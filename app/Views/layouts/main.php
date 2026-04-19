@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
     <?php if (!empty($extraHead)) echo $extraHead; ?>
     <link rel="stylesheet" href="<?= BASE_URL ?>public/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/css/home.css">
 </head>
 <body class="bg-light">
 
@@ -22,6 +23,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="<?= BASE_URL ?>public/js/app.js"></script>
+    <script src="<?= BASE_URL ?>public/js/home.js"></script>
     <?php if (!empty($extraScripts)) echo $extraScripts; ?>
 
 </body>
