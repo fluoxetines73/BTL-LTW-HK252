@@ -469,6 +469,56 @@
 	</div>
 </section>
 
+<!-- Newsletter Signup Section -->
+<section class="newsletter-section py-5 mb-5">
+	<div class="container-fluid px-4 px-md-5">
+		<div class="row">
+			<div class="col-12">
+				<div class="newsletter-container p-5 rounded">
+					<!-- Heading -->
+					<h2 class="newsletter-title h2 mb-3">
+						Subscribe to Our Newsletter
+					</h2>
+
+					<!-- Description -->
+					<p class="newsletter-description text-muted mb-4">
+						Stay updated with the latest movie releases, exclusive offers, and special promotions delivered directly to your inbox.
+					</p>
+
+					<!-- Newsletter Form -->
+					<form id="newsletter-form" class="newsletter-form" novalidate>
+						<div class="row g-2">
+							<!-- Email Input -->
+							<div class="col-12 col-md-8">
+								<input 
+									type="email" 
+									name="email" 
+									id="newsletter-email"
+									class="form-control form-control-lg" 
+									placeholder="Enter your email address"
+									required>
+								<small class="form-text text-muted d-block mt-2">
+									We respect your privacy. Unsubscribe at any time.
+								</small>
+							</div>
+
+							<!-- Submit Button -->
+							<div class="col-12 col-md-4">
+								<button 
+									type="submit" 
+									class="btn btn-primary btn-lg w-100 h-100"
+									id="newsletter-submit">
+									<i class="fas fa-paper-plane me-2"></i>Subscribe
+								</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
 <!-- Additional Sections Placeholder -->
 <section class="panel">
 	<h2>Mục tiêu tuần này</h2>
