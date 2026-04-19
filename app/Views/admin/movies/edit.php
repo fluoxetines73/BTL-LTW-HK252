@@ -19,7 +19,7 @@
                 </div>
                 
                 <div class="card-body p-4">
-                    <form action="<?= BASE_URL ?>admin/movie/update/<?= $movie['id'] ?>" method="POST">
+                    <form action="<?= BASE_URL ?>admin/movie/update/<?= $movie['id'] ?>" method="POST" enctype="multipart/form-data">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Tên Phim <span class="text-danger">*</span></label>
@@ -77,6 +77,21 @@
                                         <label class="form-check-label text-danger fw-bold" for="s3">Đã kết thúc</label>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Ảnh poster</label>
+                                <input type="file" class="form-control" name="poster" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif">
+                                <small class="text-muted">Hỗ trợ: JPEG, PNG, WebP, GIF (tối đa 5MB). Để trống nếu không muốn đổi ảnh.</small>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold d-block">Ảnh hiện tại</label>
+                                <?php if (!empty($movie['poster'])): ?>
+                                    <img src="<?= BASE_URL ?>public/uploads/movies/<?= htmlspecialchars($movie['poster']) ?>" alt="Poster hiện tại" style="max-height: 120px; border-radius: 8px; object-fit: cover;">
+                                <?php else: ?>
+                                    <small class="text-muted">Chưa có ảnh poster.</small>
+                                <?php endif; ?>
                             </div>
 
                             <div class="col-md-12">

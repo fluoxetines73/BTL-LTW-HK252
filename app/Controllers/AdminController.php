@@ -37,7 +37,8 @@ class AdminController extends Controller {
         }
 
         try {
-            $stats['total_news'] = (int)$pdo->query("SELECT COUNT(*) FROM news WHERE status = 'published'")->fetchColumn();
+            // Tổng nội dung hiển thị ở khu vực News: bài viết + phim timeline
+            $stats['total_news'] = (int)$pdo->query('SELECT (SELECT COUNT(*) FROM news) + (SELECT COUNT(*) FROM movies)')->fetchColumn();
         } catch (Throwable $e) {
             $stats['total_news'] = 0;
         }
@@ -357,13 +358,62 @@ class AdminController extends Controller {
 
         $keyword = trim((string)($_GET['q'] ?? ''));
         $newsModel = $this->model('News');
+        $movieModel = $this->model('Movie');
 
         try {
-            $articles = $newsModel->getAdminList($keyword);
+            $newsItems = $newsModel->getAdminList($keyword);
         } catch (Throwable $e) {
-            $articles = [];
+            $newsItems = [];
             $_SESSION['error'] = 'Không thể tải danh sách tin tức. Hãy kiểm tra bảng news.';
         }
+
+        try {
+            $movies = $movieModel->getAllMovies($keyword);
+        } catch (Throwable $e) {
+            $movies = [];
+            if (!isset($_SESSION['error'])) {
+                $_SESSION['error'] = 'Không thể tải danh sách phim để gộp vào trang quản lý tin tức.';
+            }
+        }
+
+        $movieItems = array_values(array_map(function (array $movie): array {
+            $status = (string)($movie['status'] ?? 'coming_soon');
+            $category = $status === 'now_showing' ? 'phim-dang-chieu' : 'phim-sap-chieu';
+            $releaseDate = (string)($movie['release_date'] ?? '');
+
+            return [
+                'id' => (int)($movie['id'] ?? 0),
+                'title' => (string)($movie['title'] ?? 'Phim điện ảnh'),
+                'slug' => (string)($movie['slug'] ?? ''),
+                'content' => (string)($movie['description'] ?? ''),
+                'category' => $category,
+                'status' => 'published',
+                'author_name' => 'Hệ thống phim',
+                'created_at' => $releaseDate !== '' ? ($releaseDate . ' 00:00:00') : date('Y-m-d H:i:s'),
+                'published_at' => $releaseDate !== '' ? ($releaseDate . ' 00:00:00') : date('Y-m-d H:i:s'),
+                'source_type' => 'movie',
+            ];
+        }, array_filter($movies, static function (array $movie): bool {
+            $status = (string)($movie['status'] ?? '');
+            return in_array($status, ['now_showing', 'coming_soon'], true);
+        })));
+
+        $articles = array_merge(
+            array_map(static function (array $item): array {
+                $item['source_type'] = 'news';
+                return $item;
+            }, $newsItems),
+            $movieItems
+        );
+
+        usort($articles, static function (array $a, array $b): int {
+            $ta = strtotime((string)($a['published_at'] ?? $a['created_at'] ?? '')) ?: 0;
+            $tb = strtotime((string)($b['published_at'] ?? $b['created_at'] ?? '')) ?: 0;
+            if ($tb !== $ta) {
+                return $tb <=> $ta;
+            }
+            return ((int)($b['id'] ?? 0)) <=> ((int)($a['id'] ?? 0));
+        });
 
         $this->view('layouts/admin', [
             'title' => 'Quản lý Tin tức',
@@ -607,6 +657,9 @@ class AdminController extends Controller {
             'tin-tuc' => 'Tin tức',
             'khuyen-mai' => 'Khuyến mãi',
             'su-kien' => 'Sự kiện',
+            'phim-dang-chieu' => 'Phim đang chiếu',
+            'phim-sap-chieu' => 'Phim sắp chiếu',
+            'uu-dai' => 'Ưu đãi',
         ];
     }
 }

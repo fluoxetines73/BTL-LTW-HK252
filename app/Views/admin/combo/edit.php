@@ -33,7 +33,7 @@
 
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Thay đổi hình ảnh</label>
-                                <input type="file" class="form-control" name="image" accept="image/*">
+                                <input type="file" class="form-control" name="image" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif">
                                 <small class="text-muted italic">Để trống nếu muốn giữ ảnh cũ</small>
                             </div>
 

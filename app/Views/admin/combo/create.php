@@ -32,7 +32,7 @@
 
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Hình ảnh Combo</label>
-                                <input type="file" class="form-control" name="image" accept="image/*">
+                                <input type="file" class="form-control" name="image" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif">
                                 <small class="text-muted">Định dạng hỗ trợ: JPG, PNG. (Có thể để trống)</small>
                             </div>
 

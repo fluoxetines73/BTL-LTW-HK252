@@ -43,7 +43,7 @@
 
         <div class="mb-3">
             <label class="form-label" for="image">Ảnh đại diện (tùy chọn)</label>
-            <input id="image" type="file" name="image" class="form-control" accept="image/*">
+            <input id="image" type="file" name="image" class="form-control" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif">
             <?php if (!empty($article['image'])): ?>
                 <p class="mt-2 mb-0 small text-muted">Ảnh hiện tại:</p>
                 <img src="<?= BASE_URL . 'public/' . ltrim((string)$article['image'], '/') ?>" alt="Ảnh bài viết" style="max-width: 240px; height: auto; margin-top: 6px; border-radius: 8px;">

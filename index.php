@@ -6,8 +6,8 @@ if (session_status() === PHP_SESSION_NONE) {
 	session_start();
 }
 
-// Tự động hết phiên sau 2 phút không hoạt động.
-$sessionTimeoutSeconds = 120;
+// Tự động hết phiên sau 10 phút không hoạt động.
+$sessionTimeoutSeconds = 600;
 if (!empty($_SESSION['auth_user'])) {
 	$now = time();
 	$lastActivity = (int)($_SESSION['last_activity'] ?? 0);
@@ -16,7 +16,7 @@ if (!empty($_SESSION['auth_user'])) {
 		unset($_SESSION['auth_user'], $_SESSION['last_activity']);
 		$_SESSION['auth_flash'] = [
 			'type' => 'error',
-			'message' => 'Phiên đăng nhập đã hết hạn sau 2 phút không hoạt động. Vui lòng đăng nhập lại.',
+			'message' => 'Phiên đăng nhập đã hết hạn sau 10 phút không hoạt động. Vui lòng đăng nhập lại.',
 		];
 	} else {
 		$_SESSION['last_activity'] = $now;

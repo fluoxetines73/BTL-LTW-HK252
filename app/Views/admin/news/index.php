@@ -6,6 +6,11 @@ unset($_SESSION['success'], $_SESSION['error']);
 
 <section class="panel">
 
+    <?php if (($_SESSION['auth_user']['role'] ?? '') !== 'admin'): ?>
+        <div class="alert alert-danger">Bạn không có quyền quản lý tin tức.</div>
+        <?php return; ?>
+    <?php endif; ?>
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="m-0">Quản lý tin tức</h1>
         <a class="btn btn-primary" href="<?= BASE_URL ?>admin/create_news">Thêm bài viết</a>
@@ -20,7 +25,7 @@ unset($_SESSION['success'], $_SESSION['error']);
 
     <form method="get" action="<?= BASE_URL ?>admin/news" class="row g-2 mb-3">
         <div class="col-md-8">
-            <input type="text" name="q" value="<?= htmlspecialchars((string)($keyword ?? '')) ?>" class="form-control" placeholder="Tìm theo tiêu đề/nội dung/slug">
+            <input type="text" name="q" value="<?= htmlspecialchars((string)($keyword ?? '')) ?>" class="form-control" placeholder="Tìm theo tiêu đề/nội dung/slug (tin tức + phim)">
         </div>
         <div class="col-md-4 d-flex gap-2">
             <button class="btn btn-dark" type="submit">Tìm kiếm</button>
@@ -36,6 +41,7 @@ unset($_SESSION['success'], $_SESSION['error']);
                 <tr>
                     <th style="width: 70px;">ID</th>
                     <th>Tiêu đề</th>
+                    <th style="width: 110px;">Loại</th>
                     <th style="width: 140px;">Danh mục</th>
                     <th style="width: 140px;">Trạng thái</th>
                     <th style="width: 160px;">Tác giả</th>
@@ -45,11 +51,19 @@ unset($_SESSION['success'], $_SESSION['error']);
             <tbody>
                 <?php if (!empty($articles)): ?>
                     <?php foreach ($articles as $item): ?>
+                        <?php $isMovieItem = (($item['source_type'] ?? 'news') === 'movie'); ?>
                         <tr>
                             <td><?= (int)$item['id'] ?></td>
                             <td>
                                 <strong><?= htmlspecialchars((string)$item['title']) ?></strong><br>
                                 <small class="text-muted">Slug: <?= htmlspecialchars((string)$item['slug']) ?></small>
+                            </td>
+                            <td>
+                                <?php if ($isMovieItem): ?>
+                                    <span class="badge text-bg-primary">Phim</span>
+                                <?php else: ?>
+                                    <span class="badge text-bg-dark">Tin</span>
+                                <?php endif; ?>
                             </td>
                             <td><?= htmlspecialchars((string)($categories[$item['category']] ?? $item['category'])) ?></td>
                             <td>
@@ -61,15 +75,21 @@ unset($_SESSION['success'], $_SESSION['error']);
                             </td>
                             <td><?= htmlspecialchars((string)($item['author_name'] ?? '-')) ?></td>
                             <td class="d-flex gap-2 flex-wrap">
-                                <a class="btn btn-sm btn-outline-primary" href="<?= BASE_URL ?>news/detail/<?= (int)$item['id'] ?>" target="_blank" rel="noopener">Xem</a>
-                                <a class="btn btn-sm btn-warning" href="<?= BASE_URL ?>admin/edit_news/<?= (int)$item['id'] ?>">Sửa</a>
-                                <a class="btn btn-sm btn-danger" href="<?= BASE_URL ?>admin/delete_news/<?= (int)$item['id'] ?>" onclick="return confirm('Xóa bài viết này?')">Xóa</a>
+                                <?php if ($isMovieItem): ?>
+                                    <a class="btn btn-sm btn-outline-primary" href="<?= BASE_URL ?>product/detail/<?= (int)$item['id'] ?>">Xem</a>
+                                    <a class="btn btn-sm btn-warning" href="<?= BASE_URL ?>admin/movie/edit/<?= (int)$item['id'] ?>">Sửa</a>
+                                    <a class="btn btn-sm btn-danger" href="<?= BASE_URL ?>admin/movie/delete/<?= (int)$item['id'] ?>" onclick="return confirm('Xóa phim này?')">Xóa</a>
+                                <?php else: ?>
+                                    <a class="btn btn-sm btn-outline-primary" href="<?= BASE_URL ?>news/detail/<?= (int)$item['id'] ?>">Xem</a>
+                                    <a class="btn btn-sm btn-warning" href="<?= BASE_URL ?>admin/edit_news/<?= (int)$item['id'] ?>">Sửa</a>
+                                    <a class="btn btn-sm btn-danger" href="<?= BASE_URL ?>admin/delete_news/<?= (int)$item['id'] ?>" onclick="return confirm('Xóa bài viết này?')">Xóa</a>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="6" class="text-center text-muted">Chưa có bài viết nào.</td>
+                        <td colspan="7" class="text-center text-muted">Chưa có bài viết nào.</td>
                     </tr>
                 <?php endif; ?>
             </tbody>

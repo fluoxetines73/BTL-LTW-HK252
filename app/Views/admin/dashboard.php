@@ -47,7 +47,7 @@ $stats = $stats ?? [
     </div>
     <div class="stat-card">
         <div class="icon"><i class="fas fa-newspaper"></i></div>
-        <h3>Tất cả Tin tức</h3>
+                <h3>Tổng số Tin tức</h3>
         <div class="value"><?= (int)($stats['total_news'] ?? 0) ?></div>
     </div>
     <div class="stat-card">
