@@ -205,6 +205,105 @@
 	</div>
 </section>
 
+<!-- Ads Banner Carousel Section -->
+<section class="ads-section py-5 mb-5">
+	<div class="container-fluid px-4 px-md-5">
+		<!-- Section Title -->
+		<div class="row mb-4">
+			<div class="col-12">
+				<h2 class="ads-title h3 mb-0">
+					Khuyến Mãi Đặc Biệt
+				</h2>
+				<p class="text-muted small mt-1">
+					Khám phá những ưu đãi hấp dẫn dành riêng cho bạn
+				</p>
+			</div>
+		</div>
+
+		<!-- Carousel Container -->
+		<?php if (!empty($ads) && is_array($ads) && count($ads) > 0): ?>
+			<div class="row">
+				<div class="col-12">
+					<!-- Swiper Carousel -->
+					<div class="swiper ads-carousel" data-swiper-id="ads">
+						<!-- Slides wrapper -->
+						<div class="swiper-wrapper">
+							<?php foreach ($ads as $ad): ?>
+								<div class="swiper-slide">
+									<div class="ad-card h-100">
+										<!-- Ad Banner Image -->
+										<div class="ad-card-image-wrapper position-relative overflow-hidden">
+											<?php if (!empty($ad['image'])): ?>
+												<img 
+													src="<?= htmlspecialchars($ad['image']) ?>" 
+													alt="<?= htmlspecialchars($ad['title'] ?? 'Ad Banner') ?>" 
+													class="ad-card-image img-fluid w-100" 
+													loading="lazy"
+													style="height: 280px; object-fit: cover; display: block;">
+											<?php else: ?>
+												<div class="ad-card-image bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 280px;">
+													<span class="small">Chưa có hình ảnh quảng cáo</span>
+												</div>
+											<?php endif; ?>
+										</div>
+
+										<!-- Ad Info -->
+										<div class="ad-card-content p-4">
+											<!-- Title -->
+											<h5 class="ad-card-title mb-2">
+												<?= htmlspecialchars($ad['title'] ?? 'Ad Title') ?>
+											</h5>
+
+											<!-- Description -->
+											<?php if (!empty($ad['description'])): ?>
+												<p class="ad-card-description mb-3 small text-muted">
+													<?= htmlspecialchars(strlen($ad['description']) > 80 ? substr($ad['description'], 0, 80) . '...' : $ad['description']) ?>
+												</p>
+											<?php endif; ?>
+
+											<!-- CTA Button -->
+											<div class="ad-card-cta">
+												<?php if (!empty($ad['link'])): ?>
+													<a 
+														href="<?= htmlspecialchars($ad['link']) ?>" 
+														class="btn btn-sm btn-primary w-100">
+														<i class="fas fa-arrow-right me-1"></i>Xem chi tiết
+													</a>
+												<?php else: ?>
+													<button class="btn btn-sm btn-primary w-100" disabled>
+														<i class="fas fa-arrow-right me-1"></i>Xem chi tiết
+													</button>
+												<?php endif; ?>
+											</div>
+										</div>
+									</div>
+								</div>
+							<?php endforeach; ?>
+						</div>
+
+						<!-- Pagination dots -->
+						<div class="swiper-pagination ads-pagination"></div>
+
+						<!-- Navigation buttons -->
+						<div class="swiper-button-prev ads-button-prev"></div>
+						<div class="swiper-button-next ads-button-next"></div>
+					</div>
+				</div>
+			</div>
+		<?php else: ?>
+			<!-- Fallback when no ads -->
+			<div class="row">
+				<div class="col-12">
+					<div class="alert alert-info" role="alert">
+						<h5 class="alert-heading">Không có quảng cáo</h5>
+						<p class="mb-0">Vui lòng quay lại sau để xem các khuyến mãi đặc biệt.</p>
+					</div>
+				</div>
+			</div>
+		<?php endif; ?>
+	</div>
+</section>
+
 <!-- Additional Sections Placeholder -->
 <section class="panel">
 	<h2>Mục tiêu tuần này</h2>
