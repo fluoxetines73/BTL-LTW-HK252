@@ -1,2 +1,6 @@
 myenv/ configs/database.php
 myenv/
+
+node_modules/
+php-8.5.5-Win32-vs17-x64/
+.sisyphus/

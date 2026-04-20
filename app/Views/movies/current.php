@@ -11,7 +11,7 @@
 					<div class="card-header bg-success text-white">
 						<small>ĐANG CHIẾU</small>
 					</div>
-					<img src="<?= htmlspecialchars($movie['poster']) ?>" class="card-img-top" alt="<?= htmlspecialchars($movie['title']) ?>" style="height: 300px; object-fit: cover;">
+					<img src="<?= BASE_URL . htmlspecialchars($movie['poster']) ?>" class="card-img-top" alt="<?= htmlspecialchars($movie['title']) ?>" style="height: 300px; object-fit: cover;">
 					<div class="card-body">
 						<h5 class="card-title"><?= htmlspecialchars($movie['title']) ?></h5>
 						<p class="card-text">

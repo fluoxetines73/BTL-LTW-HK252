@@ -1,16 +1,140 @@
 <?php
 require_once ROOT . '/core/Controller.php';
+require_once ROOT . '/core/Database.php';
+require_once ROOT . '/app/Models/Settings.php';
 
 class HomeController extends Controller {
 	public function index(): void {
+		// Get PDO database connection
+		$db = Database::getInstance()->getPdo();
+		
+		// Initialize data array
+		$data = [];
+
+		// Prepare homepage-specific assets
+		$extraHead = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<link rel="stylesheet" href="' . BASE_URL . 'public/css/home.css">';
+		$extraScripts = '<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="' . BASE_URL . 'public/js/home.js"></script>';
+
+		// 1. Fetch Featured Movie
+		$settings = new Settings();
+		$featured_movie_id = $settings->getFeaturedMovieId();
+		
+		if ($featured_movie_id) {
+			$stmt = $db->prepare("
+				SELECT id, title, slug, description, poster, banner, release_date, 
+					   duration_min, age_rating, director
+				FROM movies 
+				WHERE id = ? AND status IN ('now_showing', 'coming_soon')
+			");
+			$stmt->execute([$featured_movie_id]);
+			$data['featured_movie'] = $stmt->fetch() ?: null;
+		} else {
+			$data['featured_movie'] = null;
+		}
+
+		// 2. Fetch 8 Recommended Movies (Now Showing, by release date DESC)
+		$stmt = $db->prepare("
+			SELECT id, title, slug, description, poster, banner, release_date, 
+				   duration_min, age_rating, status
+			FROM movies 
+			WHERE status = 'now_showing'
+			ORDER BY release_date DESC
+			LIMIT 8
+		");
+		$stmt->execute();
+		$data['recommendations'] = $stmt->fetchAll();
+
+		// 3. Fetch Top 5-7 Genres with movie count
+		// Join movie_genres and movies tables, count movies per genre, order by count descending
+		// Count m.id instead of mg.movie_id to exclude movies filtered out by the status condition
+		$stmt = $db->prepare("
+			SELECT g.id, g.name, g.slug, COUNT(DISTINCT m.id) as movie_count
+			FROM genres g
+			LEFT JOIN movie_genres mg ON g.id = mg.genre_id
+			LEFT JOIN movies m ON mg.movie_id = m.id AND m.status IN ('now_showing', 'coming_soon')
+			GROUP BY g.id, g.name, g.slug
+			ORDER BY movie_count DESC
+			LIMIT 7
+		");
+		$stmt->execute();
+		$data['genres'] = $stmt->fetchAll();
+
+		// 4. Fetch 6 Coming Soon Movies (by release date ASC)
+		$stmt = $db->prepare("
+			SELECT id, title, slug, description, poster, banner, release_date, 
+				   duration_min, age_rating, status
+			FROM movies 
+			WHERE status = 'coming_soon' AND release_date >= CURDATE()
+			ORDER BY release_date ASC
+			LIMIT 6
+		");
+		$stmt->execute();
+		$data['coming_soon'] = $stmt->fetchAll();
+
+		// 5. Fetch 4 Recent News Items (Published status, by date DESC)
+		$stmt = $db->prepare("
+			SELECT id, title, slug, content, image, category, published_at, status
+			FROM news 
+			WHERE status = 'published'
+			ORDER BY published_at DESC
+			LIMIT 4
+		");
+		$stmt->execute();
+		$data['news'] = $stmt->fetchAll();
+
+		// 6. Create Static Ad Data (5 sample ads with diverse content)
+		$data['ads'] = [
+			[
+				'id' => 1,
+				'title' => 'CGV Premium - Trải nghiệm tuyệt vời',
+				'image' => BASE_URL . 'public/assets/ads/ad-premium.jpg',
+				'link' => BASE_URL . 'pricing',
+				'description' => 'Nâng cấp lên thành viên Premium và nhận ưu đãi độc quyền'
+			],
+			[
+				'id' => 2,
+				'title' => 'Combo Đặc Biệt Mỗi Tuần',
+				'image' => BASE_URL . 'public/assets/ads/ad-combo.jpg',
+				'link' => BASE_URL . 'movies',
+				'description' => 'Mua combo tiết kiệm tới 30% khi xem phim'
+			],
+			[
+				'id' => 3,
+				'title' => 'Sự Kiện Sinh Nhật Tại CGV',
+				'image' => BASE_URL . 'public/assets/ads/ad-birthday.jpg',
+				'link' => BASE_URL . 'contact',
+				'description' => 'Tổ chức sinh nhật của bạn tại rạp CGV Cinema'
+			],
+			[
+				'id' => 4,
+				'title' => 'Công Nghệ 4DX & Dolby Atmos',
+				'image' => BASE_URL . 'public/assets/ads/ad-4dx.jpg',
+				'link' => BASE_URL . 'about',
+				'description' => 'Trải nghiệm phim ảnh với công nghệ tiên tiến nhất'
+			],
+			[
+				'id' => 5,
+				'title' => 'Đặt Vé Online - Dễ Dàng & Nhanh Chóng',
+				'image' => BASE_URL . 'public/assets/ads/ad-booking.jpg',
+				'link' => BASE_URL . 'movies',
+				'description' => 'Đặt vé trước qua website và app CGV Cinema'
+			]
+		];
+
+		// Pass all data to view
 		$this->view('layouts/main', [
 			'title' => 'Trang chu',
 			'content' => 'home/index',
-			'highlights' => [
-				'Kien truc MVC tu viet de ca nhom dung chung',
-				'Template Header / Footer / Navigation thong nhat',
-				'Route convention ro rang de ghep code an toan',
-			],
+			'featured_movie' => $data['featured_movie'],
+			'recommendations' => $data['recommendations'],
+			'genres' => $data['genres'],
+			'coming_soon' => $data['coming_soon'],
+			'news' => $data['news'],
+			'ads' => $data['ads'],
+			'extraHead' => $extraHead,
+			'extraScripts' => $extraScripts,
 		]);
 	}
 

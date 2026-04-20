@@ -8,7 +8,7 @@
 		<?php foreach (($movies ?? []) as $movie): ?>
 			<div class="col-md-6 col-lg-4">
 				<div class="card h-100 shadow-sm">
-					<img src="<?= htmlspecialchars($movie['poster']) ?>" class="card-img-top" alt="<?= htmlspecialchars($movie['title']) ?>" style="height: 300px; object-fit: cover;">
+					<img src="<?= BASE_URL . htmlspecialchars($movie['poster']) ?>" class="card-img-top" alt="<?= htmlspecialchars($movie['title']) ?>" style="height: 300px; object-fit: cover;">
 					<div class="card-body">
 						<h5 class="card-title"><?= htmlspecialchars($movie['title']) ?></h5>
 						<p class="card-text text-muted">
