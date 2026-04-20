@@ -22,22 +22,20 @@ class Settings extends Model {
     /**
      * Set a setting value
      * 
+     * Atomically inserts a new setting or updates an existing one.
+     * Uses MySQL's INSERT ... ON DUPLICATE KEY UPDATE to avoid race conditions
+     * and rowCount() unreliability when values don't change.
+     * 
      * @param string $key The setting key
      * @param mixed $value The setting value
      * @return bool
      */
     public function set(string $key, $value): bool {
-        // Try to update first
-        $stmt = $this->db->prepare("UPDATE {$this->table} SET setting_value = ? WHERE setting_key = ?");
-        $stmt->execute([$value, $key]);
-        
-        // If no rows affected, insert new row
-        if ($stmt->rowCount() === 0) {
-            $stmt = $this->db->prepare("INSERT INTO {$this->table} (setting_key, setting_value) VALUES (?, ?)");
-            return $stmt->execute([$key, $value]);
-        }
-        
-        return true;
+        $sql = "INSERT INTO {$this->table} (setting_key, setting_value) 
+                VALUES (?, ?)
+                ON DUPLICATE KEY UPDATE setting_value = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$key, $value, $value]);
     }
 
     /**
