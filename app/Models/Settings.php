@@ -41,6 +41,9 @@ class Settings extends Model {
     /**
      * Get featured movie ID with fallback to first movie
      * 
+     * Returns only movies with status 'now_showing' or 'coming_soon' to ensure
+     * consistency with the homepage query. Filters both cached IDs and fallback queries.
+     * 
      * @return int|null
      */
     public function getFeaturedMovieId() {
@@ -48,11 +51,27 @@ class Settings extends Model {
         $featured_id = $this->getByKey('featured_movie_id');
         
         if ($featured_id) {
-            return (int)$featured_id;
+            // Validate cached ID: ensure it's still a valid "showable" movie
+            $stmt = $this->db->prepare(
+                "SELECT id FROM {$this->table} WHERE setting_key = 'featured_movie_id'
+                 AND (SELECT status FROM movies WHERE id = ?) IN ('now_showing', 'coming_soon')"
+            );
+            $stmt->execute([(int)$featured_id]);
+            if ($stmt->fetch()) {
+                return (int)$featured_id;
+            }
+            // Cached ID is invalid, clear it
+            $this->db->prepare("DELETE FROM {$this->table} WHERE setting_key = 'featured_movie_id'")
+                ->execute();
         }
         
-        // Fallback: get first movie ID
-        $stmt = $this->db->query("SELECT id FROM movies ORDER BY id LIMIT 1");
+        // Fallback: get first movie with valid status (now_showing or coming_soon)
+        $stmt = $this->db->prepare(
+            "SELECT id FROM movies 
+             WHERE status IN ('now_showing', 'coming_soon')
+             ORDER BY id LIMIT 1"
+        );
+        $stmt->execute();
         $result = $stmt->fetch();
         
         if ($result) {

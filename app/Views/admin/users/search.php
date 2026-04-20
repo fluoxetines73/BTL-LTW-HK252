@@ -547,7 +547,7 @@
                         <div class="pagination">
                             <!-- Previous -->
                             <?php if ($current_page > 1): ?>
-                                <a href="<?= htmlspecialchars($base_url) ?>&page=<?= $current_page - 1 ?>">
+                                <a href="<?= $base_url ?>&page=<?= $current_page - 1 ?>">
                                     <i class="fas fa-chevron-left"></i> Trước
                                 </a>
                             <?php endif; ?>
@@ -558,7 +558,7 @@
                             $end = min($total_pages, $current_page + 2);
 
                             if ($start > 1) {
-                                echo '<a href="' . htmlspecialchars($base_url) . '&page=1">1</a>';
+                                echo '<a href="' . $base_url . '&page=1">1</a>';
                                 if ($start > 2) echo '<span>...</span>';
                             }
 
@@ -566,19 +566,19 @@
                                 if ($p === $current_page) {
                                     echo '<span class="active">' . $p . '</span>';
                                 } else {
-                                    echo '<a href="' . htmlspecialchars($base_url) . '&page=' . $p . '">' . $p . '</a>';
+                                    echo '<a href="' . $base_url . '&page=' . $p . '">' . $p . '</a>';
                                 }
                             }
 
                             if ($end < $total_pages) {
                                 if ($end < $total_pages - 1) echo '<span>...</span>';
-                                echo '<a href="' . htmlspecialchars($base_url) . '&page=' . $total_pages . '">' . $total_pages . '</a>';
+                                echo '<a href="' . $base_url . '&page=' . $total_pages . '">' . $total_pages . '</a>';
                             }
                             ?>
 
                             <!-- Next -->
                             <?php if ($current_page < $total_pages): ?>
-                                <a href="<?= htmlspecialchars($base_url) ?>&page=<?= $current_page + 1 ?>">
+                                <a href="<?= $base_url ?>&page=<?= $current_page + 1 ?>">
                                     Tiếp <i class="fas fa-chevron-right"></i>
                                 </a>
                             <?php endif; ?>

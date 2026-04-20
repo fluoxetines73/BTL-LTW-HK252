@@ -3,6 +3,12 @@
 -- ============================================================
 -- Purpose: Ensure settings table exists and featured_movie_id is configured
 -- Run this after database/schema.sql is imported
+--
+-- IMAGE PATH CONVENTION:
+-- Store image paths relative to BASE_URL (defined in index.php).
+-- Use format: public/images/... (no leading slash)
+-- At runtime, controllers/views prepend BASE_URL to these paths.
+-- This ensures compatibility with subdirectory deployments.
 
 -- ============================================================
 -- 1. Ensure Settings Table Exists
@@ -29,8 +35,8 @@ SELECT
     'Christopher Nolan',
     148,
     DATE_SUB(CURDATE(), INTERVAL 30 DAY),
-    '/public/images/movies/inception-poster.jpg',
-    '/public/images/movies/inception-banner.jpg',
+    'public/images/movies/inception-poster.jpg',
+    'public/images/movies/inception-banner.jpg',
     'C13',
     'now_showing'
 WHERE NOT EXISTS (SELECT 1 FROM movies LIMIT 1);

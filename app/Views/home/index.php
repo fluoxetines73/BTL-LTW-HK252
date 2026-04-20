@@ -7,13 +7,13 @@
 				<div class="col-12 col-md-6 col-lg-7 hero-image-wrapper">
 					<?php if (!empty($featured_movie['banner'])): ?>
 						<img 
-							src="<?= htmlspecialchars($featured_movie['banner']) ?>" 
+							src="<?= BASE_URL . htmlspecialchars($featured_movie['banner']) ?>" 
 							alt="<?= htmlspecialchars($featured_movie['title']) ?>" 
 							class="hero-image img-fluid w-100" 
 							style="height: 400px; object-fit: cover; display: block;">
 					<?php elseif (!empty($featured_movie['poster'])): ?>
 						<img 
-							src="<?= htmlspecialchars($featured_movie['poster']) ?>" 
+							src="<?= BASE_URL . htmlspecialchars($featured_movie['poster']) ?>" 
 							alt="<?= htmlspecialchars($featured_movie['title']) ?>" 
 							class="hero-image img-fluid w-100" 
 							style="height: 400px; object-fit: cover; display: block;">
@@ -125,7 +125,7 @@
 										<div class="movie-card-image-wrapper position-relative overflow-hidden">
 											<?php if (!empty($movie['poster'])): ?>
 												<img 
-													src="<?= htmlspecialchars($movie['poster']) ?>" 
+													src="<?= BASE_URL . htmlspecialchars($movie['poster']) ?>" 
 													alt="<?= htmlspecialchars($movie['title'] ?? 'Unknown') ?>" 
 													class="movie-card-image img-fluid w-100" 
 													loading="lazy"
@@ -261,12 +261,12 @@
 												</p>
 											<?php endif; ?>
 
-											<!-- CTA Button -->
-											<div class="ad-card-cta">
-												<?php if (!empty($ad['link'])): ?>
-													<a 
-														href="<?= htmlspecialchars($ad['link']) ?>" 
-														class="btn btn-sm btn-primary w-100">
+										<!-- CTA Button -->
+										<div class="ad-card-cta">
+											<?php if (!empty($ad['link'])): ?>
+												<a 
+													href="<?= $ad['link'] ?>" 
+													class="btn btn-sm btn-primary w-100">
 														<i class="fas fa-arrow-right me-1"></i>Xem chi tiết
 													</a>
 												<?php else: ?>
@@ -326,7 +326,7 @@
 					<div class="genre-chips-wrapper d-flex flex-wrap gap-3">
 						<?php foreach ($genres as $genre): ?>
 							<a 
-								href="<?= BASE_URL ?>movies/current?genre=<?= urlencode(htmlspecialchars($genre['slug'] ?? '')) ?>" 
+								href="<?= BASE_URL ?>movies/current?genre=<?= urlencode($genre['slug'] ?? '') ?>" 
 								class="genre-chip btn btn-outline-secondary"
 								title="<?= htmlspecialchars($genre['name'] ?? 'Unknown Genre') ?>">
 								<span class="genre-name">
@@ -384,7 +384,7 @@
 										<div class="movie-card-image-wrapper position-relative overflow-hidden">
 											<?php if (!empty($movie['poster'])): ?>
 												<img 
-													src="<?= htmlspecialchars($movie['poster']) ?>" 
+													src="<?= BASE_URL . htmlspecialchars($movie['poster']) ?>" 
 													alt="<?= htmlspecialchars($movie['title'] ?? 'Unknown') ?>" 
 													class="movie-card-image img-fluid w-100" 
 													loading="lazy"
@@ -565,12 +565,12 @@
 									</span>
 								<?php endif; ?>
 
-								<!-- Title -->
-								<h5 class="news-card-title mb-2">
-									<a 
-										href="<?= BASE_URL ?>news/<?= htmlspecialchars($item['slug'] ?? '') ?>" 
-										class="text-decoration-none"
-										title="<?= htmlspecialchars($item['title'] ?? 'News') ?>">
+							<!-- Title -->
+							<h5 class="news-card-title mb-2">
+								<a 
+									href="<?= BASE_URL ?>news/<?= urlencode($item['slug'] ?? '') ?>" 
+									class="text-decoration-none"
+									title="<?= htmlspecialchars($item['title'] ?? 'News') ?>">
 										<?= htmlspecialchars(strlen($item['title'] ?? '') > 60 ? substr($item['title'], 0, 60) . '...' : ($item['title'] ?? 'News')) ?>
 									</a>
 								</h5>

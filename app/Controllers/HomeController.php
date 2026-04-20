@@ -11,6 +11,12 @@ class HomeController extends Controller {
 		// Initialize data array
 		$data = [];
 
+		// Prepare homepage-specific assets
+		$extraHead = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<link rel="stylesheet" href="' . BASE_URL . 'public/css/home.css">';
+		$extraScripts = '<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="' . BASE_URL . 'public/js/home.js"></script>';
+
 		// 1. Fetch Featured Movie
 		$settings = new Settings();
 		$featured_movie_id = $settings->getFeaturedMovieId();
@@ -42,8 +48,9 @@ class HomeController extends Controller {
 
 		// 3. Fetch Top 5-7 Genres with movie count
 		// Join movie_genres and movies tables, count movies per genre, order by count descending
+		// Count m.id instead of mg.movie_id to exclude movies filtered out by the status condition
 		$stmt = $db->prepare("
-			SELECT g.id, g.name, g.slug, COUNT(mg.movie_id) as movie_count
+			SELECT g.id, g.name, g.slug, COUNT(DISTINCT m.id) as movie_count
 			FROM genres g
 			LEFT JOIN movie_genres mg ON g.id = mg.genre_id
 			LEFT JOIN movies m ON mg.movie_id = m.id AND m.status IN ('now_showing', 'coming_soon')
@@ -126,6 +133,8 @@ class HomeController extends Controller {
 			'coming_soon' => $data['coming_soon'],
 			'news' => $data['news'],
 			'ads' => $data['ads'],
+			'extraHead' => $extraHead,
+			'extraScripts' => $extraScripts,
 		]);
 	}
 

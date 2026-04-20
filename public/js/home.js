@@ -13,164 +13,173 @@ if (typeof Swiper === 'undefined') {
         // =====================================================
         // 1. RECOMMENDATIONS CAROUSEL
         // =====================================================
-        const recommendationsSwiper = new Swiper('.recommendations-carousel', {
-            // Autoplay settings
-            autoplay: {
-                delay: 4000,                    // 4 second interval
-                pauseOnMouseEnter: true         // Pause on hover
-            },
-
-            // Loop settings
-            loop: true,                         // Infinite loop
-
-            // Pagination (dots)
-            pagination: {
-                el: '.recommendations-pagination',
-                clickable: true
-            },
-
-            // Navigation (arrows)
-            navigation: {
-                nextEl: '.recommendations-button-next',
-                prevEl: '.recommendations-button-prev'
-            },
-
-            // Responsive breakpoints for slide count
-            breakpoints: {
-                // Mobile: 375px and up
-                375: {
-                    slidesPerView: 1,
-                    spaceBetween: 10
+        const recommendationsContainer = document.querySelector('.recommendations-carousel');
+        if (recommendationsContainer) {
+            const recommendationsSwiper = new Swiper('.recommendations-carousel', {
+                // Autoplay settings
+                autoplay: {
+                    delay: 4000,                    // 4 second interval
+                    pauseOnMouseEnter: true         // Pause on hover
                 },
-                // Tablet: 768px and up
-                768: {
-                    slidesPerView: 2,
-                    spaceBetween: 15
+
+                // Loop settings
+                loop: true,                         // Infinite loop
+
+                // Pagination (dots)
+                pagination: {
+                    el: '.recommendations-pagination',
+                    clickable: true
                 },
-                // Desktop: 1024px and up
-                1024: {
-                    slidesPerView: 4,
-                    spaceBetween: 20
+
+                // Navigation (arrows)
+                navigation: {
+                    nextEl: '.recommendations-button-next',
+                    prevEl: '.recommendations-button-prev'
+                },
+
+                // Responsive breakpoints for slide count
+                breakpoints: {
+                    // Mobile: 375px and up
+                    375: {
+                        slidesPerView: 1,
+                        spaceBetween: 10
+                    },
+                    // Tablet: 768px and up
+                    768: {
+                        slidesPerView: 2,
+                        spaceBetween: 15
+                    },
+                    // Desktop: 1024px and up
+                    1024: {
+                        slidesPerView: 4,
+                        spaceBetween: 20
+                    }
+                },
+
+                // Touch/swipe support (native Swiper feature)
+                simulateTouch: true,
+                touchRatio: 1,
+
+                // Accessibility
+                a11y: {
+                    enabled: true
                 }
-            },
-
-            // Touch/swipe support (native Swiper feature)
-            simulateTouch: true,
-            touchRatio: 1,
-
-            // Accessibility
-            a11y: {
-                enabled: true
-            }
-        });
+            });
+        }
 
         // =====================================================
         // 2. ADS CAROUSEL
         // =====================================================
-        const adsSwiper = new Swiper('.ads-carousel', {
-            // Autoplay settings
-            autoplay: {
-                delay: 5000,                    // 5 second interval
-                pauseOnMouseEnter: true         // Pause on hover
-            },
-
-            // Loop settings
-            loop: true,                         // Infinite loop
-
-            // Pagination (dots)
-            pagination: {
-                el: '.ads-pagination',
-                clickable: true
-            },
-
-            // Navigation (arrows)
-            navigation: {
-                nextEl: '.ads-button-next',
-                prevEl: '.ads-button-prev'
-            },
-
-            // Responsive breakpoints for slide count
-            breakpoints: {
-                // Mobile: 375px and up
-                375: {
-                    slidesPerView: 1,
-                    spaceBetween: 10
+        const adsContainer = document.querySelector('.ads-carousel');
+        if (adsContainer) {
+            const adsSwiper = new Swiper('.ads-carousel', {
+                // Autoplay settings
+                autoplay: {
+                    delay: 5000,                    // 5 second interval
+                    pauseOnMouseEnter: true         // Pause on hover
                 },
-                // Tablet: 768px and up
-                768: {
-                    slidesPerView: 2,
-                    spaceBetween: 15
+
+                // Loop settings
+                loop: true,                         // Infinite loop
+
+                // Pagination (dots)
+                pagination: {
+                    el: '.ads-pagination',
+                    clickable: true
                 },
-                // Desktop: 1024px and up
-                1024: {
-                    slidesPerView: 4,
-                    spaceBetween: 20
+
+                // Navigation (arrows)
+                navigation: {
+                    nextEl: '.ads-button-next',
+                    prevEl: '.ads-button-prev'
+                },
+
+                // Responsive breakpoints for slide count
+                breakpoints: {
+                    // Mobile: 375px and up
+                    375: {
+                        slidesPerView: 1,
+                        spaceBetween: 10
+                    },
+                    // Tablet: 768px and up
+                    768: {
+                        slidesPerView: 2,
+                        spaceBetween: 15
+                    },
+                    // Desktop: 1024px and up
+                    1024: {
+                        slidesPerView: 4,
+                        spaceBetween: 20
+                    }
+                },
+
+                // Touch/swipe support (native Swiper feature)
+                simulateTouch: true,
+                touchRatio: 1,
+
+                // Accessibility
+                a11y: {
+                    enabled: true
                 }
-            },
-
-            // Touch/swipe support (native Swiper feature)
-            simulateTouch: true,
-            touchRatio: 1,
-
-            // Accessibility
-            a11y: {
-                enabled: true
-            }
-        });
+            });
+        }
 
         // =====================================================
         // 3. COMING SOON CAROUSEL
         // =====================================================
-        const comingSoonSwiper = new Swiper('.coming-soon-carousel', {
-            // Autoplay settings
-            autoplay: {
-                delay: 4000,                    // 4 second interval
-                pauseOnMouseEnter: true         // Pause on hover
-            },
-
-            // Loop settings
-            loop: true,                         // Infinite loop
-
-            // Pagination (dots)
-            pagination: {
-                el: '.coming-soon-pagination',
-                clickable: true
-            },
-
-            // Navigation (arrows)
-            navigation: {
-                nextEl: '.coming-soon-button-next',
-                prevEl: '.coming-soon-button-prev'
-            },
-
-            // Responsive breakpoints for slide count
-            breakpoints: {
-                // Mobile: 375px and up
-                375: {
-                    slidesPerView: 1,
-                    spaceBetween: 10
+        const comingSoonContainer = document.querySelector('.coming-soon-carousel');
+        if (comingSoonContainer) {
+            const comingSoonSwiper = new Swiper('.coming-soon-carousel', {
+                // Autoplay settings
+                autoplay: {
+                    delay: 4000,                    // 4 second interval
+                    pauseOnMouseEnter: true         // Pause on hover
                 },
-                // Tablet: 768px and up
-                768: {
-                    slidesPerView: 3,
-                    spaceBetween: 15
+
+                // Loop settings
+                loop: true,                         // Infinite loop
+
+                // Pagination (dots)
+                pagination: {
+                    el: '.coming-soon-pagination',
+                    clickable: true
                 },
-                // Desktop: 1024px and up
-                1024: {
-                    slidesPerView: 5,
-                    spaceBetween: 20
+
+                // Navigation (arrows)
+                navigation: {
+                    nextEl: '.coming-soon-button-next',
+                    prevEl: '.coming-soon-button-prev'
+                },
+
+                // Responsive breakpoints for slide count
+                breakpoints: {
+                    // Mobile: 375px and up
+                    375: {
+                        slidesPerView: 1,
+                        spaceBetween: 10
+                    },
+                    // Tablet: 768px and up
+                    768: {
+                        slidesPerView: 3,
+                        spaceBetween: 15
+                    },
+                    // Desktop: 1024px and up
+                    1024: {
+                        slidesPerView: 5,
+                        spaceBetween: 20
+                    }
+                },
+
+                // Touch/swipe support (native Swiper feature)
+                simulateTouch: true,
+                touchRatio: 1,
+
+                // Accessibility
+                a11y: {
+                    enabled: true
                 }
-            },
-
-            // Touch/swipe support (native Swiper feature)
-            simulateTouch: true,
-            touchRatio: 1,
-
-            // Accessibility
-            a11y: {
-                enabled: true
-            }
-        });
+            });
+        }
 
         // =====================================================
         // NEWSLETTER FORM VALIDATION
