@@ -236,23 +236,15 @@
                         <i class="fas fa-users"></i> Quản lý Người dùng
                     </a>
                 </li>
-               <li>
-                    <a href="<?= BASE_URL ?>admin/movie/index">
-                        <i class="fas fa-film"></i> Quản lý Phim
-                    </a>
-                </li>
                 <li>
-                    <a href="<?= BASE_URL ?>admin/combo/index">
-                        <i class="fas fa-hamburger"></i> Quản lý Combo
+                    <a href="<?= BASE_URL ?>admin/products">
+                        <i class="fas fa-box"></i> Quản lý Sản phẩm
                     </a>
                 </li>
                 <li>
                     <a href="<?= BASE_URL ?>admin/news">
                         <i class="fas fa-newspaper"></i> Quản lý Tin tức
                     </a>
-                </li>
-                <li>
-                    <a href="<?= BASE_URL ?>admin/order/index"><i class="ti-receipt"></i><span>Quản lý Đơn hàng</span></a>
                 </li>
                 <li>
                     <a href="<?= BASE_URL ?>profile/edit">
