@@ -560,7 +560,7 @@
 							<div class="news-card-content p-3">
 								<!-- Category Badge -->
 								<?php if (!empty($item['category'])): ?>
-									<span class="badge bg-info mb-2">
+									<span class="badge text-white mb-2" style="background-color: var(--cgv-red);">
 										<?= htmlspecialchars($item['category']) ?>
 									</span>
 								<?php endif; ?>

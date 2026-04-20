@@ -28,9 +28,10 @@
 }
 
 .hero-content-wrapper {
-    background-color: var(--cgv-dark);
-    color: var(--cgv-white);
+    background-color: #f8fafc;
+    color: var(--cgv-dark);
     padding: var(--spacing-md) !important; /* Mobile padding */
+    border-left: 1px solid #e2e8f0;
 }
 
 .hero-title {
@@ -51,13 +52,13 @@
 
 .hero-date, .hero-detail-item {
     font-size: 0.85rem;
-    color: #e2e8f0; /* Light gray for dark background */
+    color: #475569; /* Darker gray for light background */
 }
 
 .hero-description {
     font-size: 0.9rem;
     line-height: 1.5;
-    color: #cbd5e1;
+    color: #64748b;
     margin-bottom: var(--spacing-md);
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -396,39 +397,40 @@
 
 /* Mobile */
 .newsletter-container {
-    background: linear-gradient(135deg, var(--cgv-dark) 0%, #2a2a4a 100%);
-    color: var(--cgv-white);
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    color: var(--cgv-dark);
     text-align: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
 }
 
 .newsletter-title {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--cgv-white);
+    color: var(--cgv-dark);
 }
 
 .newsletter-description {
     font-size: 0.9rem;
-    color: #cbd5e1 !important;
+    color: #475569 !important;
 }
 
 .newsletter-form input {
     border-radius: var(--radius-md);
-    border: 1px solid #475569;
-    background-color: rgba(255, 255, 255, 0.1);
-    color: var(--cgv-white);
+    border: 1px solid #cbd5e1;
+    background-color: var(--cgv-white);
+    color: var(--cgv-dark);
     padding: 12px 16px;
 }
 
 .newsletter-form input::placeholder {
-    color: #94a3b8;
+    color: #64748b;
 }
 
 .newsletter-form input:focus {
     background-color: var(--cgv-white);
     color: var(--cgv-dark);
-    box-shadow: 0 0 0 3px rgba(231, 26, 15, 0.25);
+    box-shadow: 0 0 0 3px rgba(231, 26, 15, 0.15);
     border-color: var(--cgv-red);
 }
 
@@ -447,7 +449,7 @@
 }
 
 .newsletter-form small {
-    color: #94a3b8 !important;
+    color: #64748b !important;
 }
 
 /* Tablet (768px+) */
