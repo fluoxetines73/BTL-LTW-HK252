@@ -1,0 +1,585 @@
+/* ============================================================================
+   HOME PAGE RESPONSIVE STYLES
+   Mobile-First Approach: Base (375px) -> Tablet (768px) -> Desktop (1024px)
+   ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+   1. HERO SECTION (.hero-section)
+   ---------------------------------------------------------------------------- */
+
+/* Mobile (Base) */
+.hero-section {
+    background-color: var(--cgv-white);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-bottom: var(--spacing-lg);
+}
+
+.hero-wrapper {
+    flex-direction: column;
+}
+
+.hero-image {
+    width: 100%;
+    height: 250px !important; /* Override inline style for mobile */
+    object-fit: cover;
+    transition: transform var(--transition-smooth);
+}
+
+.hero-content-wrapper {
+    background-color: #f8fafc;
+    color: var(--cgv-dark);
+    padding: var(--spacing-md) !important; /* Mobile padding */
+    border-left: 1px solid #e2e8f0;
+}
+
+.hero-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: var(--spacing-sm);
+}
+
+.hero-rating {
+    background-color: var(--cgv-red);
+    color: var(--cgv-white);
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.hero-date, .hero-detail-item {
+    font-size: 0.85rem;
+    color: #475569; /* Darker gray for light background */
+}
+
+.hero-description {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #64748b;
+    margin-bottom: var(--spacing-md);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.hero-cta-button {
+    background-color: var(--cgv-red);
+    color: var(--cgv-white);
+    border: none;
+    font-weight: 600;
+    padding: 12px 24px;
+    transition: background-color var(--transition-smooth), transform var(--transition-smooth);
+    border-radius: var(--radius-md);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero-cta-button:hover, .hero-cta-button:focus {
+    background-color: #c41408;
+    color: var(--cgv-white);
+    transform: translateY(-2px);
+}
+
+/* Tablet (768px+) */
+@media (min-width: 768px) {
+    .hero-wrapper {
+        flex-direction: row;
+    }
+    
+    .hero-image {
+        height: 350px !important;
+    }
+    
+    .hero-content-wrapper {
+        padding: var(--spacing-lg) !important;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-description {
+        font-size: 1rem;
+        -webkit-line-clamp: 4;
+    }
+}
+
+/* Desktop (1024px+) */
+@media (min-width: 1024px) {
+    .hero-image {
+        height: 400px !important;
+    }
+    
+    .hero-content-wrapper {
+        padding: 3rem !important; /* Larger padding for desktop */
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
+    }
+}
+
+/* ----------------------------------------------------------------------------
+   SHARED CAROUSEL STYLES (Recommendations, Ads, Coming Soon)
+   ---------------------------------------------------------------------------- */
+
+/* Mobile */
+.swiper {
+    padding-bottom: 40px !important; /* Space for pagination */
+}
+
+.swiper-pagination-bullet {
+    background-color: var(--cgv-gray) !important;
+    opacity: 0.5 !important;
+    transition: opacity var(--transition-smooth), background-color var(--transition-smooth);
+}
+
+.swiper-pagination-bullet-active {
+    background-color: var(--cgv-red) !important;
+    opacity: 1 !important;
+}
+
+.swiper-button-next, .swiper-button-prev {
+    color: var(--cgv-red) !important;
+    background-color: rgba(255, 255, 255, 0.8);
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: none !important; /* Hide on mobile by default */
+}
+
+.swiper-button-next::after, .swiper-button-prev::after {
+    font-size: 1.2rem !important;
+    font-weight: bold;
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+    .swiper-button-next, .swiper-button-prev {
+        display: flex !important; /* Show on desktop */
+    }
+}
+
+/* ----------------------------------------------------------------------------
+   2. MOVIE RECOMMENDATIONS & 5. COMING SOON CAROUSELS
+   ---------------------------------------------------------------------------- */
+
+/* Mobile */
+.recommendations-title, .coming-soon-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--cgv-dark);
+    position: relative;
+    padding-left: 12px;
+}
+
+.recommendations-title::before, .coming-soon-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 24px;
+    background-color: var(--cgv-red);
+    border-radius: 2px;
+}
+
+.movie-card {
+    background-color: var(--cgv-white);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
+    border: 1px solid #f1f5f9;
+}
+
+.movie-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.movie-card-image {
+    transition: transform 0.5s ease;
+}
+
+.movie-card:hover .movie-card-image {
+    transform: scale(1.05);
+}
+
+.movie-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+}
+
+.movie-card-title a {
+    color: var(--cgv-dark);
+    transition: color var(--transition-smooth);
+}
+
+.movie-card-title a:hover {
+    color: var(--cgv-red);
+}
+
+.movie-rating {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.movie-card-cta .btn {
+    color: var(--cgv-red);
+    border-color: var(--cgv-red);
+    font-weight: 500;
+    transition: all var(--transition-smooth);
+}
+
+.movie-card-cta .btn:hover {
+    background-color: var(--cgv-red);
+    color: var(--cgv-white);
+}
+
+/* Tablet (768px+) */
+@media (min-width: 768px) {
+    .recommendations-title, .coming-soon-title {
+        font-size: 1.75rem;
+    }
+}
+
+/* Desktop (1024px+) */
+@media (min-width: 1024px) {
+    .recommendations-title, .coming-soon-title {
+        font-size: 2rem;
+    }
+}
+
+/* ----------------------------------------------------------------------------
+   3. ADS BANNER CAROUSEL (.ads-section)
+   ---------------------------------------------------------------------------- */
+
+/* Mobile */
+.ads-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--cgv-dark);
+    position: relative;
+    padding-left: 12px;
+}
+
+.ads-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 24px;
+    background-color: var(--cgv-red);
+    border-radius: 2px;
+}
+
+.ad-card {
+    background-color: var(--cgv-white);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f1f5f9;
+}
+
+.ad-card-image {
+    transition: transform 0.5s ease;
+}
+
+.ad-card:hover .ad-card-image {
+    transform: scale(1.03);
+}
+
+.ad-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--cgv-dark);
+}
+
+.ad-card-description {
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.ad-card-cta .btn {
+    background-color: var(--cgv-red);
+    color: var(--cgv-white);
+    border: none;
+    font-weight: 500;
+}
+
+.ad-card-cta .btn:hover {
+    background-color: #c41408;
+}
+
+/* Tablet (768px+) */
+@media (min-width: 768px) {
+    .ads-title {
+        font-size: 1.75rem;
+    }
+}
+
+/* Desktop (1024px+) */
+@media (min-width: 1024px) {
+    .ads-title {
+        font-size: 2rem;
+    }
+}
+
+/* ----------------------------------------------------------------------------
+   4. GENRE FILTER BAR (.genre-filter-section)
+   ---------------------------------------------------------------------------- */
+
+/* Mobile */
+.genre-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--cgv-dark);
+}
+
+.genre-chips-wrapper {
+    justify-content: flex-start;
+}
+
+.genre-chip {
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--cgv-text);
+    border: 1px solid #cbd5e1;
+    background-color: var(--cgv-white);
+    transition: all var(--transition-smooth);
+    display: flex;
+    align-items: center;
+}
+
+.genre-chip:hover {
+    background-color: var(--cgv-red);
+    color: var(--cgv-white);
+    border-color: var(--cgv-red);
+    transform: translateY(-2px);
+}
+
+.genre-chip:hover .genre-count {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.genre-count {
+    font-size: 0.8rem;
+}
+
+/* Tablet (768px+) */
+@media (min-width: 768px) {
+    .genre-chips-wrapper {
+        justify-content: center; /* Center on larger screens */
+    }
+    
+    .genre-chip {
+        padding: 8px 20px;
+        font-size: 1rem;
+    }
+}
+
+/* ----------------------------------------------------------------------------
+   6. NEWSLETTER SIGNUP BANNER (.newsletter-section)
+   ---------------------------------------------------------------------------- */
+
+/* Mobile */
+.newsletter-container {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    color: var(--cgv-dark);
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.newsletter-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--cgv-dark);
+}
+
+.newsletter-description {
+    font-size: 0.9rem;
+    color: #475569 !important;
+}
+
+.newsletter-form input {
+    border-radius: var(--radius-md);
+    border: 1px solid #cbd5e1;
+    background-color: var(--cgv-white);
+    color: var(--cgv-dark);
+    padding: 12px 16px;
+}
+
+.newsletter-form input::placeholder {
+    color: #64748b;
+}
+
+.newsletter-form input:focus {
+    background-color: var(--cgv-white);
+    color: var(--cgv-dark);
+    box-shadow: 0 0 0 3px rgba(231, 26, 15, 0.15);
+    border-color: var(--cgv-red);
+}
+
+.newsletter-form button {
+    background-color: var(--cgv-red);
+    color: var(--cgv-white);
+    border: none;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    transition: background-color var(--transition-smooth), transform var(--transition-smooth);
+}
+
+.newsletter-form button:hover {
+    background-color: #c41408;
+    transform: translateY(-2px);
+}
+
+.newsletter-form small {
+    color: #64748b !important;
+}
+
+/* Tablet (768px+) */
+@media (min-width: 768px) {
+    .newsletter-title {
+        font-size: 2rem;
+    }
+    
+    .newsletter-description {
+        font-size: 1rem;
+    }
+}
+
+/* Desktop (1024px+) */
+@media (min-width: 1024px) {
+    .newsletter-container {
+        padding: 4rem 5rem !important;
+    }
+    
+    .newsletter-title {
+        font-size: 2.5rem;
+    }
+}
+
+/* ----------------------------------------------------------------------------
+   7. NEWS PREVIEW GRID (.news-section)
+   ---------------------------------------------------------------------------- */
+
+/* Mobile */
+.news-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--cgv-dark);
+    position: relative;
+    padding-left: 12px;
+}
+
+.news-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 24px;
+    background-color: var(--cgv-red);
+    border-radius: 2px;
+}
+
+.news-card {
+    background-color: var(--cgv-white);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
+    border: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+}
+
+.news-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.news-card-image {
+    transition: transform 0.5s ease;
+}
+
+.news-card:hover .news-card-image {
+    transform: scale(1.05);
+}
+
+.news-card-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.news-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.news-card-title a {
+    color: var(--cgv-dark);
+    transition: color var(--transition-smooth);
+}
+
+.news-card-title a:hover {
+    color: var(--cgv-red);
+}
+
+.news-card-excerpt {
+    flex-grow: 1;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.news-card-meta {
+    font-size: 0.8rem;
+    margin-top: auto;
+}
+
+.news-section .btn-primary {
+    background-color: var(--cgv-red);
+    color: var(--cgv-white);
+    border: none;
+    font-weight: 600;
+    padding: 10px 24px;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-smooth);
+}
+
+.news-section .btn-primary:hover {
+    background-color: #c41408;
+    transform: translateY(-2px);
+}
+
+/* Tablet (768px+) */
+@media (min-width: 768px) {
+    .news-title {
+        font-size: 1.75rem;
+    }
+}
+
+/* Desktop (1024px+) */
+@media (min-width: 1024px) {
+    .news-title {
+        font-size: 2rem;
+    }
+}

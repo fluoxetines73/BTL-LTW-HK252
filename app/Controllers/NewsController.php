@@ -179,6 +179,13 @@ class NewsController extends Controller {
         ]);
     }
 
+    public function promotions(): void {
+        $this->view('layouts/main', [
+            'title' => 'Khuyen mai va uu dai',
+            'content' => 'news/promotions',
+        ]);
+    }
+
     private function seedNews(): array {
         return [
             ['id' => 1, 'title' => 'Cap nhat phim dang chieu tuan nay', 'summary' => 'Danh sach phim hot dang co lich.', 'content' => 'Nhieu tua phim moi dang chieu tai he thong rap.', 'category' => 'phim-dang-chieu', 'created_at' => date('Y-m-d H:i:s', strtotime('-1 day'))],
