@@ -112,9 +112,8 @@ class User extends Model {
 	/**
 	 * Lấy danh sách tất cả người dùng (không phân trang)
 	 */
-	public function getAllUsers(string $sort = 'id_asc'): array {
-		$orderBy = $this->resolveSortOrder($sort);
-		$stmt = $this->db->query("SELECT * FROM {$this->table} ORDER BY {$orderBy}");
+	public function getAllUsers(): array {
+		$stmt = $this->db->query("SELECT * FROM {$this->table} ORDER BY created_at DESC");
 		return $stmt->fetchAll();
 	}
 
@@ -124,10 +123,9 @@ class User extends Model {
 	 * @param int $perPage Số lượng bản ghi trên mỗi trang
 	 * @return array ['users' => array, 'total' => int, 'pages' => int, 'current_page' => int]
 	 */
-	public function getUsersPaginated(int $page = 1, int $perPage = 10, string $sort = 'id_asc'): array {
+	public function getUsersPaginated(int $page = 1, int $perPage = 10): array {
 		$page = max(1, $page);
 		$offset = ($page - 1) * $perPage;
-		$orderBy = $this->resolveSortOrder($sort);
 
 		// Lấy tổng số bản ghi
 		$stmtCount = $this->db->query("SELECT COUNT(*) FROM {$this->table}");
@@ -135,7 +133,7 @@ class User extends Model {
 		$pages = ceil($total / $perPage);
 
 		// Lấy dữ liệu cho trang hiện tại
-		$stmt = $this->db->prepare("SELECT * FROM {$this->table} ORDER BY {$orderBy} LIMIT ? OFFSET ?");
+		$stmt = $this->db->prepare("SELECT * FROM {$this->table} ORDER BY created_at DESC LIMIT ? OFFSET ?");
 		$stmt->execute([$perPage, $offset]);
 		$users = $stmt->fetchAll();
 
@@ -150,11 +148,10 @@ class User extends Model {
 	/**
 	 * Tìm kiếm người dùng theo email hoặc tên
 	 */
-	public function search(string $keyword, int $page = 1, int $perPage = 10, string $sort = 'id_asc'): array {
+	public function search(string $keyword, int $page = 1, int $perPage = 10): array {
 		$page = max(1, $page);
 		$offset = ($page - 1) * $perPage;
 		$searchTerm = '%' . $keyword . '%';
-		$orderBy = $this->resolveSortOrder($sort);
 
 		// Lấy tổng số bản ghi
 		$stmtCount = $this->db->prepare("SELECT COUNT(*) FROM {$this->table} WHERE email LIKE ? OR full_name LIKE ?");
@@ -163,7 +160,7 @@ class User extends Model {
 		$pages = ceil($total / $perPage);
 
 		// Lấy dữ liệu cho trang hiện tại
-		$stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE email LIKE ? OR full_name LIKE ? ORDER BY {$orderBy} LIMIT ? OFFSET ?");
+		$stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE email LIKE ? OR full_name LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?");
 		$stmt->execute([$searchTerm, $searchTerm, $perPage, $offset]);
 		$users = $stmt->fetchAll();
 
@@ -226,14 +223,5 @@ class User extends Model {
 	public function updateAvatar(int $id, string $avatarPath): bool {
 		$stmt = $this->db->prepare("UPDATE {$this->table} SET avatar = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
 		return $stmt->execute([$avatarPath, $id]);
-	}
-
-	private function resolveSortOrder(string $sort): string {
-		return match ($sort) {
-			'id_desc' => 'id DESC, created_at DESC',
-			'created_desc' => 'created_at DESC, id DESC',
-			'created_asc' => 'created_at ASC, id ASC',
-			default => 'id ASC, created_at ASC',
-		};
 	}
 }

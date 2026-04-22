@@ -54,7 +54,7 @@
                             <input
                                 type="file"
                                 name="avatar"
-                                accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif"
+                                accept="image/*"
                                 class="form-control"
                             >
                             <small class="text-muted d-block mt-2">Định dạng hỗ trợ: JPG, PNG, WEBP. Kích thước tối đa theo cấu hình hệ thống.</small>

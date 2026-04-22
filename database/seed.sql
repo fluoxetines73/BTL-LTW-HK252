@@ -176,14 +176,6 @@ INSERT INTO `news` (`title`, `slug`, `content`, `category`, `author_id`, `status
 ('Lich phim moi thang 4', 'lich-phim-moi-thang-4', 'Cap nhat danh sach phim moi trong thang 4.', 'tin-tuc', 1, 'published', NOW());
 
 -- ============================================================
--- NEWS REVIEWS
--- ============================================================
-INSERT INTO `news_reviews` (`news_id`, `user_id`, `rating`, `comment`, `status`) VALUES
-(1, 2, 5, 'Chuong trinh uu dai rat huu ich, de theo doi.', 'approved'),
-(1, 3, 4, 'Thong tin ro rang, mong co them uu dai vao cuoi tuan.', 'approved'),
-(2, 4, 4, 'Lich phim cap nhat day du, de tim phim moi.', 'pending');
-
--- ============================================================
 -- STATIC CONTENT TABLES
 -- ============================================================
 INSERT INTO `pages` (`title`, `slug`, `content`, `status`) VALUES
