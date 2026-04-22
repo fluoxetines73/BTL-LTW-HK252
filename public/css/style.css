@@ -317,6 +317,60 @@ header .d-flex .btn-outline-secondary:hover {
     border-color: #D0D0D0;
 }
 
+/* Header account avatar trigger */
+header .user-menu-dropdown {
+    position: relative;
+}
+
+header .user-avatar-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    text-decoration: none;
+    padding: 0;
+}
+
+header .header-avatar-default,
+header .header-avatar-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: 2px solid var(--cgv-red);
+}
+
+header .header-avatar-default {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #d9dbe1;
+    color: #6f7382;
+    font-size: 15px;
+}
+
+header .header-avatar-img {
+    object-fit: cover;
+    display: block;
+}
+
+header .user-avatar-trigger:hover .header-avatar-default,
+header .user-avatar-trigger:focus .header-avatar-default,
+header .user-avatar-trigger:hover .header-avatar-img,
+header .user-avatar-trigger:focus .header-avatar-img {
+    box-shadow: 0 0 0 3px rgba(231, 26, 15, 0.12);
+}
+
+@media (min-width: 992px) {
+    header .user-menu-dropdown:hover > .dropdown-menu {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+}
+
 /* ============================================================================
    WAVE 3 TASK 6: CGV HEADER MOBILE RESPONSIVE STYLING (<= 768px)
    ============================================================================ */
@@ -458,6 +512,17 @@ header .d-flex .btn-outline-secondary:hover {
      header .d-flex .btn {
          padding: 10px 24px !important;
          font-size: 14px !important;
+     }
+
+     header .user-avatar-trigger {
+         width: 42px;
+         height: 42px;
+     }
+
+     header .header-avatar-default,
+     header .header-avatar-img {
+         width: 38px;
+         height: 38px;
      }
 }
 

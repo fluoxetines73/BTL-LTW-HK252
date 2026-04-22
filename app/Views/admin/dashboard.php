@@ -302,22 +302,22 @@
                 <div class="stat-card">
                     <div class="icon"><i class="fas fa-users"></i></div>
                     <h3>Tổng Người dùng</h3>
-                    <div class="value">0</div>
+                    <div class="value"><?= htmlspecialchars((string)($stats['total_users'] ?? 0)) ?></div>
                 </div>
                 <div class="stat-card">
                     <div class="icon"><i class="fas fa-box"></i></div>
                     <h3>Tất cả Sản phẩm</h3>
-                    <div class="value">0</div>
+                    <div class="value"><?= htmlspecialchars((string)($stats['total_products'] ?? 0)) ?></div>
                 </div>
                 <div class="stat-card">
                     <div class="icon"><i class="fas fa-newspaper"></i></div>
                     <h3>Tất cả Tin tức</h3>
-                    <div class="value">0</div>
+                    <div class="value"><?= htmlspecialchars((string)($stats['total_news'] ?? 0)) ?></div>
                 </div>
                 <div class="stat-card">
                     <div class="icon"><i class="fas fa-lock"></i></div>
                     <h3>Tài khoản Khóa</h3>
-                    <div class="value">0</div>
+                    <div class="value"><?= htmlspecialchars((string)($stats['locked_users'] ?? 0)) ?></div>
                 </div>
             </div>
 

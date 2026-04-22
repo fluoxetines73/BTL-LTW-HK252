@@ -133,7 +133,7 @@ class User extends Model {
 		$pages = ceil($total / $perPage);
 
 		// Lấy dữ liệu cho trang hiện tại
-		$stmt = $this->db->prepare("SELECT * FROM {$this->table} ORDER BY created_at DESC LIMIT ? OFFSET ?");
+		$stmt = $this->db->prepare("SELECT * FROM {$this->table} ORDER BY CASE WHEN role = 'admin' THEN 0 ELSE 1 END ASC, id ASC LIMIT ? OFFSET ?");
 		$stmt->execute([$perPage, $offset]);
 		$users = $stmt->fetchAll();
 
@@ -160,7 +160,7 @@ class User extends Model {
 		$pages = ceil($total / $perPage);
 
 		// Lấy dữ liệu cho trang hiện tại
-		$stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE email LIKE ? OR full_name LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?");
+		$stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE email LIKE ? OR full_name LIKE ? ORDER BY CASE WHEN role = 'admin' THEN 0 ELSE 1 END ASC, id ASC LIMIT ? OFFSET ?");
 		$stmt->execute([$searchTerm, $searchTerm, $perPage, $offset]);
 		$users = $stmt->fetchAll();
 
