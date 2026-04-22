@@ -7,7 +7,32 @@ class Router {
     public function dispatch(): void {
         $url = $this->parseUrl();
 
-        // Xác định controller
+        // --- BẮT ĐẦU PHẦN THÊM MỚI CHO ADMIN ---
+        // 1. Xử lý route cho Admin (Ví dụ: /admin/movie/create -> AdminMovieController::create)
+        if (!empty($url[0]) && strtolower($url[0]) === 'admin' && !empty($url[1])) {
+            // Ghép chuỗi tạo tên Controller, vd: 'movie' -> 'AdminMovieController'
+            $adminControllerName = 'Admin' . ucfirst(strtolower($url[1])) . 'Controller';
+            $adminFile = APPROOT . '/Controllers/' . $adminControllerName . '.php';
+            
+            if (file_exists($adminFile)) {
+                $this->controller = $adminControllerName;
+                unset($url[0]); // Xóa chữ 'admin' khỏi URL
+                unset($url[1]); // Xóa chữ 'movie' khỏi URL
+                
+                // Re-index lại mảng sao cho Method (vd: 'create') nằm đúng ở vị trí $url[1] 
+                // để tương thích hoàn toàn với logic cũ của nhóm ở bên dưới
+                $newUrl = [];
+                $i = 1;
+                foreach ($url as $val) {
+                    $newUrl[$i] = $val;
+                    $i++;
+                }
+                $url = $newUrl;
+            }
+        }
+        // --- KẾT THÚC PHẦN THÊM MỚI ---
+
+        // 2. Xác định controller (Logic mặc định)
         if (!empty($url[0])) {
             $controllerName = ucfirst(strtolower($url[0])) . 'Controller';
             $file = APPROOT . '/Controllers/' . $controllerName . '.php';
@@ -29,7 +54,7 @@ class Router {
         require_once $controllerFile;
         $controller = new $this->controller();
 
-        // Xác định method
+        // 3. Xác định method
         if (!empty($url[1])) {
             if (method_exists($controller, $url[1])) {
                 $this->method = $url[1];
@@ -37,7 +62,7 @@ class Router {
             }
         }
 
-        // Phần còn lại là params
+        // 4. Phần còn lại là params (tham số)
         $this->params = array_values($url ?? []);
 
         if (!method_exists($controller, $this->method)) {
