@@ -453,10 +453,14 @@
 
                 <!-- Users Table -->
                 <?php if (!empty($users)): ?>
+                    <?php
+                    $perPage = 10;
+                    $rowNumber = (($current_page ?? 1) - 1) * $perPage + 1;
+                    ?>
                     <table class="table">
                         <thead>
                             <tr>
-                                <th style="width: 5%">ID</th>
+                                <th style="width: 5%">STT</th>
                                 <th style="width: 15%">Avatar</th>
                                 <th style="width: 25%">Tên / Email</th>
                                 <th style="width: 15%">Vai trò</th>
@@ -467,7 +471,7 @@
                         <tbody>
                             <?php foreach ($users as $user): ?>
                                 <tr>
-                                    <td><?= htmlspecialchars($user['id']) ?></td>
+                                    <td><?= htmlspecialchars((string)$rowNumber++) ?></td>
                                     <td>
                                         <?php if (!empty($user['avatar'])): ?>
                                             <?php $avatarPath = (string)$user['avatar']; if (!str_starts_with($avatarPath, 'public/')) { $avatarPath = 'public/' . ltrim($avatarPath, '/'); } ?>

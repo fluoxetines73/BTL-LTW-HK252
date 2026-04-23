@@ -2,6 +2,13 @@
 $authUser = $_SESSION['auth_user'] ?? null;
 $isAdmin = !empty($authUser) && (($authUser['role'] ?? '') === 'admin');
 $homeHref = BASE_URL;
+$avatarPath = null;
+if (!empty($authUser['avatar'])) {
+    $avatarPath = (string)$authUser['avatar'];
+    if (!str_starts_with($avatarPath, 'public/')) {
+        $avatarPath = 'public/' . ltrim($avatarPath, '/');
+    }
+}
 ?>
 <header>
     <nav class="navbar navbar-expand-md navbar-light bg-light border-bottom">
@@ -37,10 +44,11 @@ $homeHref = BASE_URL;
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="newsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Tin mới & Ưu đãi
+                            Tin tức
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="newsDropdown">
-                            <li><a class="dropdown-item" href="<?= BASE_URL ?>news/promotions">Promotions</a></li>
+                            <li><a class="dropdown-item" href="<?= BASE_URL ?>news/promotions">Ưu đãi</a></li>
+                            <li><a class="dropdown-item" href="<?= BASE_URL ?>news/monthlyMovies">Phim hay tháng</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -63,13 +71,18 @@ $homeHref = BASE_URL;
                         <?php if ($isAdmin): ?>
                             <a class="btn btn-outline-secondary btn-sm me-2" href="<?= BASE_URL ?>admin/admin_dashboard">Dashboard</a>
                         <?php endif; ?>
-                        <div class="dropdown">
-                            <a class="btn text-white" style="background-color: #E71A0F;" href="#" id="userMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fa-solid fa-user"></i>
+                        <div class="dropdown user-menu-dropdown">
+                            <a class="user-avatar-trigger" href="#" id="userMenuDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Tài khoản">
+                                <?php if (!empty($avatarPath)): ?>
+                                    <img src="<?= BASE_URL . htmlspecialchars($avatarPath) ?>" alt="Avatar" class="header-avatar-img">
+                                <?php else: ?>
+                                    <span class="header-avatar-default">
+                                        <i class="fa-solid fa-user"></i>
+                                    </span>
+                                <?php endif; ?>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuDropdown">
-                                <li><a class="dropdown-item" href="<?= BASE_URL ?>profile/index"><?= htmlspecialchars((string)($authUser['name'] ?? 'Tài khoản')) ?></a></li>
-                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="<?= BASE_URL ?>profile/edit">Thay đổi hồ sơ</a></li>
                                 <li><a class="dropdown-item" href="<?= BASE_URL ?>auth/logout">Đăng xuất</a></li>
                             </ul>
                         </div>
