@@ -320,6 +320,7 @@ header .d-flex .btn-outline-secondary:hover {
 /* Header account avatar trigger */
 header .user-menu-dropdown {
     position: relative;
+    overflow: visible;
 }
 
 header .user-avatar-trigger {
@@ -331,6 +332,7 @@ header .user-avatar-trigger {
     border-radius: 999px;
     text-decoration: none;
     padding: 0;
+    overflow: visible;
 }
 
 header .header-avatar-default,
@@ -360,6 +362,12 @@ header .user-avatar-trigger:focus .header-avatar-default,
 header .user-avatar-trigger:hover .header-avatar-img,
 header .user-avatar-trigger:focus .header-avatar-img {
     box-shadow: 0 0 0 3px rgba(231, 26, 15, 0.12);
+}
+
+header .user-menu-dropdown .dropdown-menu {
+    right: 0;
+    left: auto;
+    min-width: 180px;
 }
 
 @media (min-width: 992px) {
@@ -507,6 +515,7 @@ header .user-avatar-trigger:focus .header-avatar-img {
          border-top: 1px solid #E5E5E5;
          width: 100%;
          justify-content: flex-start;
+         overflow: visible;
      }
      
      header .d-flex .btn {
@@ -515,14 +524,27 @@ header .user-avatar-trigger:focus .header-avatar-img {
      }
 
      header .user-avatar-trigger {
-         width: 42px;
-         height: 42px;
+         width: 46px;
+         height: 46px;
+         padding: 2px;
      }
 
      header .header-avatar-default,
      header .header-avatar-img {
-         width: 38px;
-         height: 38px;
+         width: 40px;
+         height: 40px;
+     }
+
+     /* Keep account dropdown inside viewport on small screens */
+     header .user-menu-dropdown .dropdown-menu {
+         position: absolute !important;
+         top: calc(100% + 8px) !important;
+         right: 0 !important;
+         left: auto !important;
+         transform: none !important;
+         inset: auto 0 auto auto !important;
+         min-width: 170px;
+         max-width: min(92vw, 260px);
      }
 }
 

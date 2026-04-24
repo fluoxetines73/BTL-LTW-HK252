@@ -1,45 +1,6 @@
 <?php
 $flash = $flash ?? null;
 ?>
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($title ?? 'Đăng Tin Tức') ?></title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root { --cgv-red:#E71A0F; --cgv-dark:#1A1A2E; --cgv-white:#fff; --cgv-gold:#D4A843; }
-        body { background:#f8f9fa; font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; }
-        .admin-container { display:flex; min-height:100vh; }
-        .sidebar { width:250px; background:var(--cgv-dark); color:#fff; position:fixed; left:0; top:0; height:100vh; }
-        .sidebar-logo { padding:20px; text-align:center; border-bottom:2px solid var(--cgv-red); margin-bottom:20px; }
-        .sidebar-logo h3 { margin:0; color:var(--cgv-red); font-weight:700; }
-        .sidebar-menu { list-style:none; margin:0; padding:0; }
-        .sidebar-menu li { border-bottom:1px solid rgba(255,255,255,0.1); }
-        .sidebar-menu a { display:block; padding:15px 20px; color:#fff; text-decoration:none; border-left:3px solid transparent; }
-        .sidebar-menu a:hover,.sidebar-menu a.active { background:var(--cgv-red); border-left-color:var(--cgv-gold); }
-        .sidebar-menu i { margin-right:10px; width:20px; text-align:center; }
-
-        .main-content { margin-left:250px; flex:1; padding:30px; }
-        .panel { background:#fff; border-radius:8px; padding:24px; box-shadow:0 2px 4px rgba(0,0,0,.1); max-width:860px; }
-        .panel h1 { margin-top:0; margin-bottom:16px; color:var(--cgv-dark); }
-        .field { margin-bottom:14px; }
-        .field label { display:block; font-weight:600; margin-bottom:6px; }
-        .field input,.field textarea,.field select { width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; }
-        .actions { display:flex; gap:10px; flex-wrap:wrap; }
-        .btn-submit { background:var(--cgv-red); color:#fff; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; }
-        .btn-back { display:inline-block; background:#e5e7eb; color:#111827; text-decoration:none; padding:10px 16px; border-radius:8px; }
-        .flash { margin-bottom:12px; padding:10px 12px; border-radius:8px; }
-        .flash.error { background:#ffebee; border:1px solid #ffcdd2; }
-
-        @media (max-width:768px) {
-            .sidebar { width:100%; position:relative; height:auto; }
-            .main-content { margin-left:0; padding:15px; }
-        }
-    </style>
-</head>
-<body>
 <div class="admin-container">
     <aside class="sidebar">
         <div class="sidebar-logo"><h3><i class="fas fa-cogs"></i> Admin</h3></div>
@@ -68,17 +29,43 @@ $flash = $flash ?? null;
                 </div>
 
                 <div class="field">
+                    <label for="highlight_title">Tiêu đề nổi bật (hiển thị ở trang Tin tức)</label>
+                    <input id="highlight_title" type="text" name="highlight_title" minlength="4" placeholder="Ví dụ: TÊN HÙNG ĐI XEM ANH HÙNG - SĂN LÙNG NỬA GIÁ">
+                </div>
+
+                <div class="field">
                     <label for="category">Danh mục</label>
                     <select id="category" name="category">
                         <option value="tin-tuc">Tin tức</option>
                         <option value="khuyen-mai">Khuyến mãi</option>
                         <option value="su-kien">Sự kiện</option>
+                        <option value="phim-hay-thang">Phim hay tháng</option>
                     </select>
                 </div>
 
                 <div class="field">
                     <label for="content">Nội dung</label>
-                    <textarea id="content" name="content" rows="8" required minlength="10"></textarea>
+                    <textarea id="content" name="content" rows="6" required minlength="10" placeholder="Nội dung tóm tắt hiển thị ở trang danh sách tin..."></textarea>
+                </div>
+
+                <div class="field">
+                    <label for="detail_content">Nội dung chi tiết (quản lý riêng cho trang detail)</label>
+                    <div class="rich-editor" data-target="detail_content">
+                        <div class="rich-editor-toolbar">
+                            <button type="button" class="editor-btn" data-command="bold"><strong>B</strong></button>
+                            <button type="button" class="editor-btn" data-command="italic"><em>I</em></button>
+                            <button type="button" class="editor-btn" data-command="insertUnorderedList">• List</button>
+                            <button type="button" class="editor-btn" data-command="insertOrderedList">1. List</button>
+                            <button type="button" class="editor-btn" data-command="formatBlock" data-value="H2">H2</button>
+                            <button type="button" class="editor-btn" data-command="formatBlock" data-value="H3">H3</button>
+                            <button type="button" class="editor-btn" data-command="formatBlock" data-value="P">P</button>
+                            <label class="editor-color-wrap">Màu
+                                <input type="color" class="editor-color" value="#e71a0f">
+                            </label>
+                        </div>
+                        <div id="detail_editor" class="rich-editor-content" contenteditable="true" data-placeholder="Nhập nội dung chi tiết... có thể tạo tiêu đề, in đậm, đổi màu, xuống dòng giống mẫu."></div>
+                        <textarea id="detail_content" name="detail_content" rows="12" minlength="10" class="rich-editor-textarea"></textarea>
+                    </div>
                 </div>
 
                 <div class="field">
@@ -86,13 +73,52 @@ $flash = $flash ?? null;
                     <input id="image" type="file" name="image" accept="image/*" required>
                 </div>
 
+                <div class="field">
+                    <label class="featured-toggle">
+                        <input type="checkbox" name="featured" value="1">
+                        <span>Hiển thị trên slider</span>
+                    </label>
+                </div>
+
                 <div class="actions">
                     <button type="submit" class="btn-submit">Đăng tin</button>
                     <a href="<?= BASE_URL ?>admin/news" class="btn-back">Quay lại</a>
                 </div>
             </form>
+
+            <script>
+            (function () {
+                const editorWrap = document.querySelector('.rich-editor[data-target="detail_content"]');
+                if (!editorWrap) return;
+
+                const editor = editorWrap.querySelector('.rich-editor-content');
+                const textarea = document.getElementById('detail_content');
+                const form = editorWrap.closest('form');
+
+                editor.innerHTML = textarea.value.trim() !== '' ? textarea.value : '<p></p>';
+
+                editorWrap.querySelectorAll('.editor-btn').forEach((btn) => {
+                    btn.addEventListener('click', function () {
+                        const command = this.getAttribute('data-command');
+                        const value = this.getAttribute('data-value');
+                        editor.focus();
+                        document.execCommand(command, false, value || null);
+                    });
+                });
+
+                const colorInput = editorWrap.querySelector('.editor-color');
+                if (colorInput) {
+                    colorInput.addEventListener('input', function () {
+                        editor.focus();
+                        document.execCommand('foreColor', false, this.value);
+                    });
+                }
+
+                form.addEventListener('submit', function () {
+                    textarea.value = editor.innerHTML.trim();
+                });
+            })();
+            </script>
         </section>
     </main>
 </div>
-</body>
-</html>
