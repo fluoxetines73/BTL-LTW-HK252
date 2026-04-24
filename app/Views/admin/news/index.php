@@ -1,52 +1,3 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($title ?? 'Quản lý Tin tức') ?></title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --cgv-red: #E71A0F;
-            --cgv-dark: #1A1A2E;
-            --cgv-white: #FFFFFF;
-            --cgv-gold: #D4A843;
-        }
-        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .admin-container { display: flex; min-height: 100vh; }
-        .sidebar { width: 250px; background: var(--cgv-dark); color: var(--cgv-white); padding: 20px 0; position: fixed; height: 100vh; overflow-y: auto; left: 0; top: 0; }
-        .sidebar-logo { padding: 20px; text-align: center; border-bottom: 2px solid var(--cgv-red); margin-bottom: 20px; }
-        .sidebar-logo h3 { margin: 0; color: var(--cgv-red); font-weight: bold; }
-        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
-        .sidebar-menu li { border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .sidebar-menu a { display: block; padding: 15px 20px; color: var(--cgv-white); text-decoration: none; transition: all .3s ease; border-left: 3px solid transparent; }
-        .sidebar-menu a:hover, .sidebar-menu a.active { background-color: var(--cgv-red); border-left-color: var(--cgv-gold); color: var(--cgv-white); }
-        .sidebar-menu i { margin-right: 10px; width: 20px; text-align: center; }
-        .main-content { margin-left: 250px; flex: 1; padding: 30px; }
-        .admin-header { background: var(--cgv-white); padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,.1); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-        .admin-header h1 { margin: 0; color: var(--cgv-dark); font-weight: bold; }
-        .table-container { background: var(--cgv-white); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,.1); overflow: hidden; }
-        .table-header { padding: 16px 20px; border-bottom: 1px solid #dee2e6; }
-        .info-bar { padding: 14px 20px; background: #e3f2fd; border-left: 4px solid #2196F3; margin: 16px 20px; border-radius: 4px; }
-        .table { margin: 0; }
-        .table thead { background: var(--cgv-dark); color: #fff; }
-        .table thead th { color: #fff !important; }
-        .table th, .table td { padding: 12px 10px; vertical-align: middle; }
-        .news-thumb { width: 88px; height: 52px; object-fit: cover; border-radius: 6px; }
-        .btn-add { background: var(--cgv-red); color: #fff; border: none; border-radius: 6px; padding: 10px 14px; text-decoration: none; display: inline-flex; align-items: center; }
-        .btn-add:hover { color: #fff; background: #ca170c; }
-        .type-switcher { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
-        .type-switcher a { text-decoration: none; padding: 9px 14px; border-radius: 999px; border: 1px solid #d1d5db; color: #374151; background: #fff; font-weight: 600; }
-        .type-switcher a.active { background: var(--cgv-red); color: #fff; border-color: var(--cgv-red); }
-        @media (max-width: 768px) {
-            .sidebar { width: 100%; height: auto; position: relative; }
-            .main-content { margin-left: 0; padding: 15px; }
-            .admin-header { flex-direction: column; align-items: stretch; }
-        }
-    </style>
-</head>
-<body>
     <div class="admin-container">
         <aside class="sidebar">
             <div class="sidebar-logo">
@@ -70,8 +21,26 @@
 
             <div class="type-switcher">
                 <a href="<?= BASE_URL ?>admin/news_promotions" class="<?= ($newsCategory ?? '') === 'khuyen-mai' ? 'active' : '' ?>">Quản lý ưu đãi</a>
-                <a href="<?= BASE_URL ?>admin/news_monthly_movies" class="<?= ($newsCategory ?? '') === 'tin-tuc' ? 'active' : '' ?>">Quản lý phim hay tháng</a>
+                <a href="<?= BASE_URL ?>admin/news_monthly_movies" class="<?= ($newsCategory ?? '') === 'phim-hay-thang' ? 'active' : '' ?>">Quản lý phim hay tháng</a>
                 <a href="<?= BASE_URL ?>admin/news" class="<?= empty($newsCategory) ? 'active' : '' ?>">Tất cả</a>
+            </div>
+
+            <div style="background:#fff;padding:20px;border-radius:8px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,.1);">
+                <form method="GET" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+                    <div style="flex:1;min-width:200px;">
+                        <label style="display:block;font-weight:600;margin-bottom:6px;">Tìm kiếm</label>
+                        <input type="text" name="q" placeholder="Tiêu đề bài viết..." value="<?= htmlspecialchars($keyword ?? '') ?>" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:600;margin-bottom:6px;">Sắp xếp</label>
+                        <select name="sort" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;">
+                            <option value="newest" <?= ($sort ?? 'newest') === 'newest' ? 'selected' : '' ?>>Mới nhất</option>
+                            <option value="oldest" <?= ($sort ?? 'newest') === 'oldest' ? 'selected' : '' ?>>Cũ nhất</option>
+                        </select>
+                    </div>
+                    <button type="submit" style="background:#E71A0F;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:600;">Tìm</button>
+                    <a href="<?= BASE_URL ?>admin/news" style="background:#6b7280;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:600;">Xóa lọc</a>
+                </form>
             </div>
 
             <?php if (!empty($_SESSION['success'])): ?>
@@ -86,28 +55,52 @@
 
             <div class="table-container">
                 <div class="table-header">
-                    <strong>Danh sách bài viết đã đăng</strong>
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <strong>Danh sách bài viết đã đăng</strong>
+                        <?php if (!empty($articles)): ?>
+                            <form method="POST" style="display:inline;" id="bulk-delete-form">
+                                <input type="hidden" name="action" value="delete_selected">
+                                <input type="hidden" name="selected_ids" id="selected_ids" value="">
+                                <button type="button" id="bulk-delete-btn" style="background:#dc2626;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:600;display:none;" onclick="deleteSelected();">Xóa đã chọn</button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
                 <table class="table">
                     <thead>
                         <tr>
-                            <th style="width:6%;">#</th>
-                            <th style="width:14%;">Ảnh</th>
-                            <th style="width:28%;">Tiêu đề</th>
-                            <th style="width:14%;">Danh mục</th>
-                            <th style="width:18%;">Ngày đăng</th>
-                            <th style="width:12%;">Người đăng</th>
+                            <th style="width:14%;text-align:center;">
+                                <label for="select-all" class="select-all-label">
+                                    <input type="checkbox" id="select-all" onchange="toggleSelectAll(this);">
+                                    <span>Chọn tất cả</span>
+                                </label>
+                            </th>
+                            <th style="width:5%;">#</th>
+                            <th style="width:12%;">Ảnh</th>
+                            <th style="width:25%;">Tiêu đề</th>
+                            <th style="width:12%;">Danh mục</th>
+                            <th style="width:15%;">Ngày đăng</th>
+                            <th style="width:10%;">Người đăng</th>
+                            <th style="width:8%;text-align:center;">Slider</th>
                             <th style="width:10%;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($articles)): ?>
-                            <tr><td colspan="7" class="text-center">Chưa có tin tức.</td></tr>
+                            <tr><td colspan="9" class="text-center">Chưa có tin tức.</td></tr>
                         <?php else: ?>
                             <?php foreach ($articles as $idx => $article): ?>
                                 <?php
                                 $rawImage = trim((string)($article['image'] ?? ''));
+                                $categoryValue = (string)($article['category'] ?? '');
+                                $categoryLabelMap = [
+                                    'tin-tuc' => 'Tin tức',
+                                    'khuyen-mai' => 'Khuyến mãi',
+                                    'su-kien' => 'Sự kiện',
+                                    'phim-hay-thang' => 'Phim hay tháng',
+                                ];
+                                $categoryLabel = $categoryLabelMap[$categoryValue] ?? $categoryValue;
                                 if ($rawImage === '') {
                                     $articleImage = BASE_URL . 'public/images/about/about-6.png';
                                 } elseif (str_starts_with($rawImage, 'public/')) {
@@ -121,18 +114,20 @@
                                 }
                                 ?>
                                 <tr>
+                                    <td style="text-align:center;"><input type="checkbox" class="select-item" value="<?= (int)($article['id'] ?? 0) ?>" onchange="updateSelectAll();"></td>
                                     <td><?= (int)$idx + 1 ?></td>
                                     <td><img src="<?= htmlspecialchars($articleImage) ?>" alt="Ảnh tin" class="news-thumb"></td>
                                     <td><?= htmlspecialchars((string)($article['title'] ?? '')) ?></td>
-                                    <td><?= htmlspecialchars((string)($article['category'] ?? '')) ?></td>
+                                    <td><?= htmlspecialchars($categoryLabel) ?></td>
                                     <td><?= htmlspecialchars((string)($article['published_at'] ?? $article['created_at'] ?? '')) ?></td>
                                     <td><?= htmlspecialchars((string)($article['author_name'] ?? 'Admin')) ?></td>
+                                    <td style="text-align:center;"><?= ($article['featured'] ?? 0) ? '★ Có' : '- Không' ?></td>
                                     <td>
-                                        <a href="<?= BASE_URL ?>news/detail/<?= (int)($article['id'] ?? 0) ?>" style="color:#2563eb;text-decoration:none;">Xem</a>
-                                        <span style="color:#cbd5e1;">|</span>
-                                        <a href="<?= BASE_URL ?>admin/edit_news/<?= (int)($article['id'] ?? 0) ?>" style="color:#d97706;text-decoration:none;">Sửa</a>
-                                        <span style="color:#cbd5e1;">|</span>
-                                        <a href="<?= BASE_URL ?>admin/delete_news/<?= (int)($article['id'] ?? 0) ?>" style="color:#dc2626;text-decoration:none;" onclick="return confirm('Xóa tin này?');">Xóa</a>
+                                        <div class="news-action-buttons">
+                                            <a href="<?= BASE_URL ?>news/detail/<?= (int)($article['id'] ?? 0) ?>" class="btn-news-action btn-view">Xem</a>
+                                            <a href="<?= BASE_URL ?>admin/edit_news/<?= (int)($article['id'] ?? 0) ?>" class="btn-news-action btn-edit">Sửa</a>
+                                            <a href="<?= BASE_URL ?>admin/delete_news/<?= (int)($article['id'] ?? 0) ?>" class="btn-news-action btn-delete" onclick="return confirm('Xóa tin này?');">Xóa</a>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -140,8 +135,35 @@
                     </tbody>
                 </table>
             </div>
+
+            <script>
+            function toggleSelectAll(checkbox) {
+                document.querySelectorAll('.select-item').forEach(el => el.checked = checkbox.checked);
+                updateBulkDeleteBtn();
+            }
+            function updateSelectAll() {
+                const totalCheckboxes = document.querySelectorAll('.select-item').length;
+                const checkedCheckboxes = document.querySelectorAll('.select-item:checked').length;
+                document.getElementById('select-all').checked = totalCheckboxes > 0 && totalCheckboxes === checkedCheckboxes;
+                updateBulkDeleteBtn();
+            }
+            function updateBulkDeleteBtn() {
+                const checkedCount = document.querySelectorAll('.select-item:checked').length;
+                const btn = document.getElementById('bulk-delete-btn');
+                if (btn) btn.style.display = checkedCount > 0 ? 'inline-block' : 'none';
+            }
+            function deleteSelected() {
+                const selectedIds = Array.from(document.querySelectorAll('.select-item:checked')).map(el => el.value);
+                if (selectedIds.length === 0) {
+                    alert('Vui lòng chọn ít nhất một bài viết để xóa.');
+                    return;
+                }
+                if (!confirm('Xóa ' + selectedIds.length + ' bài viết? Hành động này không thể hoàn tác!')) {
+                    return;
+                }
+                document.getElementById('selected_ids').value = selectedIds.join(',');
+                document.getElementById('bulk-delete-form').submit();
+            }
+            </script>
         </main>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
