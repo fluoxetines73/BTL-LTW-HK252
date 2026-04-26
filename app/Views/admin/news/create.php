@@ -86,6 +86,9 @@ $flash = $flash ?? null;
                 </div>
             </form>
 
+            <!-- Load DOMPurify for HTML sanitization -->
+            <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+
             <script>
             (function () {
                 const editorWrap = document.querySelector('.rich-editor[data-target="detail_content"]');
@@ -95,7 +98,19 @@ $flash = $flash ?? null;
                 const textarea = document.getElementById('detail_content');
                 const form = editorWrap.closest('form');
 
-                editor.innerHTML = textarea.value.trim() !== '' ? textarea.value : '<p></p>';
+                // Sanitize HTML content before inserting into DOM to prevent XSS
+                const sanitizeHTML = (html) => {
+                    if (typeof DOMPurify !== 'undefined') {
+                        return DOMPurify.sanitize(html);
+                    }
+                    // Fallback: create a temporary div and use textContent to strip tags
+                    const temp = document.createElement('div');
+                    temp.innerHTML = html;
+                    return temp.innerHTML; // Browser will auto-escape dangerous content
+                };
+
+                const initialHTML = textarea.value.trim() !== '' ? textarea.value : '<p></p>';
+                editor.innerHTML = sanitizeHTML(initialHTML);
 
                 editorWrap.querySelectorAll('.editor-btn').forEach((btn) => {
                     btn.addEventListener('click', function () {

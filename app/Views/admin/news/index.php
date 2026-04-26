@@ -39,7 +39,18 @@
                         </select>
                     </div>
                     <button type="submit" style="background:#E71A0F;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:600;">Tìm</button>
-                    <a href="<?= BASE_URL ?>admin/news" style="background:#6b7280;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:600;">Xóa lọc</a>
+                    <a href="<?php
+                        // Preserve category when resetting filters
+                        $resetUrl = BASE_URL . 'admin/news';
+                        if (!empty($newsCategory)) {
+                            if ($newsCategory === 'khuyen-mai') {
+                                $resetUrl = BASE_URL . 'admin/news_promotions';
+                            } elseif ($newsCategory === 'phim-hay-thang') {
+                                $resetUrl = BASE_URL . 'admin/news_monthly_movies';
+                            }
+                        }
+                        echo $resetUrl;
+                    ?>" style="background:#6b7280;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:600;">Xóa lọc</a>
                 </form>
             </div>
 

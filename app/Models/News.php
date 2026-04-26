@@ -200,11 +200,11 @@ class News extends Model {
             $params[] = '%' . $keyword . '%';
         }
 
-        // Sort
+        // Sort by published_at (or created_at fallback) for consistency with displayed date
         if ($sort === 'oldest') {
-            $baseSql .= " ORDER BY n.created_at ASC, n.id ASC";
+            $baseSql .= " ORDER BY COALESCE(n.published_at, n.created_at) ASC, n.id ASC";
         } else {
-            $baseSql .= " ORDER BY n.created_at DESC, n.id DESC";
+            $baseSql .= " ORDER BY COALESCE(n.published_at, n.created_at) DESC, n.id DESC";
         }
 
         $stmt = $this->db->prepare($baseSql);

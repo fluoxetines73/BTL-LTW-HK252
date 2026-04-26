@@ -125,15 +125,27 @@ class AdminController extends Controller {
 
         // Handle bulk delete
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && !empty($_POST['action']) && $_POST['action'] === 'delete_selected') {
-            $selectedIds = array_map('intval', (array)($_POST['selected_ids'] ?? []));
+            // Parse selected_ids from either comma-separated string or array
+            $rawSelectedIds = $_POST['selected_ids'] ?? '';
+            if (is_array($rawSelectedIds)) {
+                $selectedIds = array_map('intval', array_map('trim', $rawSelectedIds));
+            } elseif (is_string($rawSelectedIds) && $rawSelectedIds !== '') {
+                $selectedIds = array_map('intval', array_map('trim', explode(',', $rawSelectedIds)));
+            } else {
+                $selectedIds = [];
+            }
+            $selectedIds = array_values(array_filter($selectedIds, static function ($id) { return $id > 0; }));
+            
             if (!empty($selectedIds)) {
                 if ($newsModel->deleteMultipleNews($selectedIds)) {
                     $_SESSION['success'] = 'Đã xóa ' . count($selectedIds) . ' bài viết.';
                 } else {
                     $_SESSION['error'] = 'Không thể xóa các bài viết đã chọn.';
                 }
-                $this->redirect('admin/news');
-                return;
+                // Preserve current context (category + search/sort params) on redirect
+                $redirectTarget = $_SERVER['REQUEST_URI'] ?? 'admin/news';
+                header('Location: ' . $redirectTarget);
+                exit();
             }
         }
 
