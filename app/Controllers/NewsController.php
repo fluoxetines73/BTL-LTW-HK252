@@ -21,12 +21,12 @@ class NewsController extends Controller {
     }
 
     public function promotions(): void {
-        $articles = $this->newsModel ? $this->newsModel->getAdminList('khuyen-mai') : [];
+        $articles = $this->newsModel ? $this->newsModel->getPublishedByCategory('khuyen-mai') : [];
         $this->renderNewsTimelinePage($articles, 'Khuyến mãi và ưu đãi');
     }
 
     public function monthlyMovies(): void {
-        $articles = $this->newsModel ? $this->newsModel->getAdminList('tin-tuc') : [];
+        $articles = $this->newsModel ? $this->newsModel->getPublishedByCategory('phim-hay-thang') : [];
         $this->renderNewsTimelinePage($articles, 'Phim hay tháng');
     }
 
@@ -42,7 +42,9 @@ class NewsController extends Controller {
             $timelineItems[] = [
                 'id' => (int)($article['id'] ?? 0),
                 'title' => (string)($article['title'] ?? 'Tin tức'),
+                'highlight_title' => (string)($article['highlight_title'] ?? ''),
                 'content' => (string)($article['content'] ?? ''),
+                'detail_content' => (string)($article['detail_content'] ?? ''),
                 'summary' => (string)($article['summary'] ?? ''),
                 'image_url' => $this->resolveNewsImageUrl((string)($article['image'] ?? '')),
                 'display_date' => date('d/m/Y', $timestamp),
@@ -59,6 +61,8 @@ class NewsController extends Controller {
             'latestNews' => $latest,
             'timelineItems' => $timelineItems,
             'timelineTitle' => $timelineTitle,
+            'extraHead' => '<link rel="stylesheet" href="' . BASE_URL . 'public/css/news-timeline.css">',
+            'extraScripts' => '<script src="' . BASE_URL . 'public/js/news-timeline.js"></script>',
         ]);
     }
 
@@ -74,12 +78,53 @@ class NewsController extends Controller {
             return;
         }
 
+        $detailContent = trim((string)($article['detail_content'] ?? ''));
+        if ($detailContent === '') {
+            $detailContent = (string)($article['content'] ?? '');
+        }
+
         $this->view('layouts/main', [
-            'title' => 'Chi tiet tin tuc',
+            'title' => 'Chi tiết tin tức',
             'content' => 'news/detail',
             'article' => $article,
             'articleImageUrl' => $this->resolveNewsImageUrl((string)($article['image'] ?? '')),
+            'articleDetailHtml' => $this->sanitizeDetailHtml($detailContent),
+            'extraHead' => '<link rel="stylesheet" href="' . BASE_URL . 'public/css/news-detail.css">',
         ]);
+    }
+
+    private function sanitizeDetailHtml(string $html): string {
+        $allowedTags = '<h1><h2><h3><h4><p><br><strong><b><em><i><u><ul><ol><li><span><div>';
+        $clean = strip_tags($html, $allowedTags);
+
+        // Remove event handlers and risky scriptable URLs.
+        $clean = preg_replace('/\son[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $clean) ?? $clean;
+        $clean = preg_replace('/(javascript:|data:)/i', '', $clean) ?? $clean;
+
+        // Keep only a small safe subset of inline style declarations (mainly for text color/format).
+        $clean = preg_replace_callback('/style\s*=\s*"([^"]*)"/i', function ($matches) {
+            $style = $matches[1];
+            $allowed = [];
+            foreach (explode(';', $style) as $rule) {
+                $rule = trim($rule);
+                if ($rule === '' || strpos($rule, ':') === false) {
+                    continue;
+                }
+                [$prop, $val] = array_map('trim', explode(':', $rule, 2));
+                $propLower = strtolower($prop);
+                if (!in_array($propLower, ['color', 'font-weight', 'text-decoration', 'text-align'], true)) {
+                    continue;
+                }
+                if (preg_match('/javascript:|data:/i', $val)) {
+                    continue;
+                }
+                $allowed[] = $propLower . ': ' . $val;
+            }
+
+            return empty($allowed) ? '' : 'style="' . implode('; ', $allowed) . '"';
+        }, $clean) ?? $clean;
+
+        return $clean;
     }
 
     private function seedNews(): array {

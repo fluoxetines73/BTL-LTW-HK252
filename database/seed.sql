@@ -173,7 +173,7 @@ INSERT INTO `reviews` (`user_id`, `movie_id`, `rating`, `comment`, `status`) VAL
 -- ============================================================
 INSERT INTO `news` (`title`, `slug`, `content`, `category`, `author_id`, `status`, `published_at`) VALUES
 ('CGV khai truong uu dai mua he', 'cgv-khai-truong-uu-dai-mua-he', 'Thong tin chuong trinh uu dai mua he tai he thong rap CGV.', 'khuyen-mai', 1, 'published', NOW()),
-('Lich phim moi thang 4', 'lich-phim-moi-thang-4', 'Cap nhat danh sach phim moi trong thang 4.', 'tin-tuc', 1, 'published', NOW());
+('Lịch phim mới tháng 4', 'lich-phim-moi-thang-4', 'Cập nhật danh sách phim mới trong tháng 4.', 'tin-tuc', 1, 'published', NOW());
 
 -- ============================================================
 -- STATIC CONTENT TABLES

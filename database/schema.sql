@@ -371,12 +371,15 @@ CREATE TABLE `reviews` (
 CREATE TABLE `news` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `title` VARCHAR(255) NOT NULL,
+    `highlight_title` VARCHAR(255) DEFAULT NULL,
     `slug` VARCHAR(300) NOT NULL,
     `content` TEXT NOT NULL,
+    `detail_content` LONGTEXT DEFAULT NULL,
     `image` VARCHAR(255) DEFAULT NULL,
-    `category` ENUM('tin-tuc','khuyen-mai','su-kien') NOT NULL,
+    `category` ENUM('tin-tuc','khuyen-mai','su-kien','phim-hay-thang') NOT NULL,
     `author_id` INT NOT NULL,
     `status` ENUM('draft','published') NOT NULL DEFAULT 'draft',
+    `featured` BOOLEAN NOT NULL DEFAULT FALSE,
     `published_at` DATETIME NULL,
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -384,6 +387,7 @@ CREATE TABLE `news` (
     INDEX `idx_category` (`category`),
     INDEX `idx_author` (`author_id`),
     INDEX `idx_status` (`status`),
+    INDEX `idx_featured` (`featured`),
     CONSTRAINT `fk_n_author` FOREIGN KEY (`author_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
