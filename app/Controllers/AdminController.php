@@ -110,20 +110,56 @@ class AdminController extends Controller {
      * Route: /admin/news_monthly_movies
      */
     public function news_monthly_movies() {
-        $this->renderNewsManagement('tin-tuc', 'Quản lý Phim Hay Tháng');
+        $this->renderNewsManagement('phim-hay-thang', 'Quản lý Phim Hay Tháng');
     }
 
     private function renderNewsManagement(?string $category, string $title): void {
         $this->middlewareAdmin();
 
         $newsModel = $this->model('News');
-        $articles = $newsModel->getAdminList($category);
+        
+        // Get search/sort parameters
+        $keyword = trim((string)($_GET['q'] ?? ''));
+        $sort = trim((string)($_GET['sort'] ?? 'newest'));
+        $sort = in_array($sort, ['newest', 'oldest'], true) ? $sort : 'newest';
+
+        // Handle bulk delete
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && !empty($_POST['action']) && $_POST['action'] === 'delete_selected') {
+            // Parse selected_ids from either comma-separated string or array
+            $rawSelectedIds = $_POST['selected_ids'] ?? '';
+            if (is_array($rawSelectedIds)) {
+                $selectedIds = array_map('intval', array_map('trim', $rawSelectedIds));
+            } elseif (is_string($rawSelectedIds) && $rawSelectedIds !== '') {
+                $selectedIds = array_map('intval', array_map('trim', explode(',', $rawSelectedIds)));
+            } else {
+                $selectedIds = [];
+            }
+            $selectedIds = array_values(array_filter($selectedIds, static function ($id) { return $id > 0; }));
+            
+            if (!empty($selectedIds)) {
+                if ($newsModel->deleteMultipleNews($selectedIds)) {
+                    $_SESSION['success'] = 'Đã xóa ' . count($selectedIds) . ' bài viết.';
+                } else {
+                    $_SESSION['error'] = 'Không thể xóa các bài viết đã chọn.';
+                }
+                // Preserve current context (category + search/sort params) on redirect
+                $redirectTarget = $_SERVER['REQUEST_URI'] ?? 'admin/news';
+                header('Location: ' . $redirectTarget);
+                exit();
+            }
+        }
+
+        // Get articles based on search/sort
+        $articles = $newsModel->searchAdminNews($category, $keyword !== '' ? $keyword : null, $sort);
 
         $this->view('layouts/main', [
             'title' => $title,
             'content' => 'admin/news/index',
             'articles' => $articles,
             'newsCategory' => $category,
+            'keyword' => $keyword,
+            'sort' => $sort,
+            'extraHead' => '<link rel="stylesheet" href="' . BASE_URL . 'public/css/admin-news.css">',
         ]);
     }
 
@@ -137,14 +173,24 @@ class AdminController extends Controller {
         $flash = null;
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $title = trim((string)($_POST['title'] ?? ''));
+            $highlightTitle = trim((string)($_POST['highlight_title'] ?? ''));
             $content = trim((string)($_POST['content'] ?? ''));
+            $detailContent = trim((string)($_POST['detail_content'] ?? ''));
             $category = trim((string)($_POST['category'] ?? 'tin-tuc'));
+            $featured = isset($_POST['featured']) && $_POST['featured'] === '1';
+
+            if ($highlightTitle === '') {
+                $highlightTitle = $title;
+            }
+            if ($detailContent === '') {
+                $detailContent = $content;
+            }
 
             if ($title === '' || mb_strlen($title) < 4) {
                 $flash = ['type' => 'error', 'message' => 'Tiêu đề phải có ít nhất 4 ký tự.'];
             } elseif ($content === '' || mb_strlen($content) < 10) {
                 $flash = ['type' => 'error', 'message' => 'Nội dung phải có ít nhất 10 ký tự.'];
-            } elseif (!in_array($category, ['tin-tuc', 'khuyen-mai', 'su-kien'], true)) {
+            } elseif (!in_array($category, ['tin-tuc', 'khuyen-mai', 'su-kien', 'phim-hay-thang'], true)) {
                 $flash = ['type' => 'error', 'message' => 'Danh mục không hợp lệ.'];
             } else {
                 require_once APPROOT . '/Helpers/Upload.php';
@@ -160,12 +206,15 @@ class AdminController extends Controller {
 
                     $created = $newsModel->createNews([
                         'title' => $title,
+                        'highlight_title' => $highlightTitle,
                         'slug' => $slug,
                         'content' => $content,
+                        'detail_content' => $detailContent,
                         'image' => $imagePath,
                         'category' => $category,
                         'author_id' => (int)($_SESSION['auth_user']['id'] ?? 0),
                         'status' => 'published',
+                        'featured' => $featured,
                         'published_at' => date('Y-m-d H:i:s'),
                     ]);
 
@@ -184,6 +233,7 @@ class AdminController extends Controller {
             'title' => 'Đăng Tin Tức',
             'content' => 'admin/news/create',
             'flash' => $flash,
+            'extraHead' => '<link rel="stylesheet" href="' . BASE_URL . 'public/css/admin-news.css">',
         ]);
     }
 
@@ -206,14 +256,24 @@ class AdminController extends Controller {
         $flash = null;
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
             $title = trim((string)($_POST['title'] ?? ''));
+            $highlightTitle = trim((string)($_POST['highlight_title'] ?? ''));
             $content = trim((string)($_POST['content'] ?? ''));
+            $detailContent = trim((string)($_POST['detail_content'] ?? ''));
             $category = trim((string)($_POST['category'] ?? 'tin-tuc'));
+            $featured = isset($_POST['featured']) && $_POST['featured'] === '1';
+
+            if ($highlightTitle === '') {
+                $highlightTitle = $title;
+            }
+            if ($detailContent === '') {
+                $detailContent = $content;
+            }
 
             if ($title === '' || mb_strlen($title) < 4) {
                 $flash = ['type' => 'error', 'message' => 'Tiêu đề phải có ít nhất 4 ký tự.'];
             } elseif ($content === '' || mb_strlen($content) < 10) {
                 $flash = ['type' => 'error', 'message' => 'Nội dung phải có ít nhất 10 ký tự.'];
-            } elseif (!in_array($category, ['tin-tuc', 'khuyen-mai', 'su-kien'], true)) {
+            } elseif (!in_array($category, ['tin-tuc', 'khuyen-mai', 'su-kien', 'phim-hay-thang'], true)) {
                 $flash = ['type' => 'error', 'message' => 'Danh mục không hợp lệ.'];
             } else {
                 require_once APPROOT . '/Helpers/Upload.php';
@@ -233,10 +293,13 @@ class AdminController extends Controller {
                     $slug = $this->makeSlug($title) . '-' . (int)$article['id'];
                     $updated = $newsModel->updateNews((int)$article['id'], [
                         'title' => $title,
+                        'highlight_title' => $highlightTitle,
                         'slug' => $slug,
                         'content' => $content,
+                        'detail_content' => $detailContent,
                         'image' => $imagePath,
                         'category' => $category,
+                        'featured' => $featured,
                     ]);
 
                     if ($updated) {
@@ -251,8 +314,11 @@ class AdminController extends Controller {
 
             $article = array_merge($article, [
                 'title' => $title,
+                'highlight_title' => $highlightTitle,
                 'content' => $content,
+                'detail_content' => $detailContent,
                 'category' => $category,
+                'featured' => $featured,
             ]);
         }
 
@@ -261,6 +327,7 @@ class AdminController extends Controller {
             'content' => 'admin/news/edit',
             'flash' => $flash,
             'article' => $article,
+            'extraHead' => '<link rel="stylesheet" href="' . BASE_URL . 'public/css/admin-news.css">',
         ]);
     }
 
