@@ -1,37 +1,45 @@
-<section class="panel">
-	<div class="mb-4">
-		<h1 class="display-4">Danh sach phim</h1>
-		<p class="text-muted">Khám phá bộ sưu tập phim đa dạng của CGV Cinema</p>
-	</div>
+<!-- app/Views/movies/index.php -->
+<section class="container py-5">
+    <div class="mb-4">
+        <h1 class="display-4 text-white">Danh sách phim</h1>
+        <p class="text-muted">Khám phá bộ sưu tập phim đa dạng tại rạp của chúng tôi</p>
+    </div>
 
-	<div class="row g-4">
-		<?php foreach (($movies ?? []) as $movie): ?>
-			<div class="col-md-6 col-lg-4">
-				<div class="card h-100 shadow-sm">
-					<img src="<?= BASE_URL . htmlspecialchars($movie['poster']) ?>" class="card-img-top" alt="<?= htmlspecialchars($movie['title']) ?>" style="height: 300px; object-fit: cover;">
-					<div class="card-body">
-						<h5 class="card-title"><?= htmlspecialchars($movie['title']) ?></h5>
-						<p class="card-text text-muted">
-							<small><strong>Đạo diễn:</strong> <?= htmlspecialchars($movie['director'] ?? 'Chưa cập nhật') ?></small><br>
-							<small><strong>Thể loại:</strong> <?= htmlspecialchars($movie['genre'] ?? 'N/A') ?></small><br>
-							<small><strong>Thời lượng:</strong> <?= (int)($movie['duration'] ?? 0) ?> phút</small><br>
-							<small><strong>Phân loại:</strong> <span class="badge bg-info"><?= htmlspecialchars($movie['rating'] ?? 'P') ?></span></small>
-						</p>
-						<p class="card-text">
-							<small class="text-success"><strong>Công chiếu:</strong> <?= htmlspecialchars($movie['release_date'] ?? 'TBA') ?></small>
-						</p>
-					</div>
-					<div class="card-footer bg-white border-top-0">
-						<a href="<?= BASE_URL ?>movies/current" class="btn btn-sm btn-primary w-100">Xem chi tiết & Đặt vé</a>
-					</div>
-				</div>
-			</div>
-		<?php endforeach; ?>
-	</div>
+    <!-- Kết quả tìm kiếm nếu có -->
+    <?php if (isset($keyword) && $keyword !== ''): ?>
+        <h3 class="mb-4 text-white">
+            Kết quả tìm kiếm cho: <span class="text-danger">"<?= htmlspecialchars($keyword) ?>"</span>
+        </h3>
+    <?php endif; ?>
 
-	<?php if (empty($movies)): ?>
-		<div class="alert alert-info text-center mt-4">
-			<p>Hiện chưa có phim nào. Vui lòng quay lại sau.</p>
-		</div>
-	<?php endif; ?>
+    <div class="row g-4">
+        <?php if (!empty($movies)): ?>
+            <?php foreach ($movies as $movie): ?>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 shadow-sm border-0 bg-dark text-white">
+                        <img src="<?= !empty($movie['poster']) ? BASE_URL . htmlspecialchars($movie['poster']) : 'https://via.placeholder.com/300x450' ?>" 
+                             class="card-img-top" alt="<?= htmlspecialchars($movie['title']) ?>" 
+                             style="height: 350px; object-fit: cover;">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title text-truncate"><?= htmlspecialchars($movie['title']) ?></h5>
+                            <p class="card-text small text-muted">
+                                <?= (int)($movie['duration_min'] ?? 0) ?> phút | 
+                                <span class="badge bg-warning text-dark"><?= htmlspecialchars($movie['age_rating'] ?? 'P') ?></span>
+                            </p>
+                            <div class="mt-auto">
+                                <a href="<?= BASE_URL ?>product/detail/<?= $movie['id'] ?>" class="btn btn-danger w-100">
+                                    Chi tiết & Đặt vé
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <div class="col-12 text-center py-5">
+                <p class="text-white">Hiện chưa có phim nào trong danh sách.</p>
+                <a href="<?= BASE_URL ?>" class="btn btn-outline-light">Quay lại trang chủ</a>
+            </div>
+        <?php endif; ?>
+    </div>
 </section>
