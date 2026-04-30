@@ -28,7 +28,8 @@
                 <div class="movie-banner-dark shadow-lg">
                     <div class="row g-4">
                         <div class="col-md-4">
-                            <img src="<?= !empty($movie['poster']) ? BASE_URL . 'public/uploads/movies/' . $movie['poster'] : 'https://via.placeholder.com/300x450?text=Poster' ?>" class="poster-img" alt="Poster">
+                            <!-- ĐÃ SỬA LỖI ĐƯỜNG DẪN ẢNH CHO ĐỒNG BỘ -->
+                            <img src="<?= !empty($movie['poster']) ? BASE_URL . htmlspecialchars($movie['poster']) : 'https://via.placeholder.com/300x450?text=Poster' ?>" class="poster-img" alt="Poster">
                         </div>
                         <div class="col-md-8">
                             <h1 class="fw-bold text-danger mb-2"><?= htmlspecialchars($movie['title']) ?></h1>
@@ -39,6 +40,7 @@
                                 <span class="badge bg-secondary fs-6"><i class="fas fa-clock me-1"></i><?= $movie['duration_min'] ?> phút</span>
                             </div>
                             
+                            <!-- BẢNG THÔNG TIN PHIM -->
                             <table class="table table-borderless text-light table-sm">
                                 <tr>
                                     <td width="120" class="text-muted">Đạo diễn:</td>
@@ -47,6 +49,13 @@
                                 <tr>
                                     <td class="text-muted">Diễn viên:</td>
                                     <td class="fw-bold"><?= htmlspecialchars($movie['cast']) ?></td>
+                                </tr>
+                                <!-- ĐÃ THÊM DÒNG THỂ LOẠI VÀO ĐÂY -->
+                                <tr>
+                                    <td class="text-muted">Thể loại:</td>
+                                    <td class="fw-bold text-info">
+                                        <?= !empty($movie['genre_names']) ? htmlspecialchars($movie['genre_names']) : 'Đang cập nhật' ?>
+                                    </td>
                                 </tr>
                             </table>
 
@@ -60,6 +69,7 @@
                 </div>
             </div>
 
+            <!-- PHẦN GIỎ HÀNG BÊN PHẢI (Giữ nguyên không đổi) -->
             <div class="col-lg-4">
                 <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
                     <div class="card-header bg-danger text-white py-3 text-center">

@@ -34,10 +34,7 @@ class AdminMovieController extends Controller {
      * Xử lý dữ liệu form thêm mới và lưu vào database
      */
     public function store() {
-        // Kiểm tra xem có đúng là request POST từ form gửi lên không
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            
-            // Gom dữ liệu từ $_POST vào một mảng
             $data = [
                 'title' => trim($_POST['title']),
                 'slug' => trim($_POST['slug']),
@@ -48,15 +45,18 @@ class AdminMovieController extends Controller {
                 'release_date' => $_POST['release_date'],
                 'age_rating' => $_POST['age_rating'],
                 'status' => $_POST['status'],
-                'poster' => 'default_poster.jpg' // Tạm thời fix cứng tên ảnh
+                'poster' => 'default_poster.jpg' // Hoặc xử lý upload ảnh ở đây
             ];
 
-            // Gọi Model và tiến hành lưu
-            $movieModel = $this->model('Movie');
-            $success = $movieModel->createMovie($data);
+            // 1. Lấy mảng thể loại từ Form
+            $selectedGenres = $_POST['genres'] ?? [];
 
-            if ($success) {
-                // Nếu lưu thành công, chuyển hướng về trang danh sách
+            $movieModel = $this->model('Movie');
+            $newMovieId = $movieModel->createMovie($data); // Model cần trả về ID của phim vừa tạo
+
+            if ($newMovieId) {
+                // 2. Đồng bộ thể loại vào Database
+                $movieModel->syncMovieGenres($newMovieId, $selectedGenres);
                 $this->redirect('admin/movie/index');
             } else {
                 echo "Có lỗi xảy ra khi lưu vào CSDL!";
@@ -92,8 +92,11 @@ class AdminMovieController extends Controller {
             return;
         }
 
+        $currentGenres = $this->model('Movie')->getGenreSlugsByMovieId($id); 
+
         $this->view('admin/movies/edit', [
-            'movie' => $movie
+            'movie' => $movie,
+            'currentGenres' => $currentGenres // Truyền mảng này sang để View biết nút nào cần bật sáng
         ]);
     }
     /**
@@ -101,7 +104,6 @@ class AdminMovieController extends Controller {
      */
     public function update($id = null) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id) {
-            
             $data = [
                 'title' => trim($_POST['title']),
                 'slug' => trim($_POST['slug']),
@@ -112,12 +114,18 @@ class AdminMovieController extends Controller {
                 'release_date' => $_POST['release_date'],
                 'age_rating' => $_POST['age_rating'],
                 'status' => $_POST['status']
+                // Thêm xử lý upload ảnh ở đây nếu có
             ];
+
+            // 1. Lấy mảng thể loại từ Form
+            $selectedGenres = $_POST['genres'] ?? [];
 
             $movieModel = $this->model('Movie');
             $success = $movieModel->updateMovie($id, $data);
 
             if ($success) {
+                // 2. Đồng bộ thể loại vào Database
+                $movieModel->syncMovieGenres($id, $selectedGenres);
                 $this->redirect('admin/movie/index');
             } else {
                 echo "Có lỗi xảy ra khi cập nhật CSDL!";

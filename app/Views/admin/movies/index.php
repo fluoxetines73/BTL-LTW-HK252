@@ -36,6 +36,7 @@
                             <th width="5%">ID</th>
                             <th width="25%">Tên Phim</th>
                             <th width="15%">Đạo diễn</th>
+                            <th>Thể loại</th> 
                             <th width="10%">Thời lượng</th>
                             <th width="15%">Ngày chiếu</th>
                             <th width="15%">Trạng thái</th>
@@ -49,6 +50,11 @@
                                 <td><?= $movie['id'] ?></td>
                                 <td class="text-start fw-bold text-primary"><?= htmlspecialchars($movie['title']) ?></td>
                                 <td><?= htmlspecialchars($movie['director']) ?></td>
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        <?= !empty($movie['genre_names']) ? htmlspecialchars($movie['genre_names']) : 'Chưa có' ?>
+                                    </span>
+                                </td>
                                 <td><span class="badge bg-secondary"><?= $movie['duration_min'] ?> phút</span></td>
                                 <td><?= date('d/m/Y', strtotime($movie['release_date'])) ?></td>
                                 <td>

@@ -19,7 +19,7 @@
                 </div>
                 
                 <div class="card-body p-4">
-                    <form action="<?= BASE_URL ?>admin/movie/update/<?= $movie['id'] ?>" method="POST">
+                    <form action="<?= BASE_URL ?>admin/movie/update/<?= $movie['id'] ?>" method="POST" enctype="multipart/form-data">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Tên Phim <span class="text-danger">*</span></label>
@@ -78,6 +78,70 @@
                                     </div>
                                 </div>
                             </div>
+
+
+
+                            <!-- Trường chọn Thể loại phim (Dạng nút bấm) -->
+                            <div class="mb-4">
+                                <label class="form-label text-white fw-bold mb-3">Thể loại phim *</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <?php
+                                    // Giả sử Controller của bạn truyền mảng $currentGenres chứa các slug thể loại của phim này (vd: ['hai', 'hanh-dong'])
+                                    $currentGenres = $currentGenres ?? []; 
+                                    
+                                    // Mảng chứa tất cả thể loại (Viết gọn lại để không phải lặp code HTML nhiều lần)
+                                    $allGenres = [
+                                        'hanh-dong' => 'Hành Động', 'hai' => 'Hài', 'khoa-hoc-vien-tuong' => 'Khoa Học Viễn Tưởng',
+                                        'tam-ly' => 'Tâm Lý', 'phieu-luu' => 'Phiêu Lưu', 'kinh-di' => 'Kinh Dị',
+                                        'hoat-hinh' => 'Hoạt Hình', 'tinh-cam' => 'Tình Cảm', 'gia-dinh' => 'Gia Đình',
+                                        'bi-an' => 'Bí Ẩn'
+                                    ];
+
+                                    foreach ($allGenres as $slug => $name):
+                                        // Kiểm tra xem slug này có nằm trong mảng thể loại hiện tại của phim không
+                                        $isChecked = in_array($slug, $currentGenres) ? 'checked' : '';
+                                    ?>
+                                        <!-- In ra từng nút -->
+                                        <input type="checkbox" class="btn-check" id="edit-genre-<?= $slug ?>" name="genres[]" value="<?= $slug ?>" autocomplete="off" <?= $isChecked ?>>
+                                        <label class="btn btn-outline-info rounded-pill" for="edit-genre-<?= $slug ?>"><?= $name ?></label>
+                                    <?php endforeach; ?>
+                                </div>
+                                <small class="text-muted mt-2 d-block">
+                                    <i class="fas fa-hand-pointer"></i> Nhấn trực tiếp vào các nút trên để thay đổi thể loại.
+                                </small>
+                            </div>
+                            
+
+
+                            <!-- Khối Upload Hình Ảnh -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label text-white fw-bold">Poster Phim (Khổ dọc)</label>
+                                    <input type="file" name="poster" class="form-control bg-dark text-white border-secondary" accept="image/*">
+                                    <!-- Hiển thị ảnh cũ nếu có -->
+                                    <?php if (!empty($movie['poster'])): ?>
+                                        <div class="mt-2">
+                                            <small class="text-muted d-block mb-1">Poster hiện tại:</small>
+                                            <img src="<?= BASE_URL . htmlspecialchars($movie['poster']) ?>" alt="Poster" class="img-thumbnail" style="height: 150px; object-fit: cover;">
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-white fw-bold">Banner Phim (Khổ ngang)</label>
+                                    <input type="file" name="banner" class="form-control bg-dark text-white border-secondary" accept="image/*">
+                                    <!-- Hiển thị ảnh cũ nếu có -->
+                                    <?php if (!empty($movie['banner'])): ?>
+                                        <div class="mt-2">
+                                            <small class="text-muted d-block mb-1">Banner hiện tại:</small>
+                                            <img src="<?= BASE_URL . htmlspecialchars($movie['banner']) ?>" alt="Banner" class="img-thumbnail" style="height: 100px; object-fit: cover;">
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+
+
+
 
                             <div class="col-md-12">
                                 <label class="form-label fw-bold">Mô tả nội dung</label>
