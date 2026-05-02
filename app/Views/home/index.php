@@ -181,7 +181,13 @@
                         </div>
                     <?php endforeach; ?>
                 </div>
-                <!-- ... các phần Swiper pagination/navigation giữ nguyên ... -->
+
+                <!-- Pagination dots -->
+                <div class="swiper-pagination recommendations-pagination"></div>
+
+                <!-- Navigation buttons -->
+                <div class="swiper-button-prev recommendations-button-prev"></div>
+                <div class="swiper-button-next recommendations-button-next"></div>
             </div>
         </div>
     </div>

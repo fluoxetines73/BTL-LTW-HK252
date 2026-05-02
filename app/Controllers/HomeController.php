@@ -44,8 +44,10 @@ class HomeController extends Controller {
     // 5. Dữ liệu quảng cáo (Ads)
     $data['ads'] = [
         ['id' => 1, 'title' => 'CGV Premium', 'image' => BASE_URL . 'public/assets/ads/ad-premium.jpg', 'link' => BASE_URL . 'pricing', 'description' => 'Ưu đãi độc quyền'],
-        ['id' => 2, 'title' => 'Combo Đặc Biệt', 'image' => BASE_URL . 'public/assets/ads/ad-combo.jpg', 'link' => BASE_URL . 'movies', 'description' => 'Tiết kiệm 30%']
-        // Bạn có thể thêm các phần quảng cáo khác của nhóm vào đây
+        ['id' => 2, 'title' => 'Combo Đặc Biệt', 'image' => BASE_URL . 'public/assets/ads/ad-combo.jpg', 'link' => BASE_URL . 'movies', 'description' => 'Tiết kiệm 30%'],
+        ['id' => 3, 'title' => 'Thành Viên VIP', 'image' => BASE_URL . 'public/assets/ads/ad-vip.jpg', 'link' => BASE_URL . 'pricing', 'description' => 'Tích điểm x3, ưu đãi đặc biệt'],
+        ['id' => 4, 'title' => 'Birthday Special', 'image' => BASE_URL . 'public/assets/ads/ad-birthday.jpg', 'link' => BASE_URL . 'promotions', 'description' => 'Tặng vé miễn phí tháng sinh nhật'],
+        ['id' => 5, 'title' => 'Student Deal', 'image' => BASE_URL . 'public/assets/ads/ad-student.jpg', 'link' => BASE_URL . 'promotions', 'description' => 'Giảm 20% cho học sinh sinh viên']
     ];
 
     // --- PHẦN 3: GỌI VIEW VÀ TRUYỀN TOÀN BỘ DỮ LIỆU ---
