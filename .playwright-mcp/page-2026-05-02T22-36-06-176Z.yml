@@ -1,0 +1,149 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - heading " Admin" [level=3] [ref=e5]:
+      - generic [ref=e6]: 
+      - text: Admin
+    - list [ref=e7]:
+      - listitem [ref=e8]:
+        - link " Dashboard" [ref=e9] [cursor=pointer]:
+          - /url: /admin/admin_dashboard
+          - generic [ref=e10]: 
+          - generic [ref=e11]: Dashboard
+      - listitem [ref=e12]:
+        - link " Quản lý Người dùng" [ref=e13] [cursor=pointer]:
+          - /url: /admin/users
+          - generic [ref=e14]: 
+          - generic [ref=e15]: Quản lý Người dùng
+      - listitem [ref=e16]:
+        - link " Quản lý Phim" [ref=e17] [cursor=pointer]:
+          - /url: /admin/movie/index
+          - generic [ref=e18]: 
+          - generic [ref=e19]: Quản lý Phim
+      - listitem [ref=e20]:
+        - link " Quản lý Suất chiếu" [ref=e21] [cursor=pointer]:
+          - /url: /admin/showtime/index
+          - generic [ref=e22]: 
+          - generic [ref=e23]: Quản lý Suất chiếu
+      - listitem [ref=e24]:
+        - link " Quản lý Combo" [ref=e25] [cursor=pointer]:
+          - /url: /admin/combo/index
+          - generic [ref=e26]: 
+          - generic [ref=e27]: Quản lý Combo
+      - listitem [ref=e28]:
+        - link " Quản lý Tin tức" [ref=e29] [cursor=pointer]:
+          - /url: /admin/news
+          - generic [ref=e30]: 
+          - generic [ref=e31]: Quản lý Tin tức
+      - listitem [ref=e32]:
+        - link " Quản lý Đơn hàng" [ref=e33] [cursor=pointer]:
+          - /url: /admin/order/index
+          - generic [ref=e34]: 
+          - generic [ref=e35]: Quản lý Đơn hàng
+      - listitem [ref=e36]:
+        - link " Quản lý Trang" [ref=e37] [cursor=pointer]:
+          - /url: /admin/page/index
+          - generic [ref=e38]: 
+          - generic [ref=e39]: Quản lý Trang
+      - listitem [ref=e40]:
+        - link " Quản lý FAQ" [ref=e41] [cursor=pointer]:
+          - /url: /admin/faq/index
+          - generic [ref=e42]: 
+          - generic [ref=e43]: Quản lý FAQ
+      - listitem [ref=e44]:
+        - link " Hồ sơ cá nhân" [ref=e45] [cursor=pointer]:
+          - /url: /profile/edit
+          - generic [ref=e46]: 
+          - generic [ref=e47]: Hồ sơ cá nhân
+      - listitem [ref=e48]:
+        - link " Đăng xuất" [ref=e49] [cursor=pointer]:
+          - /url: /auth/logout
+          - generic [ref=e50]: 
+          - generic [ref=e51]: Đăng xuất
+  - main [ref=e52]:
+    - generic [ref=e53]:
+      - generic [ref=e54]:
+        - button "" [ref=e55] [cursor=pointer]:
+          - generic [ref=e56]: 
+        - heading "Quản lý Combo" [level=1] [ref=e57]
+      - generic [ref=e58]:
+        - generic [ref=e59]:
+          - strong [ref=e60]: Nguyen Van Admin
+          - text: Admin
+        - img "Avatar" [ref=e61]
+    - navigation "breadcrumb" [ref=e62]:
+      - list [ref=e63]:
+        - listitem [ref=e64]:
+          - link " Dashboard" [ref=e65] [cursor=pointer]:
+            - /url: /admin/admin_dashboard
+            - generic [ref=e66]: 
+            - text: Dashboard
+        - listitem [ref=e67]: / Quản lý Combo
+    - generic [ref=e68]:
+      - heading " Quản lý Bắp & Nước" [level=2] [ref=e69]:
+        - generic [ref=e70]: 
+        - text: Quản lý Bắp & Nước
+      - link "+ Thêm Combo Mới" [ref=e71] [cursor=pointer]:
+        - /url: /admin/combo/create
+        - generic [ref=e72]: +
+        - text: Thêm Combo Mới
+    - generic [ref=e73]:
+      - generic [ref=e75]:
+        - img "Combo Solo" [ref=e76]
+        - generic [ref=e77]:
+          - generic [ref=e78]:
+            - heading "Combo Solo" [level=5] [ref=e79]
+            - generic [ref=e80]: 65.000đ
+          - paragraph [ref=e81]: 1 Bap (S) + 1 Nuoc (S)
+        - generic [ref=e82]:
+          - link "Sửa" [ref=e83] [cursor=pointer]:
+            - /url: /admin/combo/edit/4
+          - link "Xóa" [ref=e84] [cursor=pointer]:
+            - /url: /admin/combo/delete/4
+      - generic [ref=e86]:
+        - img "Combo 1 Bap Nuoc" [ref=e87]
+        - generic [ref=e88]:
+          - generic [ref=e89]:
+            - heading "Combo 1 Bap Nuoc" [level=5] [ref=e90]
+            - generic [ref=e91]: 85.000đ
+          - paragraph [ref=e92]: 1 Bap (M) + 1 Nuoc (M)
+        - generic [ref=e93]:
+          - link "Sửa" [ref=e94] [cursor=pointer]:
+            - /url: /admin/combo/edit/1
+          - link "Xóa" [ref=e95] [cursor=pointer]:
+            - /url: /admin/combo/delete/1
+      - generic [ref=e97]:
+        - img "Combo Couple" [ref=e98]
+        - generic [ref=e99]:
+          - generic [ref=e100]:
+            - heading "Combo Couple" [level=5] [ref=e101]
+            - generic [ref=e102]: 130.000đ
+          - paragraph [ref=e103]: 1 Bap (L) + 2 Nuoc (M)
+        - generic [ref=e104]:
+          - link "Sửa" [ref=e105] [cursor=pointer]:
+            - /url: /admin/combo/edit/2
+          - link "Xóa" [ref=e106] [cursor=pointer]:
+            - /url: /admin/combo/delete/2
+      - generic [ref=e108]:
+        - img "CGV Combo Dac Biet" [ref=e109]
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - heading "CGV Combo Dac Biet" [level=5] [ref=e112]
+            - generic [ref=e113]: 220.000đ
+          - paragraph [ref=e114]: 2 Bap (L) + 2 Nuoc (L) + 1 Snack
+        - generic [ref=e115]:
+          - link "Sửa" [ref=e116] [cursor=pointer]:
+            - /url: /admin/combo/edit/3
+          - link "Xóa" [ref=e117] [cursor=pointer]:
+            - /url: /admin/combo/delete/3
+      - generic [ref=e119]:
+        - img "Combo Gia Dinh" [ref=e120]
+        - generic [ref=e121]:
+          - generic [ref=e122]:
+            - heading "Combo Gia Dinh" [level=5] [ref=e123]
+            - generic [ref=e124]: 380.000đ
+          - paragraph [ref=e125]: 3 Bap (L) + 4 Nuoc (L) + 2 Snack
+        - generic [ref=e126]:
+          - link "Sửa" [ref=e127] [cursor=pointer]:
+            - /url: /admin/combo/edit/5
+          - link "Xóa" [ref=e128] [cursor=pointer]:
+            - /url: /admin/combo/delete/5

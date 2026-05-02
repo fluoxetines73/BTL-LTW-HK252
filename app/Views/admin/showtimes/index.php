@@ -1,17 +1,3 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Quản lý Suất chiếu - Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { background-color: #f4f6f9; }
-        .card { border-radius: 10px; }
-    </style>
-</head>
-<body>
-
 <div class="container-fluid py-4">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -38,7 +24,7 @@
                             <th width="15%">Phòng Chiếu</th>
                             <th width="25%">Giờ Bắt Đầu</th>
                             <th width="15%">Giá Cơ Bản</th>
-                            <th width="15%">Hành động</th> <!-- CỘT MỚI THÊM -->
+                            <th width="15%">Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -53,12 +39,9 @@
                             
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <!-- Nút Sửa hiện tại -->
                                         <a href="<?= BASE_URL ?>admin/showtime/edit/<?= $st['id'] ?>" class="btn btn-sm btn-outline-primary" title="Sửa">
                                             <i class="fas fa-edit"></i> Sửa
                                         </a>
-                                        
-                                        <!-- Nút Xóa mới thêm (Kèm cảnh báo javascript) -->
                                         <a href="<?= BASE_URL ?>admin/showtime/delete/<?= $st['id'] ?>" class="btn btn-sm btn-outline-danger" title="Xóa" onclick="return confirm('Bạn có chắc chắn muốn xóa suất chiếu này không? Các dữ liệu vé liên quan có thể bị ảnh hưởng.');">
                                             <i class="fas fa-trash"></i> Xóa
                                         </a>
@@ -68,7 +51,7 @@
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="5" class="text-muted py-5">
+                                <td colspan="6" class="text-muted py-5">
                                     <i class="fas fa-folder-open fa-3x mb-3 text-light"></i><br>
                                     Chưa có suất chiếu nào trong cơ sở dữ liệu.
                                 </td>
@@ -80,7 +63,3 @@
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>

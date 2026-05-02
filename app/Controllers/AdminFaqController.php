@@ -19,7 +19,10 @@ class AdminFaqController extends Controller {
         $faqs = $faqModel->getAllFaqs($sortBy, $sortOrder);
         $categories = $faqModel->findAllCategories();
         
-        $this->view('admin/faq/index', [
+        $this->view('layouts/admin', [
+            'title' => 'Quản lý FAQ',
+            'content' => 'admin/faq/index',
+            'activeSection' => 'faq',
             'faqs' => $faqs, 
             'categories' => $categories,
             'sortBy' => $sortBy,
@@ -46,7 +49,12 @@ class AdminFaqController extends Controller {
         // Merge existing categories with defaults
         $allCategories = array_unique(array_merge($defaultCategories, $categories));
         
-        $this->view('admin/faq/create', ['categories' => $allCategories]);
+        $this->view('layouts/admin', [
+            'title' => 'Thêm FAQ Mới',
+            'content' => 'admin/faq/create',
+            'activeSection' => 'faq',
+            'categories' => $allCategories
+        ]);
     }
 
     public function store() {
@@ -114,7 +122,13 @@ class AdminFaqController extends Controller {
         
         $allCategories = array_unique(array_merge($defaultCategories, $categories));
 
-        $this->view('admin/faq/edit', ['faq' => $faq, 'categories' => $allCategories]);
+        $this->view('layouts/admin', [
+            'title' => 'Sửa FAQ',
+            'content' => 'admin/faq/edit',
+            'activeSection' => 'faq',
+            'faq' => $faq,
+            'categories' => $allCategories
+        ]);
     }
 
     public function update($id = null) {

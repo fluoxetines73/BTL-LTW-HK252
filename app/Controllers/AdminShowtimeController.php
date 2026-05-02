@@ -8,9 +8,11 @@ class AdminShowtimeController extends Controller {
 
     public function index() {
         $showtimes = $this->model('Showtime')->getAllShowtimes();
-        
-        // GỌI TRỰC TIẾP VIEW SHOWTIMES
-        $this->view('admin/showtimes/index', [
+
+        $this->view('layouts/admin', [
+            'title' => 'Quản lý Suất chiếu',
+            'content' => 'admin/showtimes/index',
+            'activeSection' => 'showtime',
             'showtimes' => $showtimes
         ]);
     }
@@ -18,9 +20,11 @@ class AdminShowtimeController extends Controller {
     public function create() {
         $movies = $this->model('Movie')->getAllMovies();
         $rooms = $this->model('Room')->getAllRooms();
-        
-        // GỌI TRỰC TIẾP VIEW CREATE SHOWTIMES
-        $this->view('admin/showtimes/create', [
+
+        $this->view('layouts/admin', [
+            'title' => 'Thêm Suất Chiếu Mới',
+            'content' => 'admin/showtimes/create',
+            'activeSection' => 'showtime',
             'movies' => $movies,
             'rooms' => $rooms
         ]);
@@ -60,7 +64,10 @@ class AdminShowtimeController extends Controller {
         $movies = $this->model('Movie')->getAllMovies();
         $rooms = $this->model('Room')->getAllRooms();
 
-        $this->view('admin/showtimes/edit', [
+        $this->view('layouts/admin', [
+            'title' => 'Sửa Suất Chiếu',
+            'content' => 'admin/showtimes/edit',
+            'activeSection' => 'showtime',
             'showtime' => $showtime,
             'movies' => $movies,
             'rooms' => $rooms

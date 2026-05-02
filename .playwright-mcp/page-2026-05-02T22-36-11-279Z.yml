@@ -1,0 +1,151 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - heading " Admin" [level=3] [ref=e5]:
+      - generic [ref=e6]: 
+      - text: Admin
+    - list [ref=e7]:
+      - listitem [ref=e8]:
+        - link " Dashboard" [ref=e9] [cursor=pointer]:
+          - /url: /admin/admin_dashboard
+          - generic [ref=e10]: 
+          - generic [ref=e11]: Dashboard
+      - listitem [ref=e12]:
+        - link " Quản lý Người dùng" [ref=e13] [cursor=pointer]:
+          - /url: /admin/users
+          - generic [ref=e14]: 
+          - generic [ref=e15]: Quản lý Người dùng
+      - listitem [ref=e16]:
+        - link " Quản lý Phim" [ref=e17] [cursor=pointer]:
+          - /url: /admin/movie/index
+          - generic [ref=e18]: 
+          - generic [ref=e19]: Quản lý Phim
+      - listitem [ref=e20]:
+        - link " Quản lý Suất chiếu" [ref=e21] [cursor=pointer]:
+          - /url: /admin/showtime/index
+          - generic [ref=e22]: 
+          - generic [ref=e23]: Quản lý Suất chiếu
+      - listitem [ref=e24]:
+        - link " Quản lý Combo" [ref=e25] [cursor=pointer]:
+          - /url: /admin/combo/index
+          - generic [ref=e26]: 
+          - generic [ref=e27]: Quản lý Combo
+      - listitem [ref=e28]:
+        - link " Quản lý Tin tức" [ref=e29] [cursor=pointer]:
+          - /url: /admin/news
+          - generic [ref=e30]: 
+          - generic [ref=e31]: Quản lý Tin tức
+      - listitem [ref=e32]:
+        - link " Quản lý Đơn hàng" [ref=e33] [cursor=pointer]:
+          - /url: /admin/order/index
+          - generic [ref=e34]: 
+          - generic [ref=e35]: Quản lý Đơn hàng
+      - listitem [ref=e36]:
+        - link " Quản lý Trang" [ref=e37] [cursor=pointer]:
+          - /url: /admin/page/index
+          - generic [ref=e38]: 
+          - generic [ref=e39]: Quản lý Trang
+      - listitem [ref=e40]:
+        - link " Quản lý FAQ" [ref=e41] [cursor=pointer]:
+          - /url: /admin/faq/index
+          - generic [ref=e42]: 
+          - generic [ref=e43]: Quản lý FAQ
+      - listitem [ref=e44]:
+        - link " Hồ sơ cá nhân" [ref=e45] [cursor=pointer]:
+          - /url: /profile/edit
+          - generic [ref=e46]: 
+          - generic [ref=e47]: Hồ sơ cá nhân
+      - listitem [ref=e48]:
+        - link " Đăng xuất" [ref=e49] [cursor=pointer]:
+          - /url: /auth/logout
+          - generic [ref=e50]: 
+          - generic [ref=e51]: Đăng xuất
+  - main [ref=e52]:
+    - generic [ref=e53]:
+      - generic [ref=e54]:
+        - button "" [ref=e55] [cursor=pointer]:
+          - generic [ref=e56]: 
+        - heading "Quản lý Tin tức" [level=1] [ref=e57]
+      - generic [ref=e58]:
+        - generic [ref=e59]:
+          - strong [ref=e60]: Nguyen Van Admin
+          - text: Admin
+        - img "Avatar" [ref=e61]
+    - link "+ Đăng tin mới" [ref=e63] [cursor=pointer]:
+      - /url: /admin/create_news
+      - generic [ref=e64]: +
+      - text: Đăng tin mới
+    - generic [ref=e65]:
+      - link "Quản lý ưu đãi" [ref=e66] [cursor=pointer]:
+        - /url: /admin/news_promotions
+      - link "Quản lý phim hay tháng" [ref=e67] [cursor=pointer]:
+        - /url: /admin/news_monthly_movies
+      - link "Tất cả" [ref=e68] [cursor=pointer]:
+        - /url: /admin/news
+    - generic [ref=e70]:
+      - generic [ref=e71]:
+        - generic [ref=e72]: Tìm kiếm
+        - textbox "Tiêu đề bài viết..." [ref=e73]
+      - generic [ref=e74]:
+        - generic [ref=e75]: Sắp xếp
+        - combobox [ref=e76]:
+          - option "Mới nhất" [selected]
+          - option "Cũ nhất"
+      - button "Tìm" [ref=e77] [cursor=pointer]
+      - link "Xóa lọc" [ref=e78] [cursor=pointer]:
+        - /url: /admin/news
+    - generic [ref=e79]:
+      - strong [ref=e82]: Danh sách bài viết đã đăng
+      - table [ref=e83]:
+        - rowgroup [ref=e84]:
+          - 'row "Chọn tất cả # Ảnh Tiêu đề Danh mục Ngày đăng Ngườii đăng Slider Thao tác" [ref=e85]':
+            - columnheader "Chọn tất cả" [ref=e86]:
+              - generic [ref=e87] [cursor=pointer]:
+                - checkbox "Chọn tất cả" [ref=e88]
+                - generic [ref=e89]: Chọn tất cả
+            - columnheader "#" [ref=e90]
+            - columnheader "Ảnh" [ref=e91]
+            - columnheader "Tiêu đề" [ref=e92]
+            - columnheader "Danh mục" [ref=e93]
+            - columnheader "Ngày đăng" [ref=e94]
+            - columnheader "Ngườii đăng" [ref=e95]
+            - columnheader "Slider" [ref=e96]
+            - columnheader "Thao tác" [ref=e97]
+        - rowgroup [ref=e98]:
+          - row "1 Ảnh tin Lịch phim mới tháng 4 Tin tức 2026-05-03 05:34:30 Nguyen Van Admin - Không Xem Sửa Xóa" [ref=e99]:
+            - cell [ref=e100]:
+              - checkbox [ref=e101] [cursor=pointer]
+            - cell "1" [ref=e102]
+            - cell "Ảnh tin" [ref=e103]:
+              - img "Ảnh tin" [ref=e104]
+            - cell "Lịch phim mới tháng 4" [ref=e105]
+            - cell "Tin tức" [ref=e106]
+            - cell "2026-05-03 05:34:30" [ref=e107]
+            - cell "Nguyen Van Admin" [ref=e108]
+            - cell "- Không" [ref=e109]
+            - cell "Xem Sửa Xóa" [ref=e110]:
+              - generic [ref=e111]:
+                - link "Xem" [ref=e112] [cursor=pointer]:
+                  - /url: /news/detail/2
+                - link "Sửa" [ref=e113] [cursor=pointer]:
+                  - /url: /admin/edit_news/2
+                - link "Xóa" [ref=e114] [cursor=pointer]:
+                  - /url: /admin/delete_news/2
+          - row "2 Ảnh tin CGV khai truong uu dai mua he Khuyến mãi 2026-05-03 05:34:30 Nguyen Van Admin - Không Xem Sửa Xóa" [ref=e115]:
+            - cell [ref=e116]:
+              - checkbox [ref=e117] [cursor=pointer]
+            - cell "2" [ref=e118]
+            - cell "Ảnh tin" [ref=e119]:
+              - img "Ảnh tin" [ref=e120]
+            - cell "CGV khai truong uu dai mua he" [ref=e121]
+            - cell "Khuyến mãi" [ref=e122]
+            - cell "2026-05-03 05:34:30" [ref=e123]
+            - cell "Nguyen Van Admin" [ref=e124]
+            - cell "- Không" [ref=e125]
+            - cell "Xem Sửa Xóa" [ref=e126]:
+              - generic [ref=e127]:
+                - link "Xem" [ref=e128] [cursor=pointer]:
+                  - /url: /news/detail/1
+                - link "Sửa" [ref=e129] [cursor=pointer]:
+                  - /url: /admin/edit_news/1
+                - link "Xóa" [ref=e130] [cursor=pointer]:
+                  - /url: /admin/delete_news/1

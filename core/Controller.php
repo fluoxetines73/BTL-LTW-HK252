@@ -46,4 +46,17 @@ class Controller {
         }
     }
 
+    /**
+     * Render admin view with sidebar navigation
+     * @param string $content Content view path
+     * @param string $activeSection Active sidebar section
+     * @param array $data Additional data
+     */
+    protected function adminView(string $content, string $activeSection, array $data = []): void {
+        $data['content'] = $content;
+        $data['activeSection'] = $activeSection;
+        $data['title'] = $data['title'] ?? ucfirst($activeSection);
+        $this->view('layouts/admin', $data);
+    }
+
 }

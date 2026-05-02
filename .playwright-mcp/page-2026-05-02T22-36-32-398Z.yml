@@ -1,0 +1,166 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - navigation [ref=e3]:
+      - generic [ref=e4]:
+        - link "CGV Cinema" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - img "CGV Cinema" [ref=e6]
+        - generic [ref=e7]:
+          - list [ref=e8]:
+            - listitem [ref=e9]:
+              - button "Phim" [ref=e10] [cursor=pointer]
+            - listitem [ref=e11]:
+              - button "Rạp CGV" [ref=e12] [cursor=pointer]
+            - listitem [ref=e13]:
+              - button "Tin tức" [ref=e14] [cursor=pointer]
+            - listitem [ref=e15]:
+              - button "Thông tin & Hỗ trợ" [ref=e16] [cursor=pointer]
+          - generic [ref=e17]:
+            - link "Dashboard" [ref=e18] [cursor=pointer]:
+              - /url: /admin/admin_dashboard
+            - button "Tài khoản" [ref=e20] [cursor=pointer]:
+              - generic [ref=e22]: 
+  - main [ref=e23]:
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - heading "Chỉnh sửa hồ sơ" [level=1] [ref=e29]
+        - paragraph [ref=e30]: Cập nhật thông tin cá nhân và ảnh đại diện của bạn.
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - generic [ref=e34]: Họ và tên
+          - textbox "Họ và tên" [ref=e35]:
+            - /placeholder: "Ví dụ: Nguyễn Văn A"
+            - text: Nguyen Van Admin
+        - generic [ref=e36]:
+          - generic [ref=e37]: Số điện thoại
+          - textbox "Số điện thoại" [ref=e38]:
+            - /placeholder: "Ví dụ: 0901234567"
+            - text: "0901234567"
+        - generic [ref=e39]:
+          - generic [ref=e40]: Ảnh đại diện
+          - img "Ảnh đại diện mặc định" [ref=e41]
+          - button "Choose File" [ref=e42] [cursor=pointer]
+          - generic [ref=e43]: "Định dạng hỗ trợ: JPG, PNG, WEBP. Kích thước tối đa theo cấu hình hệ thống."
+        - generic [ref=e44]:
+          - button "Lưu thay đổi" [ref=e45] [cursor=pointer]
+          - link "Quay lại hồ sơ" [ref=e46] [cursor=pointer]:
+            - /url: /profile/index
+  - contentinfo [ref=e47]:
+    - list [ref=e50]:
+      - listitem [ref=e51]:
+        - link "4DX" [ref=e52] [cursor=pointer]:
+          - /url: /
+      - listitem [ref=e53]:
+        - link "IMAX" [ref=e54] [cursor=pointer]:
+          - /url: /
+      - listitem [ref=e55]:
+        - link "STARIUM" [ref=e56] [cursor=pointer]:
+          - /url: /
+      - listitem [ref=e57]:
+        - link "GOLD CLASS" [ref=e58] [cursor=pointer]:
+          - /url: /
+      - listitem [ref=e59]:
+        - link "L'AMOUR" [ref=e60] [cursor=pointer]:
+          - /url: /
+      - listitem [ref=e61]:
+        - link "SWEETBOX" [ref=e62] [cursor=pointer]:
+          - /url: /
+      - listitem [ref=e63]:
+        - link "PREMIUM CINEMA" [ref=e64] [cursor=pointer]:
+          - /url: /
+      - listitem [ref=e65]:
+        - link "SCREENX" [ref=e66] [cursor=pointer]:
+          - /url: /
+      - listitem [ref=e67]:
+        - link "CINE & FORET" [ref=e68] [cursor=pointer]:
+          - /url: /
+      - listitem [ref=e69]:
+        - link "CINE & LIVING ROOM" [ref=e70] [cursor=pointer]:
+          - /url: /
+      - listitem [ref=e71]:
+        - link "CINE SUITE" [ref=e72] [cursor=pointer]:
+          - /url: /
+    - generic [ref=e74]:
+      - generic [ref=e75]:
+        - heading "CGV Việt Nam" [level=3] [ref=e76]
+        - list [ref=e77]:
+          - listitem [ref=e78]:
+            - link "Giới Thiệu" [ref=e79] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e80]:
+            - link "Tiện Ích Online" [ref=e81] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e82]:
+            - link "Thẻ Quà Tặng" [ref=e83] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e84]:
+            - link "Tuyển Dụng" [ref=e85] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e86]:
+            - link "Liên Hệ Quảng Cáo CGV" [ref=e87] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e88]:
+            - link "Dành cho đối tác" [ref=e89] [cursor=pointer]:
+              - /url: /
+      - generic [ref=e90]:
+        - heading "Điều khoản sử dụng" [level=3] [ref=e91]
+        - list [ref=e92]:
+          - listitem [ref=e93]:
+            - link "Điều Khoản Chung" [ref=e94] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e95]:
+            - link "Điều Khoản Giao Dịch" [ref=e96] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e97]:
+            - link "Chính Sách Thanh Toán" [ref=e98] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e99]:
+            - link "Chính Sách Bảo Mật" [ref=e100] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e101]:
+            - link "Những Quy Định Tại Rạp Phim" [ref=e102] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e103]:
+            - link "Câu Hỏi Thường Gặp" [ref=e104] [cursor=pointer]:
+              - /url: /
+      - generic [ref=e105]:
+        - heading "Kết nối với chúng tôi" [level=3] [ref=e106]
+        - list [ref=e107]:
+          - listitem [ref=e108]:
+            - link "Facebook" [ref=e109] [cursor=pointer]:
+              - /url: https://www.facebook.com/cgvcinemavietnam
+          - listitem [ref=e110]:
+            - link "YouTube" [ref=e111] [cursor=pointer]:
+              - /url: https://www.youtube.com/cgvvietnam
+          - listitem [ref=e112]:
+            - link "Instagram" [ref=e113] [cursor=pointer]:
+              - /url: http://instagram.com/cgvcinemasvietnam
+          - listitem [ref=e114]:
+            - link "Zalo" [ref=e115] [cursor=pointer]:
+              - /url: http://zalo.me/1884424922722396289
+        - link "Bộ Công Thương" [ref=e117] [cursor=pointer]:
+          - /url: http://online.gov.vn/Home/WebDetails/30270
+          - img "Bộ Công Thương" [ref=e118]
+      - generic [ref=e119]:
+        - heading "Chăm sóc khách hàng" [level=3] [ref=e120]
+        - paragraph [ref=e121]:
+          - strong [ref=e122]: "Hotline:"
+          - text: 1900 6017
+        - paragraph [ref=e123]:
+          - strong [ref=e124]: "Giờ làm việc:"
+          - text: 8:00 - 22:00 (Tất cả các ngày bao gồm cả Lễ Tết)
+        - paragraph [ref=e125]:
+          - strong [ref=e126]: "Email hỗ trợ:"
+          - link "hoidap@cgv.vn" [ref=e127] [cursor=pointer]:
+            - /url: mailto:hoidap@cgv.vn
+    - generic [ref=e129]:
+      - link "CJ CGV" [ref=e131] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e132]:
+        - heading "CÔNG TY TNHH CJ CGV VIỆT NAM" [level=3] [ref=e133]
+        - paragraph [ref=e134]:
+          - text: "Giấy Chứng nhận đăng ký doanh nghiệp:"
+          - strong [ref=e135]: "0303675393"
+          - text: ", đăng ký lần đầu ngày 31/7/2008, cấp bởi Sở Kế hoạch và Đầu tư Thành phố Hồ Chí Minh."
+        - paragraph [ref=e136]: "Địa chỉ: Lầu 2, số 7/28, đường Thành Thái, phường Diên Hồng, Thành phố Hồ Chí Minh, Việt Nam"
+        - paragraph [ref=e137]: © 2026 CJ CGV VIETNAM CO., LTD. ALL RIGHTS RESERVED

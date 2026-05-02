@@ -9,11 +9,22 @@ class AdminPageController extends Controller {
     public function index() {
         $pageModel = $this->model('Page');
         $pages = $pageModel->getAllPages();
-        $this->view('admin/page/index', ['pages' => $pages]);
+
+        $this->view('layouts/admin', [
+            'title' => 'Quản lý Trang',
+            'content' => 'admin/page/index',
+            'activeSection' => 'page',
+            'pages' => $pages
+        ]);
     }
 
     public function create() {
-        $this->view('admin/page/create');
+        $this->view('layouts/admin', [
+            'title' => 'Thêm Trang Mới',
+            'content' => 'admin/page/create',
+            'activeSection' => 'page',
+            'extraScripts' => $this->slugScript()
+        ]);
     }
 
     public function store() {
@@ -63,7 +74,13 @@ class AdminPageController extends Controller {
             return;
         }
 
-        $this->view('admin/page/edit', ['page' => $page]);
+        $this->view('layouts/admin', [
+            'title' => 'Sửa Trang',
+            'content' => 'admin/page/edit',
+            'activeSection' => 'page',
+            'page' => $page,
+            'extraScripts' => $this->slugScript()
+        ]);
     }
 
     public function update($id = null) {
@@ -108,5 +125,23 @@ class AdminPageController extends Controller {
             }
         }
         $this->redirect('admin/page/index');
+    }
+
+    private function slugScript(): string {
+        return <<<'SCRIPT'
+<script>
+document.getElementById('title').addEventListener('input', function() {
+    const title = this.value;
+    const slug = title.toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+    document.getElementById('slug').value = slug;
+});
+</script>
+SCRIPT;
     }
 }
