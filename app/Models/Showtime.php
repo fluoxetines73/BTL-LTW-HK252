@@ -63,4 +63,11 @@ class Showtime extends Model {
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([':id' => $id]);
     }
+    public function getSeatIdByCode($row, $col) {
+        $sql = "SELECT id FROM seats WHERE row_label = :row AND col_number = :col LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':row' => $row, ':col' => $col]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? $result['id'] : null;
+    }
 }
