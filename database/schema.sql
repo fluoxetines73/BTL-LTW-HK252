@@ -169,6 +169,20 @@ CREATE TABLE `pages` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
+-- Table: faqs
+-- --------------------------------------------------------
+CREATE TABLE `faqs` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `question` VARCHAR(500) NOT NULL,
+    `answer` TEXT NOT NULL,
+    `category` VARCHAR(100) NOT NULL DEFAULT 'Chung',
+    `sort_order` INT NOT NULL DEFAULT 0,
+    `status` ENUM('active','inactive') NOT NULL DEFAULT 'active',
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 -- Table: settings
 -- --------------------------------------------------------
 CREATE TABLE `settings` (

@@ -260,6 +260,16 @@
                     <a href="<?= BASE_URL ?>admin/order/index"><i class="ti-receipt"></i><span>Quản lý Đơn hàng</span></a>
                 </li>
                 <li>
+                    <a href="<?= BASE_URL ?>admin/page/index">
+                        <i class="fas fa-file-alt"></i> Quản lý Trang
+                    </a>
+                </li>
+                <li>
+                    <a href="<?= BASE_URL ?>admin/faq/index">
+                        <i class="fas fa-question-circle"></i> Quản lý FAQ
+                    </a>
+                </li>
+                <li>
                     <a href="<?= BASE_URL ?>profile/edit">
                         <i class="fas fa-user-edit"></i> Hồ sơ cá nhân
                     </a>

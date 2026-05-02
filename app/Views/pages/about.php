@@ -1,4 +1,24 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<?php if (!empty($page) && !empty($page['content'])): ?>
+<!-- Dynamic content from database -->
+<section class="about-hero text-center" data-aos="fade-in">
+    <div class="container">
+        <span class="about-hero-kicker">Thông tin & hỗ trợ</span>
+        <h1 class="display-4 fw-bold"><?= htmlspecialchars($page['title']) ?></h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center">
+                <li class="breadcrumb-item"><a href="<?= BASE_URL ?>">Trang chủ</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><?= htmlspecialchars($page['title']) ?></li>
+            </ol>
+        </nav>
+    </div>
+</section>
+<section class="container py-5 dynamic-page-content">
+    <?= $page['content'] ?>
+</section>
+<?php else: ?>
+<!-- Static fallback content -->
 <section class="about-hero text-center" data-aos="fade-in">
     <div class="container">
         <span class="about-hero-kicker">Thông tin & hỗ trợ</span>
@@ -18,7 +38,7 @@
             <div class="about-content">
                 <h2 class="mb-4" style="color: #E71A0F;">Tổ hợp Văn hóa - Cultureplex</h2>
                 <p><strong>CJ CGV</strong> là một trong top 5 cụm rạp chiếu phim lớn nhất toàn cầu và là nhà phát hành, cụm rạp chiếu phim lớn nhất Việt Nam. Chúng tôi tự hào là đơn vị tiên phong mang đến khái niệm độc đáo <strong>Cultureplex</strong> (Tổ hợp Văn hóa), nơi khán giả không chỉ đến để xem phim mà còn để trải nghiệm các dịch vụ giải trí, ẩm thực và mua sắm đẳng cấp.</p>
-                <p>Tại Việt Nam, CGV luôn nỗ lực xây dựng các chương trình Trách nhiệm xã hội như <em>"Điện ảnh cho mọi người"</em>, <em>"Dự án phim ngắn CJ"</em> nhằm đồng hành và đóng góp cho sự phát triển chung của nền công nghiệp điện ảnh nước nhà.</p>
+                <p>Tại Việt Nam, CGV luôn nỗ lực xây dựng các chương trình Trách nhiệm xã hội như <em>"Điện ảnh cho mọi ngườii"</em>, <em>"Dự án phim ngắn CJ"</em> nhằm đồng hành và đóng góp cho sự phát triển chung của nền công nghiệp điện ảnh nước nhà.</p>
             </div>
         </div>
         <div class="col-md-6" data-aos="fade-left">
@@ -186,3 +206,4 @@
         </div>
     </div>
 </section>
+<?php endif; ?>
