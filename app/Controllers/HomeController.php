@@ -131,23 +131,35 @@ class HomeController extends Controller {
 	}
 
 	public function privacy(): void {
+		$pageModel = $this->model('Page');
+		$page = $pageModel->findBySlug('chinh-sach-bao-mat');
+
 		$this->view('layouts/main', [
 			'title' => 'Chính sách bảo mật',
 			'content' => 'pages/privacy',
+			'page' => $page,
 		]);
 	}
 
 	public function terms(): void {
+		$pageModel = $this->model('Page');
+		$page = $pageModel->findBySlug('dieu-khoan-su-dung');
+
 		$this->view('layouts/main', [
 			'title' => 'Điều khoản sử dụng',
 			'content' => 'pages/terms',
+			'page' => $page,
 		]);
 	}
 
 	public function regulations(): void {
+		$pageModel = $this->model('Page');
+		$page = $pageModel->findBySlug('quy-dinh-rap-chieu');
+
 		$this->view('layouts/main', [
 			'title' => 'Quy định rạp chiếu',
 			'content' => 'pages/regulations',
+			'page' => $page,
 		]);
 	}
 

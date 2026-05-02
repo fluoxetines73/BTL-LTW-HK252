@@ -1,3 +1,6 @@
+<?php if (!empty($page) && !empty($page['content'])): ?>
+<?= $page['content'] ?>
+<?php else: ?>
 <div class="container mt-5">
     <div class="row">
         <div class="col-lg-8 mx-auto">
@@ -53,3 +56,4 @@
         </div>
     </div>
 </div>
+<?php endif; ?>
