@@ -241,6 +241,11 @@
                         <i class="fas fa-film"></i> Quản lý Phim
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="<?= BASE_URL ?>admin/showtime/index" class="nav-link text-white">
+                        <i class="fas fa-calendar-alt me-2"></i> Quản lý Suất chiếu
+                    </a>
+                </li>
                 <li>
                     <a href="<?= BASE_URL ?>admin/combo/index">
                         <i class="fas fa-hamburger"></i> Quản lý Combo

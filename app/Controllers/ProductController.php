@@ -2,118 +2,115 @@
 require_once ROOT . '/core/Controller.php';
 
 class ProductController extends Controller {
-	private ?Product $productModel = null;
 
-	public function __construct() {
-		require_once APPROOT . '/Models/Model.php';
-		require_once APPROOT . '/Models/Product.php';
+    /**
+     * Hiển thị danh sách phim (Thay thế cho danh sách sản phẩm cũ)
+     */
+    public function index() {
+        // Gọi model Movie để lấy danh sách phim
+        $movieModel = $this->model('Movie');
+        $movies = $movieModel->getAllMovies();
 
-		try {
-			$this->productModel = new Product();
-		} catch (Throwable $e) {
-			$this->productModel = null;
-		}
-	}
+        // Truyền dữ liệu sang View
+        $this->view('layouts/main', [
+            'title' => 'Danh sách Phim',
+            'content' => 'movies/index', // Cập nhật đường dẫn view phù hợp với dự án của bạn
+            'movies' => $movies,
+        ]);
+    }
 
-	public function index(): void {
-		$products = $this->seedProducts();
-		if ($this->productModel) {
-			try {
-				$products = $this->productModel->findAll();
-			} catch (Throwable $e) {
-				$products = $this->seedProducts();
-			}
-		}
-
-		$this->view('layouts/main', [
-			'title' => 'San pham',
-			'content' => 'product/index',
-			'products' => $products,
-		]);
-	}
-
-	// public function detail(int $id = 0): void {
-	// 	$product = $this->findSeedById($id);
-	// 	if ($this->productModel) {
-	// 		try {
-	// 			$product = $this->productModel->findById($id);
-	// 		} catch (Throwable $e) {
-	// 			$product = $this->findSeedById($id);
-	// 		}
-	// 	}
-
-	// 	if (!$product) {
-	// 		http_response_code(404);
-	// 		$this->view('layouts/main', [
-	// 			'title' => 'Khong tim thay san pham',
-	// 			'content' => 'home/not_found',
-	// 		]);
-	// 		return;
-	// 	}
-
-	// 	$this->view('layouts/main', [
-	// 		'title' => 'Chi tiet san pham',
-	// 		'content' => 'product/detail',
-	// 		'product' => $product,
-	// 	]);
-	// }
-	public function detail(int $id = 0): void {
-		if (!$id) {
-			header("Location: " . BASE_URL);
-			exit;
-		}
-
-		// Gọi 2 Model Phim và Combo mà bạn đã tạo
-		$movieModel = $this->model('Movie');
-		$comboModel = $this->model('Combo');
-
-		// Lấy thông tin phim từ Database
-		$movie = $movieModel->getMovieById($id);
+    /**
+     * Trang chi tiết phim và chọn ghế (Đã chuẩn theo mã của bạn)
+     */
+    public function detail($id = null) {
+        if (!$id) { 
+            $this->redirect('home/index'); 
+            return; 
+        }
         
-		// Nếu ID phim không tồn tại (nhập bừa trên URL), dùng màn hình báo lỗi có sẵn của nhóm
-		if (!$movie) {
-			http_response_code(404);
-			$this->view('layouts/main', [
-				'title' => 'Không tìm thấy phim',
-				'content' => 'home/not_found',
-			]);
-			return;
-		}
+        $movie = $this->model('Movie')->getMovieById($id);
+        $combos = $this->model('Combo')->getAllCombos();
+        
+        if (!$movie) { 
+            $this->redirect('home/not_found'); 
+            return; 
+        }
 
-		// Lấy danh sách Combo bắp nước để đổ vào Giỏ hàng
-		$combos = $comboModel->getAllCombos();
+        $this->view('layouts/main', [
+            'title' => $movie['title'],
+            'content' => 'product/detail',
+            'movie' => $movie,
+            'combos' => $combos
+        ]);
+    }
 
-		// Đẩy dữ liệu ra view của bạn (vẫn giữ nguyên layout chung của nhóm)
-		$this->view('layouts/main', [
-			'title' => 'Đặt vé: ' . $movie['title'],
-			'content' => 'product/detail',
-			'movie' => $movie,
-			'combos' => $combos
-		]);
-	}
+    /**
+     * Xử lý dữ liệu đặt vé và hiển thị trang Hóa đơn (Checkout)
+     */
+    public function checkout() {
+        // 1. Nếu người dùng truy cập trực tiếp bằng URL (không qua nút submit form), đẩy về trang chủ
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('home/index');
+            return;
+        }
 
-	public function admin(): void {
-		$this->view('layouts/main', [
-			'title' => 'Quan ly san pham',
-			'content' => 'product/index',
-			'products' => $this->seedProducts(),
-		]);
-	}
+        // 2. Lấy dữ liệu từ form POST bên trang detail
+        $movieId = $_POST['movie_id'] ?? 0;
+        $showtimeId = $_POST['showtime_id'] ?? 0;
+        $selectedSeats = $_POST['selected_seats'] ?? '';
+        $ticketQty = (int)($_POST['ticket_qty'] ?? 0);
+        $ticketPrice = (int)($_POST['ticket_price'] ?? 100000);
+        $combosPost = $_POST['combos'] ?? []; // Mảng chứa [id_combo => số_lượng]
 
-	private function seedProducts(): array {
-		return [
-			['id' => 1, 'name' => 'Goi Website Co Ban', 'price' => 4900000, 'description' => 'Landing page + responsive.'],
-			['id' => 2, 'name' => 'Goi Website Ban Hang', 'price' => 9900000, 'description' => 'Co gio hang va quan ly don hang.'],
-			['id' => 3, 'name' => 'Goi Website Doanh Nghiep', 'price' => 15900000, 'description' => 'Tin tuc, SEO co ban, dashboard.'],
-		];
-	}
+        // 3. Gọi Model để lấy thông tin chi tiết
+        $movieModel = $this->model('Movie');
+        $showtimeModel = $this->model('Showtime');
+        $comboModel = $this->model('Combo');
 
-	private function findSeedById(int $id): array|false {
-		foreach ($this->seedProducts() as $item) {
-			if ((int)$item['id'] === $id) {
-				return $item;
-			}
-		}
-		return false;
-	}
+        $movie = $movieModel->getMovieById($movieId);
+        $showtime = $showtimeModel->getShowtimeById($showtimeId);
+        
+        // 4. Tính toán tiền Combo Bắp Nước
+        $selectedCombos = [];
+        $comboTotal = 0;
+        $allCombos = $comboModel->getAllCombos(); 
+        
+        foreach ($combosPost as $comboId => $qty) {
+            if ($qty > 0) {
+                foreach ($allCombos as $c) {
+                    if ($c['id'] == $comboId) {
+                        $subtotal = $qty * $c['price'];
+                        $comboTotal += $subtotal;
+                        
+                        // Lưu lại để hiển thị ra View
+                        $selectedCombos[] = [
+                            'name' => $c['name'],
+                            'qty' => $qty,
+                            'price' => $c['price'],
+                            'subtotal' => $subtotal
+                        ];
+                        break; // Tìm thấy combo thì thoát vòng lặp con
+                    }
+                }
+            }
+        }
+
+        // 5. Tính tổng cộng tiền thanh toán
+        $ticketTotal = $ticketQty * $ticketPrice;
+        $grandTotal = $ticketTotal + $comboTotal;
+
+        // 6. Truyền toàn bộ dữ liệu đã xử lý sang trang giao diện checkout.php
+        $this->view('layouts/main', [
+            'content' => 'product/checkout',
+            'title' => 'Xác nhận Đặt vé',
+            'movie' => $movie,
+            'showtime' => $showtime,
+            'selectedSeats' => $selectedSeats,
+            'ticketQty' => $ticketQty,
+            'ticketTotal' => $ticketTotal,
+            'selectedCombos' => $selectedCombos,
+            'comboTotal' => $comboTotal,
+            'grandTotal' => $grandTotal
+        ]);
+    }
 }
