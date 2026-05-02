@@ -29,6 +29,10 @@ class HomeController extends Controller {
     $stmt = $db->query("SELECT id, title, slug, poster, release_date, status FROM movies WHERE status = 'now_showing' ORDER BY release_date DESC LIMIT 8");
     $data['recommendations'] = $stmt->fetchAll();
 
+    // 2b. Lấy 6 Phim sắp chiếu (Coming Soon)
+    $stmt = $db->query("SELECT id, title, slug, poster, release_date, status FROM movies WHERE status = 'coming_soon' AND release_date >= CURDATE() ORDER BY release_date ASC LIMIT 6");
+    $data['coming_soon'] = $stmt->fetchAll();
+
     // 3. Lấy danh sách Thể loại (Genres)
     $stmt = $db->query("SELECT g.id, g.name, g.slug, COUNT(m.id) as movie_count FROM genres g LEFT JOIN movie_genres mg ON g.id = mg.genre_id LEFT JOIN movies m ON mg.movie_id = m.id GROUP BY g.id ORDER BY movie_count DESC LIMIT 7");
     $data['genres'] = $stmt->fetchAll();
@@ -50,6 +54,7 @@ class HomeController extends Controller {
         'content'         => 'home/index',
         'featured_movie'  => $data['featured_movie'] ?? null,
         'recommendations' => $data['recommendations'], // Đã khôi phục
+        'coming_soon'     => $data['coming_soon'] ?? [],
         'genres'          => $data['genres'],          // Đã khôi phục
         'news'            => $data['news'],            // Đã khôi phục
         'ads'             => $data['ads'],             // Đã khôi phục
@@ -148,16 +153,6 @@ class HomeController extends Controller {
 		$this->view('layouts/main', [
 			'title' => '404 - Không tìm thấy trang',
 			'content' => 'errors/404',
-		]);
+        ]);
 	}
 }
-//         // Gọi View thông qua Layout chung của nhóm
-//         $this->view('layouts/main', [
-//             'title' => 'Trang Chủ - Đặt Vé Xem Phim',
-//             'content' => 'home/index', // Nạp mảnh ghép index.php vào giữa layout
-//             'nowShowing' => $nowShowing,
-//             'comingSoon' => $comingSoon,
-//             'keyword' => $keyword
-//         ]);
-//     }
-// }
