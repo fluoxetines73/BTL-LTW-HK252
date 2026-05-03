@@ -1,10 +1,3 @@
-<?php /* DEBUG: Count rows before table */ ?>
-<div class="alert alert-warning">
-    <strong>DEBUG:</strong> Total FAQs in array: <?= count($faqs ?? []) ?> |
-    mbstring loaded: <?= extension_loaded('mbstring') ? 'YES' : 'NO' ?> |
-    First ID: <?= $faqs[0]['id'] ?? 'N/A' ?>
-</div>
-
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/admin_dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
@@ -23,7 +16,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover table-bordered mb-0">
-                <thead class="table-dark">
+                <thead class="admin-table-header">
                     <tr>
                         <?php
                         // Helper function to generate sort URL
@@ -52,7 +45,7 @@
                                 Câu hỏi <?= getSortIcon('question', $sortBy ?? null, $sortOrder ?? 'asc') ?>
                             </a>
                         </th>
-                        <th class="sortable">
+                        <th class="sortable" style="width: 18%;">
                             <a href="<?= getSortUrl('category', $sortBy ?? null, $sortOrder ?? 'asc') ?>">
                                 Danh mục <?= getSortIcon('category', $sortBy ?? null, $sortOrder ?? 'asc') ?>
                             </a>
@@ -114,27 +107,3 @@
     </div>
 </div>
 
-<?php /* DEBUG: Safe render without mb_substr to prove data exists */ ?>
-<div class="card shadow-sm border-0 mt-4">
-    <div class="card-header bg-warning text-dark">
-        <strong>DEBUG TABLE (using substr instead of mb_substr):</strong>
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover table-bordered mb-0">
-                <thead class="table-dark">
-                    <tr><th>ID</th><th>Question (substr)</th><th>Category</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($faqs as $faq): ?>
-                    <tr>
-                        <td><?= (int)$faq['id'] ?></td>
-                        <td><?= htmlspecialchars(substr($faq['question'], 0, 80)) ?></td>
-                        <td><?= htmlspecialchars($faq['category']) ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>

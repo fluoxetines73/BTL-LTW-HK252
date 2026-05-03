@@ -58,7 +58,7 @@
     </div>
 
     <table class="table">
-        <thead>
+        <thead class="admin-table-header">
             <tr>
                 <th style="width:14%;text-align:center;">
                     <label for="select-all" class="select-all-label">

@@ -28,7 +28,7 @@
         $rowNumber = (($current_page ?? 1) - 1) * $perPage + 1;
         ?>
         <table class="table">
-            <thead>
+            <thead class="admin-table-header">
                 <tr>
                     <th style="width: 5%">STT</th>
                     <th style="width: 15%">Avatar</th>

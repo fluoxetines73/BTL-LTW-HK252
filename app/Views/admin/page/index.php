@@ -16,7 +16,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover table-bordered mb-0">
-                <thead class="table-dark">
+                <thead class="admin-table-header">
                     <tr>
                         <th class="text-center" style="width: 60px;">ID</th>
                         <th>Tiêu đề</th>

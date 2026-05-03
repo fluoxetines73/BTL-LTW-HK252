@@ -2,7 +2,6 @@
 // app/Controllers/AdminController.php
 
 require_once ROOT . '/core/Controller.php';
-require_once ROOT . '/core/Database.php';
 
 class AdminController extends Controller {
 
@@ -11,23 +10,10 @@ class AdminController extends Controller {
      * Nhiệm vụ của Thành viên C: Đảm bảo phân quyền admin ở đây
      */
     public function admin_dashboard() {
-        // Kiểm tra quyền Admin trước khi cho phép xem trang
         $this->middlewareAdmin();
 
-        $db = Database::getInstance()->getPdo();
-        $stats = [
-            'total_users' => $this->safeCount($db, "SELECT COUNT(*) FROM users"),
-            'total_products' => $this->safeCount($db, "SELECT COUNT(*) FROM products"),
-            'total_news' => $this->safeCount($db, "SELECT COUNT(*) FROM news"),
-            'locked_users' => $this->safeCount($db, "SELECT COUNT(*) FROM users WHERE status = 'inactive'"),
-        ];
-
-        // Gọi View giao diện quản trị
-        $this->view('layouts/admin', [
+        $this->adminView('admin/dashboard', 'dashboard', [
             'title' => 'Bảng điều khiển Admin',
-            'content' => 'admin/dashboard',
-            'stats' => $stats,
-            'activeSection' => 'dashboard',
         ]);
     }
 
@@ -47,15 +33,13 @@ class AdminController extends Controller {
         // Tính url phân trang
         $baseUrl = BASE_URL . 'admin/users';
 
-        $this->view('layouts/admin', [
+        $this->adminView('admin/users/index', 'users', [
             'title' => 'Quản lý Người dùng',
-            'content' => 'admin/users/index',
             'users' => $data['users'],
             'current_page' => $data['current_page'],
             'total_pages' => $data['pages'],
             'total_users' => $data['total'],
             'base_url' => $baseUrl,
-            'activeSection' => 'users',
         ]);
     }
 
@@ -79,16 +63,14 @@ class AdminController extends Controller {
 
         $baseUrl = BASE_URL . 'admin/search?q=' . urlencode($keyword);
 
-        $this->view('layouts/admin', [
+        $this->adminView('admin/users/search', 'users', [
             'title' => 'Tìm kiếm Người dùng',
-            'content' => 'admin/users/search',
             'users' => $data['users'],
             'current_page' => $data['current_page'],
             'total_pages' => $data['pages'],
             'total_users' => $data['total'],
             'keyword' => $keyword,
             'base_url' => $baseUrl,
-            'activeSection' => 'users',
         ]);
     }
 
@@ -155,15 +137,13 @@ class AdminController extends Controller {
         // Get articles based on search/sort
         $articles = $newsModel->searchAdminNews($category, $keyword !== '' ? $keyword : null, $sort);
 
-        $this->view('layouts/admin', [
+        $this->adminView('admin/news/index', 'news', [
             'title' => $title,
-            'content' => 'admin/news/index',
             'articles' => $articles,
             'newsCategory' => $category,
             'keyword' => $keyword,
             'sort' => $sort,
             'extraHead' => '<link rel="stylesheet" href="' . BASE_URL . 'public/css/admin-news.css">',
-            'activeSection' => 'news',
         ]);
     }
 
@@ -233,12 +213,10 @@ class AdminController extends Controller {
             }
         }
 
-        $this->view('layouts/admin', [
+        $this->adminView('admin/news/create', 'news', [
             'title' => 'Đăng Tin Tức',
-            'content' => 'admin/news/create',
             'flash' => $flash,
             'extraHead' => '<link rel="stylesheet" href="' . BASE_URL . 'public/css/admin-news.css">',
-            'activeSection' => 'news',
         ]);
     }
 
@@ -327,13 +305,11 @@ class AdminController extends Controller {
             ]);
         }
 
-        $this->view('layouts/admin', [
+        $this->adminView('admin/news/edit', 'news', [
             'title' => 'Sửa Tin Tức',
-            'content' => 'admin/news/edit',
             'flash' => $flash,
             'article' => $article,
             'extraHead' => '<link rel="stylesheet" href="' . BASE_URL . 'public/css/admin-news.css">',
-            'activeSection' => 'news',
         ]);
     }
 
@@ -366,10 +342,8 @@ class AdminController extends Controller {
 
         if (!$user) {
             http_response_code(404);
-            $this->view('layouts/admin', [
+            $this->adminView('home/not_found', 'users', [
                 'title' => 'Không tìm thấy',
-                'content' => 'home/not_found',
-                'activeSection' => 'users',
             ]);
             return;
         }
@@ -380,11 +354,9 @@ class AdminController extends Controller {
             return;
         }
 
-        $this->view('layouts/admin', [
+        $this->adminView('admin/users/edit', 'users', [
             'title' => 'Chỉnh sửa Người dùng',
-            'content' => 'admin/users/edit',
             'user' => $user,
-            'activeSection' => 'users',
         ]);
     }
 
@@ -496,15 +468,6 @@ class AdminController extends Controller {
         }
 
         $this->redirect('admin/users');
-    }
-
-    private function safeCount(PDO $db, string $sql): int {
-        try {
-            $stmt = $db->query($sql);
-            return (int)$stmt->fetchColumn();
-        } catch (Throwable $e) {
-            return 0;
-        }
     }
 
     private function makeSlug(string $text): string {

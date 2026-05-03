@@ -12,7 +12,7 @@
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-hover table-bordered align-middle text-center">
-                <thead class="table-dark">
+                <thead class="admin-table-header">
                     <tr>
                         <th>Mã Đơn</th>
                         <th>Khách Hàng</th>

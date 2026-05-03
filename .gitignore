@@ -9,3 +9,6 @@ configs/database.php
 
 # AI agent documentation
 AGENTS.md
+
+# Playwright MCP logs
+.playwright-mcp/

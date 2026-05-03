@@ -2,6 +2,26 @@
 $latestNews = $latestNews ?? [];
 $timelineItems = $timelineItems ?? [];
 $timelineTitle = $timelineTitle ?? 'Timeline Tin Tức';
+
+/**
+ * Truncate text with UTF-8 support
+ * Fallback for systems without mbstring extension
+ */
+function truncateText(string $text, int $length, string $suffix = '...'): string {
+    if (function_exists('mb_strimwidth')) {
+        return mb_strimwidth($text, 0, $length, $suffix, 'UTF-8');
+    }
+    
+    // Fallback: Use preg_match for UTF-8 aware truncation
+    if (preg_match('/^(.{0,' . $length . '})/us', $text, $matches)) {
+        $truncated = $matches[1];
+        if (strlen($truncated) < strlen($text)) {
+            return rtrim($truncated) . $suffix;
+        }
+    }
+    
+    return $text;
+}
 ?>
 <section class="news-page">
     <?php if (!empty($latestNews)): ?>
@@ -35,7 +55,7 @@ $timelineTitle = $timelineTitle ?? 'Timeline Tin Tức';
                             <div class="news-highlight-title"><?= htmlspecialchars((string)$item['highlight_title']) ?></div>
                         <?php endif; ?>
                         <h3><?= htmlspecialchars((string)($item['title'] ?? 'Tin tức')) ?></h3>
-                        <p><?= htmlspecialchars(mb_strimwidth(strip_tags((string)($item['content'] ?? '')), 0, 170, '...')) ?></p>
+                        <p><?= htmlspecialchars(truncateText(strip_tags((string)($item['content'] ?? '')), 170, '...')) ?></p>
                         <a class="btn btn-danger btn-sm" href="<?= BASE_URL ?>news/detail/<?= (int)($item['id'] ?? 0) ?>">Xem chi tiết</a>
                     </div>
                 </div>
@@ -67,7 +87,7 @@ $timelineTitle = $timelineTitle ?? 'Timeline Tin Tức';
                         <p class="timeline-highlight-title"><?= htmlspecialchars((string)$item['highlight_title']) ?></p>
                     <?php endif; ?>
                     <h4 class="timeline-title"><?= htmlspecialchars((string)($item['title'] ?? 'Tin tức')) ?></h4>
-                    <p class="timeline-text"><?= htmlspecialchars(mb_strimwidth(strip_tags((string)($item['content'] ?? '')), 0, 210, '...')) ?></p>
+                    <p class="timeline-text"><?= htmlspecialchars(truncateText(strip_tags((string)($item['content'] ?? '')), 210, '...')) ?></p>
                     <a href="<?= BASE_URL ?>news/detail/<?= (int)($item['id'] ?? 0) ?>" class="timeline-link">Đọc thêm</a>
                 </div>
                 <div class="timeline-image-box">

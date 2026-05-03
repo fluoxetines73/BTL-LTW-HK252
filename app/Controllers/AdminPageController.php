@@ -10,19 +10,15 @@ class AdminPageController extends Controller {
         $pageModel = $this->model('Page');
         $pages = $pageModel->getAllPages();
 
-        $this->view('layouts/admin', [
+        $this->adminView('admin/page/index', 'page', [
             'title' => 'Quản lý Trang',
-            'content' => 'admin/page/index',
-            'activeSection' => 'page',
             'pages' => $pages
         ]);
     }
 
     public function create() {
-        $this->view('layouts/admin', [
+        $this->adminView('admin/page/create', 'page', [
             'title' => 'Thêm Trang Mới',
-            'content' => 'admin/page/create',
-            'activeSection' => 'page',
             'extraScripts' => $this->slugScript()
         ]);
     }
@@ -74,10 +70,8 @@ class AdminPageController extends Controller {
             return;
         }
 
-        $this->view('layouts/admin', [
+        $this->adminView('admin/page/edit', 'page', [
             'title' => 'Sửa Trang',
-            'content' => 'admin/page/edit',
-            'activeSection' => 'page',
             'page' => $page,
             'extraScripts' => $this->slugScript()
         ]);

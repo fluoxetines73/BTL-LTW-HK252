@@ -10,7 +10,7 @@ class AdminFaqController extends Controller {
         $faqModel = $this->model('Faq');
         
         // Get sort parameters from URL if not provided as method arguments
-        $sortBy = $sortBy ?? ($_GET['sort'] ?? null);
+        $sortBy = $sortBy ?? ($_GET['sort'] ?? 'id');
         $sortOrder = $sortOrder ?? ($_GET['order'] ?? 'asc');
         
         // Validate sort order
@@ -19,10 +19,8 @@ class AdminFaqController extends Controller {
         $faqs = $faqModel->getAllFaqs($sortBy, $sortOrder);
         $categories = $faqModel->findAllCategories();
         
-        $this->view('layouts/admin', [
+        $this->adminView('admin/faq/index', 'faq', [
             'title' => 'Quản lý FAQ',
-            'content' => 'admin/faq/index',
-            'activeSection' => 'faq',
             'faqs' => $faqs, 
             'categories' => $categories,
             'sortBy' => $sortBy,
@@ -49,10 +47,8 @@ class AdminFaqController extends Controller {
         // Merge existing categories with defaults
         $allCategories = array_unique(array_merge($defaultCategories, $categories));
         
-        $this->view('layouts/admin', [
+        $this->adminView('admin/faq/create', 'faq', [
             'title' => 'Thêm FAQ Mới',
-            'content' => 'admin/faq/create',
-            'activeSection' => 'faq',
             'categories' => $allCategories
         ]);
     }
@@ -122,10 +118,8 @@ class AdminFaqController extends Controller {
         
         $allCategories = array_unique(array_merge($defaultCategories, $categories));
 
-        $this->view('layouts/admin', [
+        $this->adminView('admin/faq/edit', 'faq', [
             'title' => 'Sửa FAQ',
-            'content' => 'admin/faq/edit',
-            'activeSection' => 'faq',
             'faq' => $faq,
             'categories' => $allCategories
         ]);

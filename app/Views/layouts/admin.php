@@ -16,25 +16,61 @@
 
         <main class="main-content">
             <div class="admin-header">
-                <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2">
                     <button id="sidebar-toggle" class="sidebar-toggle btn btn-outline-secondary btn-sm">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h1><?= htmlspecialchars($title ?? 'Dashboard') ?></h1>
+                    <h1 class="admin-header-title"><?= htmlspecialchars($title ?? 'Dashboard') ?></h1>
                 </div>
-                <div class="user-profile">
-                    <div>
-                        <strong><?= htmlspecialchars($_SESSION['auth_user']['name'] ?? 'Admin') ?></strong><br>
-                        <small>Admin</small>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="<?= BASE_URL ?>" class="btn btn-outline-primary btn-sm" target="_blank" title="Xem trang chủ">
+                        <i class="fas fa-external-link-alt me-1"></i> Xem trang chủ
+                    </a>
+                    <div class="user-profile">
+                        <span class="user-profile-name"><?= htmlspecialchars($_SESSION['auth_user']['name'] ?? 'Admin') ?></span>
+                        <span class="user-profile-role">Admin</span>
+                        <?php if (!empty($_SESSION['auth_user']['avatar'])): ?>
+                            <?php $avatarPath = (string)$_SESSION['auth_user']['avatar']; if (!str_starts_with($avatarPath, 'public/')) { $avatarPath = 'public/' . ltrim($avatarPath, '/'); } ?>
+                            <img src="<?= BASE_URL . htmlspecialchars($avatarPath) ?>" alt="Avatar" class="user-profile-avatar">
+                        <?php else: ?>
+                            <img src="<?= BASE_URL ?>public/uploads/avatars/default-avatar.svg" alt="Avatar" class="user-profile-avatar">
+                        <?php endif; ?>
                     </div>
-                    <?php if (!empty($_SESSION['auth_user']['avatar'])): ?>
-                        <?php $avatarPath = (string)$_SESSION['auth_user']['avatar']; if (!str_starts_with($avatarPath, 'public/')) { $avatarPath = 'public/' . ltrim($avatarPath, '/'); } ?>
-                        <img src="<?= BASE_URL . htmlspecialchars($avatarPath) ?>" alt="Avatar">
-                    <?php else: ?>
-                        <img src="<?= BASE_URL ?>public/uploads/avatars/default-avatar.svg" alt="Avatar">
-                    <?php endif; ?>
                 </div>
             </div>
+
+            <?php if (isset($stats)): ?>
+            <div class="admin-stats-bar">
+                <div class="stat-card stat-card--users">
+                    <div class="stat-card__icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-card__body">
+                        <span class="stat-card__value"><?= htmlspecialchars((string)($stats['total_users'] ?? 0)) ?></span>
+                        <span class="stat-card__label">Tổng Người dùng</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card--products">
+                    <div class="stat-card__icon"><i class="fas fa-box"></i></div>
+                    <div class="stat-card__body">
+                        <span class="stat-card__value"><?= htmlspecialchars((string)($stats['total_products'] ?? 0)) ?></span>
+                        <span class="stat-card__label">Tất cả Sản phẩm</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card--news">
+                    <div class="stat-card__icon"><i class="fas fa-newspaper"></i></div>
+                    <div class="stat-card__body">
+                        <span class="stat-card__value"><?= htmlspecialchars((string)($stats['total_news'] ?? 0)) ?></span>
+                        <span class="stat-card__label">Tất cả Tin tức</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-card--locked">
+                    <div class="stat-card__icon"><i class="fas fa-lock"></i></div>
+                    <div class="stat-card__body">
+                        <span class="stat-card__value"><?= htmlspecialchars((string)($stats['locked_users'] ?? 0)) ?></span>
+                        <span class="stat-card__label">Tài khoản Khóa</span>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <?php if (!empty($_SESSION['success'])): ?>
                 <div class="alert alert-success alert-dismissible fade show">
