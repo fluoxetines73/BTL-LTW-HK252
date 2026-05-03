@@ -66,24 +66,26 @@ class Controller {
     }
 
     /**
-     * Fetch admin dashboard stats (users, products, news, locked accounts)
+     * Fetch admin dashboard stats (users, movies, showtimes, combos, news)
      * @return array<string, int>
      */
     protected function getAdminStats(): array {
         try {
             $db = Database::getInstance()->getPdo();
             return [
-                'total_users' => $this->safeCount($db, "SELECT COUNT(*) FROM users"),
-                'total_products' => $this->safeCount($db, "SELECT COUNT(*) FROM products"),
-                'total_news' => $this->safeCount($db, "SELECT COUNT(*) FROM news"),
-                'locked_users' => $this->safeCount($db, "SELECT COUNT(*) FROM users WHERE status = 'inactive'"),
+                'users' => $this->safeCount($db, "SELECT COUNT(*) FROM users"),
+                'movies' => $this->safeCount($db, "SELECT COUNT(*) FROM movies"),
+                'showtimes' => $this->safeCount($db, "SELECT COUNT(*) FROM showtimes"),
+                'combos' => $this->safeCount($db, "SELECT COUNT(*) FROM combos"),
+                'news' => $this->safeCount($db, "SELECT COUNT(*) FROM news"),
             ];
         } catch (Throwable $e) {
             return [
-                'total_users' => 0,
-                'total_products' => 0,
-                'total_news' => 0,
-                'locked_users' => 0,
+                'users' => 0,
+                'movies' => 0,
+                'showtimes' => 0,
+                'combos' => 0,
+                'news' => 0,
             ];
         }
     }
