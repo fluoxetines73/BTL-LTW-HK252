@@ -1,17 +1,3 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Sửa Suất Chiếu - Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { background-color: #f4f6f9; }
-        .card { border-radius: 10px; }
-    </style>
-</head>
-<body>
-
 <div class="container py-4">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -54,7 +40,6 @@
                         
                         <div class="mb-3">
                             <label class="form-label fw-bold">Thời gian bắt đầu <span class="text-danger">*</span></label>
-                            <!-- Format lại chuẩn ISO cho thẻ datetime-local -->
                             <?php $formattedTime = date('Y-m-d\TH:i', strtotime($showtime['start_time'])); ?>
                             <input type="datetime-local" name="start_time" class="form-control" value="<?= $formattedTime ?>" required>
                         </div>
@@ -81,7 +66,3 @@
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>

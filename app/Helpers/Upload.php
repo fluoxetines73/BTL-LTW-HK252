@@ -20,8 +20,13 @@ class Upload {
             return null;
         }
 
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $mime = $finfo->file($file['tmp_name']);
+        // Detect MIME type using getimagesize (works without fileinfo extension)
+        $imgInfo = @getimagesize($file['tmp_name']);
+        if ($imgInfo === false) {
+            $this->error = 'File không phải là ảnh hợp lệ.';
+            return null;
+        }
+        $mime = $imgInfo['mime'] ?? '';
 
         if (!in_array($mime, self::ALLOWED_TYPES, true)) {
             $this->error = 'Chỉ chấp nhận ảnh JPEG, PNG, WebP, GIF.';

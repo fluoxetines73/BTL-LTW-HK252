@@ -13,14 +13,12 @@ class AdminMovieController extends Controller {
      * Hiển thị danh sách phim
      */
     public function index() {
-        // Sử dụng hàm model() của class cha để gọi Movie Model
         $movieModel = $this->model('Movie');
-        
         $movies = $movieModel->getAllMovies();
-        
-        // Truyền mảng data với key là 'movies'
-        $this->view('admin/movies/index', [
-            'movies' => $movies
+
+        $this->adminView('admin/movies/index', 'movie', [
+            'movies' => $movies,
+            'title' => 'Quản lý Phim'
         ]);
     }
 
@@ -28,7 +26,9 @@ class AdminMovieController extends Controller {
      * Giao diện thêm phim mới
      */
     public function create() {
-        $this->view('admin/movies/create');
+        $this->adminView('admin/movies/create', 'movie', [
+            'title' => 'Thêm Phim Mới'
+        ]);
     }
     /**
      * Xử lý dữ liệu form thêm mới và lưu vào database
@@ -94,9 +94,10 @@ class AdminMovieController extends Controller {
 
         $currentGenres = $this->model('Movie')->getGenreSlugsByMovieId($id); 
 
-        $this->view('admin/movies/edit', [
+        $this->adminView('admin/movies/edit', 'movie', [
             'movie' => $movie,
-            'currentGenres' => $currentGenres // Truyền mảng này sang để View biết nút nào cần bật sáng
+            'currentGenres' => $currentGenres,
+            'title' => 'Sửa Phim'
         ]);
     }
     /**

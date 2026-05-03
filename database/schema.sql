@@ -26,6 +26,12 @@ DROP TABLE IF EXISTS `cinemas`;
 DROP TABLE IF EXISTS `genres`;
 DROP TABLE IF EXISTS `user_registration_otps`;
 DROP TABLE IF EXISTS `users`;
+-- About page structured content tables
+DROP TABLE IF EXISTS `about_leadership`;
+DROP TABLE IF EXISTS `about_core_values`;
+DROP TABLE IF EXISTS `about_statistics`;
+DROP TABLE IF EXISTS `about_timeline_items`;
+DROP TABLE IF EXISTS `about_page_settings`;
 
 SET FOREIGN_KEY_CHECKS=1;
 
@@ -166,6 +172,20 @@ CREATE TABLE `pages` (
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY `uk_slug` (`slug`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table: faqs
+-- --------------------------------------------------------
+CREATE TABLE `faqs` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `question` VARCHAR(500) NOT NULL,
+    `answer` TEXT NOT NULL,
+    `category` VARCHAR(100) NOT NULL DEFAULT 'Chung',
+    `sort_order` INT NOT NULL DEFAULT 0,
+    `status` ENUM('active','inactive') NOT NULL DEFAULT 'active',
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -405,4 +425,105 @@ CREATE TABLE `booking_combos` (
     INDEX `idx_combo` (`combo_id`),
     CONSTRAINT `fk_bc_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`id`) ON DELETE CASCADE,
     CONSTRAINT `fk_bc_combo` FOREIGN KEY (`combo_id`) REFERENCES `combos` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table: about_page_settings
+-- Main settings for About page (single row)
+-- --------------------------------------------------------
+CREATE TABLE `about_page_settings` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    
+    -- Hero Section
+    `hero_title` VARCHAR(255) NOT NULL DEFAULT 'Về CJ CGV Việt Nam',
+    `hero_kicker` VARCHAR(100) NOT NULL DEFAULT 'Thông tin & hỗ trợ',
+    
+    -- Introduction Section
+    `intro_heading` VARCHAR(255) NOT NULL DEFAULT 'Tổ hợp Văn hóa - Cultureplex',
+    `intro_paragraph_1` TEXT,
+    `intro_paragraph_2` TEXT,
+    `intro_image` VARCHAR(255) DEFAULT 'public/images/about/about-6.png',
+    
+    -- Vision & Mission Section
+    `vision_title` VARCHAR(100) NOT NULL DEFAULT 'Tầm nhìn',
+    `vision_icon` VARCHAR(100) DEFAULT 'fa-solid fa-globe',
+    `vision_content` TEXT,
+    `mission_title` VARCHAR(100) NOT NULL DEFAULT 'Sứ mệnh',
+    `mission_icon` VARCHAR(100) DEFAULT 'fa-solid fa-bullseye',
+    `mission_content` TEXT,
+    
+    -- Metadata
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `updated_by` INT NULL,
+    
+    FOREIGN KEY (`updated_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table: about_timeline_items
+-- Timeline milestones with auto-calculated AOS positions
+-- --------------------------------------------------------
+CREATE TABLE `about_timeline_items` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `year_label` VARCHAR(50) NOT NULL,
+    `content` TEXT NOT NULL,
+    `sort_order` INT NOT NULL DEFAULT 0,
+    `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_sort` (`sort_order`),
+    INDEX `idx_active` (`is_active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table: about_statistics
+-- Counter statistics with staggered AOS delays
+-- --------------------------------------------------------
+CREATE TABLE `about_statistics` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `number_display` VARCHAR(20) NOT NULL COMMENT 'e.g., "80+", "470+"',
+    `label` VARCHAR(100) NOT NULL,
+    `sort_order` INT NOT NULL DEFAULT 0,
+    `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_sort` (`sort_order`),
+    INDEX `idx_active` (`is_active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table: about_core_values
+-- Core values cards with flip-left AOS animation
+-- --------------------------------------------------------
+CREATE TABLE `about_core_values` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `icon_class` VARCHAR(100) NOT NULL COMMENT 'Font Awesome class',
+    `title` VARCHAR(100) NOT NULL,
+    `description` TEXT NOT NULL,
+    `sort_order` INT NOT NULL DEFAULT 0,
+    `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_sort` (`sort_order`),
+    INDEX `idx_active` (`is_active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table: about_leadership
+-- Leadership team members with avatar support
+-- --------------------------------------------------------
+CREATE TABLE `about_leadership` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `name` VARCHAR(100) NOT NULL,
+    `role` VARCHAR(100) NOT NULL,
+    `avatar_type` ENUM('icon', 'image') NOT NULL DEFAULT 'icon',
+    `avatar_value` VARCHAR(255) NOT NULL DEFAULT 'fa-solid fa-user-tie' COMMENT 'FontAwesome class or image path',
+    `avatar_color_class` VARCHAR(50) DEFAULT 'team-avatar-1' COMMENT 'CSS class for icon styling',
+    `status` ENUM('active', 'retired') NOT NULL DEFAULT 'active',
+    `sort_order` INT NOT NULL DEFAULT 0,
+    `is_active` BOOLEAN NOT NULL DEFAULT TRUE,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX `idx_sort` (`sort_order`),
+    INDEX `idx_active` (`is_active`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

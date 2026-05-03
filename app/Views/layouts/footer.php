@@ -1,4 +1,4 @@
-<footer class="cgv-footer bg-white">
+<footer class="cgv-footer">
     <!-- TOP SECTION - Cinema Technologies -->
     <div class="cgv-footer-brands">
         <div class="cgv-container">

@@ -6,3 +6,12 @@ node_modules/
 php-8.5.5-Win32-vs17-x64/
 .sisyphus/
 configs/database.php
+
+# AI agent documentation
+AGENTS.md
+
+# Playwright MCP logs
+.playwright-mcp/
+
+# Uploads folder (user uploaded content)
+public/uploads/
