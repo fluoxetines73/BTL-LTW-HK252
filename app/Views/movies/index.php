@@ -17,7 +17,7 @@
             <?php foreach ($movies as $movie): ?>
                 <div class="col-md-6 col-lg-3">
                     <div class="card h-100 shadow-sm border-0 bg-dark text-white">
-                        <img src="<?= !empty($movie['poster']) ? BASE_URL . htmlspecialchars($movie['poster']) : 'https://via.placeholder.com/300x450' ?>" 
+                        <img src="<?= !empty($movie['poster']) ? BASE_URL . 'public/uploads/movies/' . htmlspecialchars($movie['poster']) : 'https://via.placeholder.com/300x450' ?>" 
                              class="card-img-top" alt="<?= htmlspecialchars($movie['title']) ?>" 
                              style="height: 350px; object-fit: cover;">
                         <div class="card-body d-flex flex-column">

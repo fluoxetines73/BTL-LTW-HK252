@@ -10,7 +10,7 @@
                     <!-- Thông tin Phim -->
                     <div class="row border-bottom border-secondary pb-4 mb-4">
                         <div class="col-md-3 text-center text-md-start mb-3 mb-md-0">
-                            <img src="<?= BASE_URL . htmlspecialchars($movie['poster']) ?>" class="img-fluid rounded shadow" alt="Poster">
+                            <img src="<?= !empty($movie['poster']) ? BASE_URL . 'public/uploads/movies/' . htmlspecialchars($movie['poster']) : 'https://via.placeholder.com/300x450?text=Poster' ?>" class="img-fluid rounded shadow" alt="Poster">
                         </div>
                         <div class="col-md-9">
                             <h2 class="text-danger fw-bold mb-3"><?= htmlspecialchars($movie['title']) ?></h2>

@@ -4,7 +4,7 @@
     </div>
     
     <div class="card-body p-4">
-        <form action="<?= BASE_URL ?>admin/movie/store" method="POST">
+        <form action="<?= BASE_URL ?>admin/movie/store" method="POST" enctype="multipart/form-data">
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Tên Phim <span class="text-danger">*</span></label>
@@ -115,6 +115,18 @@
                     <small class="text-muted mt-2 d-block">
                         <i class="fas fa-hand-pointer"></i> Nhấn trực tiếp vào các nút trên để chọn hoặc bỏ chọn thể loại.
                     </small>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Ảnh Poster</label>
+                    <input type="file" name="poster" class="form-control" accept="image/*">
+                    <small class="text-muted">Chọn ảnh poster cho phim (không bắt buộc)</small>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Ảnh Banner</label>
+                    <input type="file" name="banner" class="form-control" accept="image/*">
+                    <small class="text-muted">Chọn ảnh banner cho phim (không bắt buộc)</small>
                 </div>
 
                 <div class="col-md-12">

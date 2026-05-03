@@ -7,19 +7,19 @@
 				<div class="col-12 col-md-6 col-lg-7 hero-image-wrapper">
 					<?php if (!empty($featured_movie['banner'])): ?>
 						<img 
-							src="<?= BASE_URL . htmlspecialchars($featured_movie['banner']) ?>" 
+							src="<?= BASE_URL ?>public/uploads/movies/<?= htmlspecialchars($featured_movie['banner']) ?>" 
 							alt="<?= htmlspecialchars($featured_movie['title']) ?>" 
 							class="hero-image img-fluid w-100" 
 							style="height: 400px; object-fit: cover; display: block;">
 					<?php elseif (!empty($featured_movie['poster'])): ?>
 						<img 
-							src="<?= BASE_URL . htmlspecialchars($featured_movie['poster']) ?>" 
+							src="<?= BASE_URL ?>public/uploads/movies/<?= htmlspecialchars($featured_movie['poster']) ?>" 
 							alt="<?= htmlspecialchars($featured_movie['title']) ?>" 
 							class="hero-image img-fluid w-100" 
 							style="height: 400px; object-fit: cover; display: block;">
 					<?php else: ?>
-						<div class="hero-image bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 400px;">
-							<span>Chưa có hình ảnh</span>
+						<div class="hero-image bg-gradient d-flex align-items-center justify-content-center" style="height: 400px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+							<img src="<?= BASE_URL ?>public/images/logo/cgvlogo.svg" alt="CGV Cinema" style="max-width: 200px; opacity: 0.3;">
 						</div>
 					<?php endif; ?>
 				</div>
@@ -124,15 +124,15 @@
                                 <!-- Movie Poster -->
                                 <div class="movie-card-image-wrapper position-relative overflow-hidden">
                                     <?php if (!empty($movie['poster'])): ?>
-                                        <img 
-                                            src="<?= BASE_URL . htmlspecialchars($movie['poster']) ?>" 
-                                            alt="<?= htmlspecialchars($movie['title'] ?? 'Unknown') ?>" 
-                                            class="movie-card-image img-fluid w-100" 
+                                        <img
+                                            src="<?= BASE_URL ?>public/uploads/movies/<?= htmlspecialchars($movie['poster']) ?>"
+                                            alt="<?= htmlspecialchars($movie['title'] ?? 'Unknown') ?>"
+                                            class="movie-card-image img-fluid w-100"
                                             loading="lazy"
                                             style="height: 300px; object-fit: cover; display: block;">
                                     <?php else: ?>
-                                        <div class="movie-card-image bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 300px;">
-                                            <span class="small">Chưa có hình ảnh</span>
+                                        <div class="movie-card-image bg-gradient d-flex align-items-center justify-content-center" style="height: 300px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                                            <img src="<?= BASE_URL ?>public/images/logo/cgvlogo.svg" alt="CGV Cinema" style="max-width: 100px; opacity: 0.3;">
                                         </div>
                                     <?php endif; ?>
                                 </div>
@@ -230,11 +230,11 @@
 													class="ad-card-image img-fluid w-100" 
 													loading="lazy"
 													style="height: 280px; object-fit: cover; display: block;">
-											<?php else: ?>
-												<div class="ad-card-image bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 280px;">
-													<span class="small">Chưa có hình ảnh quảng cáo</span>
-												</div>
-											<?php endif; ?>
+										<?php else: ?>
+											<div class="ad-card-image bg-gradient d-flex align-items-center justify-content-center" style="height: 280px; background: linear-gradient(135deg, #e71a0f 0%, #ff6b6b 100%);">
+												<i class="fas fa-percentage" style="font-size: 48px; opacity: 0.4; color: white;"></i>
+											</div>
+										<?php endif; ?>
 										</div>
 
 										<!-- Ad Info -->
@@ -294,56 +294,6 @@
 	</div>
 </section>
 
-<!-- Genre Filter Bar Section -->
-<section class="genre-filter-section py-5 mb-5">
-	<div class="container-fluid px-4 px-md-5">
-		<!-- Section Title -->
-		<div class="row mb-4">
-			<div class="col-12">
-				<h2 class="genre-title h3 mb-0">
-					Browse by Genre
-				</h2>
-				<p class="text-muted small mt-1">
-					Explore movies organized by your favorite genres
-				</p>
-			</div>
-		</div>
-
-		<!-- Genre Buttons/Chips -->
-		<?php if (!empty($genres) && is_array($genres) && count($genres) > 0): ?>
-			<div class="row">
-				<div class="col-12">
-					<div class="genre-chips-wrapper d-flex flex-wrap gap-3">
-						<?php foreach ($genres as $genre): ?>
-							<a 
-								href="<?= BASE_URL ?>movies/current?genre=<?= urlencode($genre['slug'] ?? '') ?>" 
-								class="genre-chip btn btn-outline-secondary"
-								title="<?= htmlspecialchars($genre['name'] ?? 'Unknown Genre') ?>">
-								<span class="genre-name">
-									<?= htmlspecialchars($genre['name'] ?? 'Unknown') ?>
-								</span>
-								<span class="genre-count text-muted ms-2">
-									(<?= (int)($genre['movie_count'] ?? 0) ?> <?= ((int)($genre['movie_count'] ?? 0) === 1) ? 'movie' : 'movies' ?>)
-								</span>
-							</a>
-						<?php endforeach; ?>
-					</div>
-				</div>
-			</div>
-		<?php else: ?>
-			<!-- Fallback when no genres -->
-			<div class="row">
-				<div class="col-12">
-					<div class="alert alert-info" role="alert">
-						<h5 class="alert-heading">No genres available</h5>
-						<p class="mb-0">Please check back later to browse movies by genre.</p>
-					</div>
-				</div>
-			</div>
-		<?php endif; ?>
-	</div>
-</section>
-
 <!-- Coming Soon Carousel Section -->
 <section class="coming-soon-section py-5 mb-5">
 	<div class="container-fluid px-4 px-md-5">
@@ -372,26 +322,26 @@
 									<div class="movie-card h-100">
 										<!-- Movie Poster -->
 										<div class="movie-card-image-wrapper position-relative overflow-hidden">
-											<?php if (!empty($movie['poster'])): ?>
-												<img 
-													src="<?= BASE_URL . htmlspecialchars($movie['poster']) ?>" 
-													alt="<?= htmlspecialchars($movie['title'] ?? 'Unknown') ?>" 
-													class="movie-card-image img-fluid w-100" 
-													loading="lazy"
-													style="height: 300px; object-fit: cover; display: block;">
-											<?php else: ?>
-												<div class="movie-card-image bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 300px;">
-													<span class="small">Chưa có hình ảnh</span>
-												</div>
-											<?php endif; ?>
+<?php if (!empty($movie['poster'])): ?>
+											<img
+												src="<?= BASE_URL ?>public/uploads/movies/<?= htmlspecialchars($movie['poster']) ?>"
+												alt="<?= htmlspecialchars($movie['title'] ?? 'Unknown') ?>"
+												class="movie-card-image img-fluid w-100"
+												loading="lazy"
+												style="height: 300px; object-fit: cover; display: block;">
+									<?php else: ?>
+										<div class="movie-card-image bg-gradient d-flex align-items-center justify-content-center" style="height: 300px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+											<img src="<?= BASE_URL ?>public/images/logo/cgvlogo.svg" alt="CGV Cinema" style="max-width: 100px; opacity: 0.3;">
 										</div>
+									<?php endif; ?>
+								</div>
 
-										<!-- Movie Info -->
-										<div class="movie-card-content p-3">
-											<!-- Title -->
-											<h5 class="movie-card-title mb-2">
-												<a 
-													href="<?= BASE_URL ?>movies/<?= (int)($movie['id'] ?? 0) ?>" 
+								<!-- Movie Info -->
+								<div class="movie-card-content p-3">
+									<!-- Title -->
+									<h5 class="movie-card-title mb-2">
+										<a 
+											href="<?= BASE_URL ?>movies/<?= (int)($movie['id'] ?? 0) ?>"
 													class="text-decoration-none"
 													title="<?= htmlspecialchars($movie['title'] ?? 'Unknown') ?>">
 													<?= htmlspecialchars(strlen($movie['title'] ?? '') > 25 ? substr($movie['title'], 0, 25) . '...' : ($movie['title'] ?? 'Unknown')) ?>
@@ -539,14 +489,14 @@
 										class="news-card-image img-fluid w-100" 
 										loading="lazy"
 										style="height: 200px; object-fit: cover; display: block;">
-								<?php else: ?>
-									<div class="news-card-image bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
-										<span class="small">Chưa có hình ảnh</span>
-									</div>
-								<?php endif; ?>
-							</div>
+							<?php else: ?>
+								<div class="news-card-image bg-gradient d-flex align-items-center justify-content-center" style="height: 200px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+									<i class="fas fa-newspaper" style="font-size: 36px; opacity: 0.4; color: white;"></i>
+								</div>
+							<?php endif; ?>
+						</div>
 
-							<!-- News Info -->
+						<!-- News Info -->
 							<div class="news-card-content p-3">
 								<!-- Category Badge -->
 								<?php if (!empty($item['category'])): ?>

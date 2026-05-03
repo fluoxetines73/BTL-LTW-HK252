@@ -99,7 +99,7 @@
                         <?php if (!empty($movie['poster'])): ?>
                             <div class="mt-2">
                                 <small class="text-muted d-block mb-1">Poster hiện tại:</small>
-                                <img src="<?= BASE_URL . htmlspecialchars($movie['poster']) ?>" alt="Poster" class="img-thumbnail" style="height: 150px; object-fit: cover;">
+                                <img src="<?= BASE_URL ?>public/uploads/movies/<?= htmlspecialchars($movie['poster']) ?>" alt="Poster" class="img-thumbnail" style="height: 150px; object-fit: cover;">
                             </div>
                         <?php endif; ?>
                     </div>
@@ -109,7 +109,7 @@
                         <?php if (!empty($movie['banner'])): ?>
                             <div class="mt-2">
                                 <small class="text-muted d-block mb-1">Banner hiện tại:</small>
-                                <img src="<?= BASE_URL . htmlspecialchars($movie['banner']) ?>" alt="Banner" class="img-thumbnail" style="height: 100px; object-fit: cover;">
+                                <img src="<?= BASE_URL ?>public/uploads/movies/<?= htmlspecialchars($movie['banner']) ?>" alt="Banner" class="img-thumbnail" style="height: 100px; object-fit: cover;">
                             </div>
                         <?php endif; ?>
                     </div>
