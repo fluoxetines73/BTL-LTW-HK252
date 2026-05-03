@@ -113,4 +113,74 @@ class ProductController extends Controller {
             'grandTotal' => $grandTotal
         ]);
     }
+	/**
+     * Xử lý thanh toán và lưu đơn hàng vào Database
+     */
+    public function processPayment() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('home/index');
+            return;
+        }
+
+        $showtimeId = $_POST['showtime_id'] ?? 0;
+        $selectedSeatsStr = $_POST['selected_seats'] ?? '';
+        $grandTotal = $_POST['grand_total'] ?? 0;
+        $userId = $_SESSION['user']['id'] ?? 1; // Tạm lấy ID 1 nếu chưa đăng nhập
+
+        // Sinh mã đặt vé ngẫu nhiên để thỏa mãn ràng buộc UNIQUE
+        $bookingCode = 'CGV-' . strtoupper(bin2hex(random_bytes(4)));
+
+        $bookingModel = $this->model('Booking');
+        $showtimeModel = $this->model('Showtime');
+
+        // Chuẩn bị mảng dữ liệu khớp hoàn toàn với Model[cite: 9]
+        $bookingData = [
+            'booking_code'    => $bookingCode,
+            'user_id'         => $userId,
+            'showtime_id'     => $showtimeId,
+            'total_amount'    => $grandTotal,
+            'discount_amount' => 0,
+            'final_amount'    => $grandTotal,
+            'payment_method'  => 'cash',      // Theo ENUM trong schema[cite: 11]
+            'payment_status'  => 'pending',   // Theo ENUM trong schema[cite: 11]
+            'status'          => 'confirmed'  // Theo ENUM trong schema[cite: 11]
+        ];
+
+        $bookingId = $bookingModel->createBooking($bookingData);
+
+        if ($bookingId) {
+            // Xử lý lưu vé chi tiết (giữ nguyên logic tách ghế cũ)
+            $seatArray = explode(',', $selectedSeatsStr); 
+            foreach ($seatArray as $seatCode) {
+                $seatCode = trim($seatCode);
+                if (empty($seatCode)) continue;
+
+                $row = substr($seatCode, 0, 1);
+                $col = substr($seatCode, 1);
+                $seatId = $showtimeModel->getSeatIdByCode($row, $col);
+
+                if ($seatId) {
+                    $bookingModel->createTicket([
+                        'booking_id'  => $bookingId,
+                        'showtime_id' => $showtimeId,
+                        'seat_id'     => $seatId,
+                        'price'       => 100000 
+                    ]);
+                }
+            }
+            $this->redirect('product/success');
+        } else {
+            echo "Lỗi: Không thể khởi tạo đơn hàng.";
+        }
+    }
+
+    /**
+     * Giao diện thông báo thanh toán thành công
+     */
+    public function success() {
+        $this->view('layouts/main', [
+            'title' => 'Đặt vé thành công',
+            'content' => 'product/success' // Bạn có thể tự tạo file view này sau
+        ]);
+    }
 }

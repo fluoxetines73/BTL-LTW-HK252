@@ -62,4 +62,52 @@ class Booking extends Model {
      * Tương lai: Hàm tạo đơn hàng mới sẽ được viết ở đây
      */
     // public function createBooking($data) { ... }
+    /**
+     * Tạo một đơn hàng mới và trả về ID của đơn hàng đó
+     */
+    /**
+     * Tạo một đơn hàng mới - Đã loại bỏ booking_date và sửa total_price
+     */
+    public function createBooking($data) {
+        // Liệt kê chính xác các cột NOT NULL từ file schema.sql bạn gửi
+        $sql = "INSERT INTO {$this->table} 
+                (booking_code, user_id, showtime_id, total_amount, discount_amount, final_amount, payment_method, payment_status, status) 
+                VALUES 
+                (:booking_code, :user_id, :showtime_id, :total_amount, :discount_amount, :final_amount, :payment_method, :payment_status, :status)";
+        
+        $stmt = $this->db->prepare($sql);
+        
+        // Cần truyền ĐỦ 9 tham số tương ứng với 9 nhãn ở trên để tránh lỗi HY093
+        $stmt->execute([
+            ':booking_code'    => $data['booking_code'],
+            ':user_id'         => $data['user_id'],
+            ':showtime_id'     => $data['showtime_id'],
+            ':total_amount'    => $data['total_amount'],
+            ':discount_amount' => $data['discount_amount'],
+            ':final_amount'    => $data['final_amount'],
+            ':payment_method'  => $data['payment_method'],
+            ':payment_status'  => $data['payment_status'],
+            ':status'          => $data['status']
+        ]);
+        
+        return $this->db->lastInsertId();
+    }
+
+    /**
+     * Lưu thông tin từng chiếc vé (ghế)
+     */
+    public function createTicket($data) {
+        // Giả sử bạn có bảng tickets
+        $sql = "INSERT INTO tickets (booking_id, showtime_id, seat_code, price) 
+                VALUES (:booking_id, :showtime_id, :seat_code, :price)";
+        
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            ':booking_id' => $data['booking_id'],
+            ':showtime_id' => $data['showtime_id'],
+            ':seat_code' => $data['seat_code'],
+            ':price' => $data['price']
+        ]);
+    }
+    
 }
