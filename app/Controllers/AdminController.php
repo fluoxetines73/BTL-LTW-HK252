@@ -12,9 +12,32 @@ class AdminController extends Controller {
     public function admin_dashboard() {
         $this->middlewareAdmin();
 
+        // Fetch counts for dashboard stat cards
+        $userModel = $this->model('User');
+        $movieModel = $this->model('Movie');
+        $showtimeModel = $this->model('Showtime');
+        $comboModel = $this->model('Combo');
+        $newsModel = $this->model('News');
+
+        $stats = [
+            'users' => $this->getTableCount($userModel),
+            'movies' => $this->getTableCount($movieModel),
+            'showtimes' => $this->getTableCount($showtimeModel),
+            'combos' => $this->getTableCount($comboModel),
+            'news' => $this->getTableCount($newsModel),
+        ];
+
         $this->adminView('admin/dashboard', 'dashboard', [
             'title' => 'Bảng điều khiển Admin',
+            'stats' => $stats,
         ]);
+    }
+
+    /**
+     * Helper method to get count from any model
+     */
+    private function getTableCount($model): int {
+        return $model->count();
     }
 
     // ===== USER MANAGEMENT =====

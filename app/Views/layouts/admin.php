@@ -41,32 +41,44 @@
 
             <?php if (isset($stats)): ?>
             <div class="admin-stats-bar">
+                <!-- Users -->
                 <div class="stat-card stat-card--users">
                     <div class="stat-card__icon"><i class="fas fa-users"></i></div>
                     <div class="stat-card__body">
-                        <span class="stat-card__value"><?= htmlspecialchars((string)($stats['total_users'] ?? 0)) ?></span>
-                        <span class="stat-card__label">Tổng Người dùng</span>
+                        <span class="stat-card__value"><?= htmlspecialchars((string)($stats['users'] ?? 0)) ?></span>
+                        <span class="stat-card__label">Người dùng</span>
                     </div>
                 </div>
-                <div class="stat-card stat-card--products">
-                    <div class="stat-card__icon"><i class="fas fa-box"></i></div>
+                <!-- Movies -->
+                <div class="stat-card stat-card--movies">
+                    <div class="stat-card__icon"><i class="fas fa-film"></i></div>
                     <div class="stat-card__body">
-                        <span class="stat-card__value"><?= htmlspecialchars((string)($stats['total_products'] ?? 0)) ?></span>
-                        <span class="stat-card__label">Tất cả Sản phẩm</span>
+                        <span class="stat-card__value"><?= htmlspecialchars((string)($stats['movies'] ?? 0)) ?></span>
+                        <span class="stat-card__label">Phim</span>
                     </div>
                 </div>
+                <!-- Showtimes -->
+                <div class="stat-card stat-card--showtimes">
+                    <div class="stat-card__icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-card__body">
+                        <span class="stat-card__value"><?= htmlspecialchars((string)($stats['showtimes'] ?? 0)) ?></span>
+                        <span class="stat-card__label">Suất chiếu</span>
+                    </div>
+                </div>
+                <!-- Combos -->
+                <div class="stat-card stat-card--combos">
+                    <div class="stat-card__icon"><i class="fas fa-box-open"></i></div>
+                    <div class="stat-card__body">
+                        <span class="stat-card__value"><?= htmlspecialchars((string)($stats['combos'] ?? 0)) ?></span>
+                        <span class="stat-card__label">Combo</span>
+                    </div>
+                </div>
+                <!-- News -->
                 <div class="stat-card stat-card--news">
                     <div class="stat-card__icon"><i class="fas fa-newspaper"></i></div>
                     <div class="stat-card__body">
-                        <span class="stat-card__value"><?= htmlspecialchars((string)($stats['total_news'] ?? 0)) ?></span>
-                        <span class="stat-card__label">Tất cả Tin tức</span>
-                    </div>
-                </div>
-                <div class="stat-card stat-card--locked">
-                    <div class="stat-card__icon"><i class="fas fa-lock"></i></div>
-                    <div class="stat-card__body">
-                        <span class="stat-card__value"><?= htmlspecialchars((string)($stats['locked_users'] ?? 0)) ?></span>
-                        <span class="stat-card__label">Tài khoản Khóa</span>
+                        <span class="stat-card__value"><?= htmlspecialchars((string)($stats['news'] ?? 0)) ?></span>
+                        <span class="stat-card__label">Tin tức</span>
                     </div>
                 </div>
             </div>
