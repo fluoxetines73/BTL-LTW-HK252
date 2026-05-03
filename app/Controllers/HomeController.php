@@ -66,6 +66,24 @@ class HomeController extends Controller {
     ]);
 	}
     public function about(): void {
+        // Load structured About page data from new tables
+        $settingsModel = $this->model('AboutPageSettings');
+        $timelineModel = $this->model('AboutTimelineItems');
+        $statsModel = $this->model('AboutStatistics');
+        $valuesModel = $this->model('AboutCoreValues');
+        $leadershipModel = $this->model('AboutLeadership');
+
+        // Get all data
+        $settings = $settingsModel->getSettings();
+        $timelineItems = $timelineModel->getAllItems();
+        $statistics = $statsModel->getAllItems();
+        $coreValues = $valuesModel->getAllItems();
+        $leadership = $leadershipModel->getAllItems();
+
+        // Check if we have structured data
+        $hasStructuredData = !empty($settings);
+
+        // Keep backward compatibility with old pages table
         $pageModel = $this->model('Page');
         $page = $pageModel->findBySlug('gioi-thieu');
 
@@ -79,6 +97,13 @@ class HomeController extends Controller {
 			'title' => 'Giới thiệu',
 			'content' => 'pages/about',
 			'page' => $page,
+            // New structured data
+            'settings' => $settings,
+            'timelineItems' => $timelineItems,
+            'statistics' => $statistics,
+            'coreValues' => $coreValues,
+            'leadership' => $leadership,
+            'hasStructuredData' => $hasStructuredData,
 			'extraHead' => $extraHead,
 			'extraScripts' => $extraScripts,
 		]);

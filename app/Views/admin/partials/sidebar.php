@@ -55,6 +55,11 @@
             </a>
         </li>
         <li>
+            <a href="<?= BASE_URL ?>admin/about/index" class="<?= ($activeSection ?? '') === 'about' ? 'active' : '' ?>">
+                <i class="fas fa-info-circle"></i> <span class="sidebar-text">Trang Giới thiệu</span>
+            </a>
+        </li>
+        <li>
             <a href="<?= BASE_URL ?>profile/edit" class="<?= ($activeSection ?? '') === 'profile' ? 'active' : '' ?>">
                 <i class="fas fa-user-edit"></i> <span class="sidebar-text">Hồ sơ cá nhân</span>
             </a>

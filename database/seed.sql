@@ -256,5 +256,63 @@ DELETE FROM `contacts`;
 INSERT INTO `contacts` (`name`, `email`, `phone`, `subject`, `message`, `status`) VALUES
 ('Nguyen Van A', 'a@example.com', '0909999999', 'Ho tro dat ve', 'Toi can ho tro khi thanh toan.', 'new');
 
+-- ============================================================
+-- ABOUT PAGE STRUCTURED CONTENT
+-- ============================================================
+DELETE FROM `about_leadership`;
+DELETE FROM `about_core_values`;
+DELETE FROM `about_statistics`;
+DELETE FROM `about_timeline_items`;
+DELETE FROM `about_page_settings`;
+
+-- About page main settings
+INSERT INTO `about_page_settings` (
+    `hero_title`, `hero_kicker`, 
+    `intro_heading`, `intro_paragraph_1`, `intro_paragraph_2`, `intro_image`,
+    `vision_title`, `vision_icon`, `vision_content`,
+    `mission_title`, `mission_icon`, `mission_content`
+) VALUES (
+    'Về CJ CGV Việt Nam',
+    'Thông tin & hỗ trợ',
+    'Tổ hợp Văn hóa - Cultureplex',
+    '<strong>CJ CGV</strong> là một trong top 5 cụm rạp chiếu phim lớn nhất toàn cầu và là nhà phát hành, cụm rạp chiếu phim lớn nhất Việt Nam. Chúng tôi tự hào là đơn vị tiên phong mang đến khái niệm độc đáo <strong>Cultureplex</strong> (Tổ hợp Văn hóa), nơi khán giả không chỉ đến để xem phim mà còn để trải nghiệm các dịch vụ giải trí, ẩm thực và mua sắm đẳng cấp.',
+    'Tại Việt Nam, CGV luôn nỗ lực xây dựng các chương trình Trách nhiệm xã hội như <em>"Điện ảnh cho mọi ngườii"</em>, <em>"Dự án phim ngắn CJ"</em> nhằm đồng hành và đóng góp cho sự phát triển chung của nền công nghiệp điện ảnh nước nhà.',
+    'public/images/about/about-6.png',
+    'Tầm nhìn',
+    'fa-solid fa-globe',
+    'Trở thành công ty giải trí và truyền thông phong cách sống toàn cầu (Global Lifestyle Entertainment Company). CGV hướng tới việc tạo ra những giá trị vượt ra ngoài những giới hạn của rạp chiếu phim truyền thống.',
+    'Sứ mệnh',
+    'fa-solid fa-bullseye',
+    'Tiên phong mang đến những công nghệ điện ảnh hiện đại nhất thế giới. Không ngừng hỗ trợ các nhà làm phim trẻ và đóng góp vào sự phát triển mạnh mẽ của nền điện ảnh Việt Nam.'
+);
+
+-- Timeline items
+INSERT INTO `about_timeline_items` (`year_label`, `content`, `sort_order`) VALUES
+('2011', 'CJ Group (Hàn Quốc) chính thức tiếp quản hệ thống rạp MegaStar tại Việt Nam, đặt nền móng đầu tiên cho hành trình nâng tầm trải nghiệm điện ảnh tiêu chuẩn quốc tế.', 1),
+('2014', 'Chính thức chuyển đổi thương hiệu thành <strong>CGV Cinemas</strong>. Ra mắt công nghệ chiếu phim 4DX và IMAX lần đầu tiên tại Việt Nam, tạo nên cơn sốt phòng vé.', 2),
+('2017 - 2019', 'Giới thiệu công nghệ ScreenX – phòng chiếu phim đa diện đầu tiên, và Starium Laser. Liên tục ra mắt các phòng chiếu cao cấp như Gold Class, L\'Amour, Premium.', 3),
+('Hiện nay', 'Khẳng định vị thế nhà phát hành và cụm rạp số 1 Việt Nam với mạng lưới phủ sóng khắp các tỉnh thành, trở thành điểm đến văn hóa quen thuộc của hàng triệu khán giả.', 4);
+
+-- Statistics
+INSERT INTO `about_statistics` (`number_display`, `label`, `sort_order`) VALUES
+('80+', 'Cụm rạp toàn quốc', 1),
+('470+', 'Phòng chiếu hiện đại', 2),
+('30+', 'Tỉnh / Thành phố', 3),
+('#1', 'Thị phần tại Việt Nam', 4);
+
+-- Core values
+INSERT INTO `about_core_values` (`icon_class`, `title`, `description`, `sort_order`) VALUES
+('fa-solid fa-film', 'Công nghệ đỉnh cao', 'Độc quyền mang đến các định dạng chiếu phim tiên tiến nhất như IMAX, 4DX, ScreenX, Starium mang lại trải nghiệm nhập vai hoàn hảo.', 1),
+('fa-solid fa-shapes', 'Cultureplex', 'Mô hình Tổ hợp văn hóa kết hợp đa dạng các dịch vụ mua sắm, ăn uống và giải trí ngay trong cùng một không gian rạp chiếu.', 2),
+('fa-solid fa-seedling', 'Nuôi dưỡng tài năng', 'Tổ chức và tài trợ các cuộc thi phim ngắn, lớp học làm phim nhằm ươm mầm cho các đạo diễn, biên kịch trẻ của Việt Nam.', 3),
+('fa-solid fa-heart', 'Trách nhiệm xã hội', 'Cam kết tổ chức định kỳ các chương trình chiếu phim miễn phí cho trẻ em vùng sâu, vùng xa có hoàn cảnh khó khăn.', 4);
+
+-- Leadership team
+INSERT INTO `about_leadership` (`name`, `role`, `avatar_type`, `avatar_value`, `avatar_color_class`, `status`, `sort_order`) VALUES
+('Nguyễn Tấn Đạt', 'CEO & Founder', 'icon', 'fa-solid fa-user-tie', 'team-avatar-1', 'retired', 1),
+('Nguyễn Thành Danh', 'Giám đốc vận hành', 'icon', 'fa-solid fa-user-tie', 'team-avatar-2', 'active', 2),
+('Nguyễn Nhất Duy', 'Giám đốc kỹ thuật', 'icon', 'fa-solid fa-user-secret', 'team-avatar-3', 'active', 3),
+('Hồ Bá Khang', 'Giám đốc sáng tạo', 'icon', 'fa-solid fa-user-secret', 'team-avatar-4', 'active', 4);
+
 COMMIT;
 SET FOREIGN_KEY_CHECKS=1;

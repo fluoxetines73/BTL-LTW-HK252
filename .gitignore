@@ -12,3 +12,6 @@ AGENTS.md
 
 # Playwright MCP logs
 .playwright-mcp/
+
+# Uploads folder (user uploaded content)
+public/uploads/
