@@ -47,7 +47,7 @@
                 <div class="movie-banner-dark shadow-lg">
                     <div class="row g-4">
                         <div class="col-md-4">
-                            <img src="<?= !empty($movie['poster']) ? BASE_URL . htmlspecialchars($movie['poster']) : 'https://via.placeholder.com/300x450?text=Poster' ?>" class="poster-img" alt="Poster">
+                            <img src="<?= !empty($movie['poster']) ? BASE_URL . 'public/uploads/movies/' . htmlspecialchars($movie['poster']) : 'https://via.placeholder.com/300x450?text=Poster' ?>" class="poster-img" alt="Poster">
                         </div>
                         <div class="col-md-8">
                             <h1 class="fw-bold text-danger mb-2"><?= htmlspecialchars($movie['title']) ?></h1>

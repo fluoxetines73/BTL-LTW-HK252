@@ -46,7 +46,7 @@
                     <!-- Thêm hiệu ứng opacity cho phim chưa chiếu -->
                     <div class="card h-100 shadow-sm bg-dark text-white border-0" style="opacity: 0.95;">
                         <!-- Hình ảnh Poster phim -->
-                        <img src="<?= !empty($movie['poster']) ? BASE_URL . htmlspecialchars($movie['poster']) : 'https://via.placeholder.com/300x450?text=No+Poster' ?>" 
+                        <img src="<?= !empty($movie['poster']) ? BASE_URL . 'public/uploads/movies/' . htmlspecialchars($movie['poster']) : 'https://via.placeholder.com/300x450?text=No+Poster' ?>" 
                              class="card-img-top" 
                              alt="<?= htmlspecialchars($movie['title']) ?>" 
                              style="height: 350px; object-fit: cover;">

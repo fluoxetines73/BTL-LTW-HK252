@@ -41,14 +41,21 @@ class HomeController extends Controller {
     $stmt = $db->query("SELECT id, title, slug, content, image, category, published_at FROM news WHERE status = 'published' ORDER BY published_at DESC LIMIT 4");
     $data['news'] = $stmt->fetchAll();
 
-    // 5. Dữ liệu quảng cáo (Ads)
-    $data['ads'] = [
-        ['id' => 1, 'title' => 'CGV Premium', 'image' => BASE_URL . 'public/assets/ads/ad-premium.jpg', 'link' => BASE_URL . 'pricing', 'description' => 'Ưu đãi độc quyền'],
-        ['id' => 2, 'title' => 'Combo Đặc Biệt', 'image' => BASE_URL . 'public/assets/ads/ad-combo.jpg', 'link' => BASE_URL . 'movies', 'description' => 'Tiết kiệm 30%'],
-        ['id' => 3, 'title' => 'Thành Viên VIP', 'image' => BASE_URL . 'public/assets/ads/ad-vip.jpg', 'link' => BASE_URL . 'pricing', 'description' => 'Tích điểm x3, ưu đãi đặc biệt'],
-        ['id' => 4, 'title' => 'Birthday Special', 'image' => BASE_URL . 'public/assets/ads/ad-birthday.jpg', 'link' => BASE_URL . 'promotions', 'description' => 'Tặng vé miễn phí tháng sinh nhật'],
-        ['id' => 5, 'title' => 'Student Deal', 'image' => BASE_URL . 'public/assets/ads/ad-student.jpg', 'link' => BASE_URL . 'promotions', 'description' => 'Giảm 20% cho học sinh sinh viên']
-    ];
+    // 5. Dữ liệu quảng cáo/Khuyến mãi từ bảng news (category = 'khuyen-mai')
+    $stmt = $db->query("SELECT id, title, slug, content as description, image, category, published_at FROM news WHERE status = 'published' AND category = 'khuyen-mai' ORDER BY published_at DESC LIMIT 5");
+    $promotions = $stmt->fetchAll();
+    
+    // Format promotions data for the view
+    $data['ads'] = [];
+    foreach ($promotions as $promo) {
+        $data['ads'][] = [
+            'id' => $promo['id'],
+            'title' => $promo['title'],
+            'image' => !empty($promo['image']) ? $promo['image'] : null,
+            'link' => BASE_URL . 'news/' . ($promo['slug'] ?? ''),
+            'description' => $promo['description'] ?? ''
+        ];
+    }
 
     // --- PHẦN 3: GỌI VIEW VÀ TRUYỀN TOÀN BỘ DỮ LIỆU ---
     $this->view('layouts/main', [

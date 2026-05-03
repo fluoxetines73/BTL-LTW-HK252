@@ -83,6 +83,35 @@ class Movie extends Model {
     }
 
     /**
+     * Thêm một bộ phim mới với cả poster và banner
+     */
+    public function createMovieWithImages($data) {
+        $sql = "INSERT INTO {$this->table} 
+                (title, slug, description, director, cast, duration_min, release_date, age_rating, status, poster, banner) 
+                VALUES 
+                (:title, :slug, :description, :director, :cast, :duration_min, :release_date, :age_rating, :status, :poster, :banner)";
+        
+        $stmt = $this->db->prepare($sql);
+        
+        $stmt->bindParam(':title', $data['title']);
+        $stmt->bindParam(':slug', $data['slug']);
+        $stmt->bindParam(':description', $data['description']);
+        $stmt->bindParam(':director', $data['director']);
+        $stmt->bindParam(':cast', $data['cast']);
+        $stmt->bindParam(':duration_min', $data['duration_min']);
+        $stmt->bindParam(':release_date', $data['release_date']);
+        $stmt->bindParam(':age_rating', $data['age_rating']);
+        $stmt->bindParam(':status', $data['status']);
+        $stmt->bindParam(':poster', $data['poster']);
+        $stmt->bindParam(':banner', $data['banner']);
+
+        if ($stmt->execute()) {
+            return $this->db->lastInsertId();
+        }
+        return false;
+    }
+
+    /**
      * Cập nhật thông tin phim
      */
     public function updateMovie($id, $data) {
@@ -105,6 +134,34 @@ class Movie extends Model {
         $stmt->bindParam(':release_date', $data['release_date']);
         $stmt->bindParam(':age_rating', $data['age_rating']);
         $stmt->bindParam(':status', $data['status']);
+
+        return $stmt->execute();
+    }
+
+    /**
+     * Cập nhật thông tin phim với cả poster và banner
+     */
+    public function updateMovieWithImages($id, $data) {
+        $sql = "UPDATE {$this->table} SET 
+                title = :title, slug = :slug, description = :description, director = :director, 
+                cast = :cast, duration_min = :duration_min, release_date = :release_date, 
+                age_rating = :age_rating, status = :status, poster = :poster, banner = :banner 
+                WHERE id = :id";
+        
+        $stmt = $this->db->prepare($sql);
+        
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->bindParam(':title', $data['title']);
+        $stmt->bindParam(':slug', $data['slug']);
+        $stmt->bindParam(':description', $data['description']);
+        $stmt->bindParam(':director', $data['director']);
+        $stmt->bindParam(':cast', $data['cast']);
+        $stmt->bindParam(':duration_min', $data['duration_min']);
+        $stmt->bindParam(':release_date', $data['release_date']);
+        $stmt->bindParam(':age_rating', $data['age_rating']);
+        $stmt->bindParam(':status', $data['status']);
+        $stmt->bindParam(':poster', $data['poster']);
+        $stmt->bindParam(':banner', $data['banner']);
 
         return $stmt->execute();
     }
