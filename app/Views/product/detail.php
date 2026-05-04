@@ -76,6 +76,39 @@
                             </table>
 
                             <hr class="border-secondary my-4">
+                            <!-- BẮT ĐẦU: Khu vực hiển thị tất cả suất chiếu -->
+                            <h5 class="text-warning fw-bold mb-3"><i class="fas fa-calendar-week me-2"></i>Tất cả lịch chiếu sắp tới</h5>
+                            <?php if (!empty($allShowtimes)): ?>
+                                <div class="row g-3">
+                                    <?php
+                                    // Logic nhóm các suất chiếu theo từng ngày
+                                    $groupedShowtimes = [];
+                                    foreach ($allShowtimes as $st) {
+                                        $date = date('d/m/Y', strtotime($st['start_time']));
+                                        $groupedShowtimes[$date][] = $st;
+                                    }
+                                    ?>
+                                    
+                                    <?php foreach ($groupedShowtimes as $date => $shows): ?>
+                                        <div class="col-12">
+                                            <div class="p-3 border border-secondary rounded" style="background-color: rgba(255,255,255,0.05);">
+                                                <strong class="text-info d-block mb-2"><i class="far fa-calendar-alt me-1"></i> Ngày: <?= $date ?></strong>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <?php foreach ($shows as $st): ?>
+                                                        <span class="badge border border-danger text-light p-2 fs-6">
+                                                            <?= date('H:i', strtotime($st['start_time'])) ?> 
+                                                            <small class="text-muted ms-1">(<?= htmlspecialchars($st['room_name']) ?>)</small>
+                                                        </span>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php else: ?>
+                                <p class="text-muted fst-italic">Hiện chưa có lịch chiếu nào sắp tới cho bộ phim này.</p>
+                            <?php endif; ?>
+                            <!-- KẾT THÚC: Khu vực hiển thị tất cả suất chiếu -->
                             <h5 class="text-info fw-bold mb-3"><i class="fas fa-align-left me-2"></i>Nội dung tóm tắt</h5>
                             <p class="text-light" style="line-height: 1.6; opacity: 0.9;">
                                 <?= nl2br(htmlspecialchars($movie['description'])) ?>
@@ -114,7 +147,7 @@
                             
                             <!-- 3. CHỌN GHẾ NGỒI -->
                             <div class="mb-4" id="seatMapSection" style="opacity: 0.3; pointer-events: none;">
-                                <label class="fw-bold form-label text-dark">Chọn ghế ngồi <span class="text-danger">(100.000đ/ghế)</span></label>
+                                <label class="fw-bold form-label text-dark">Chọn ghế ngồi </label>
                                 
                                 <div class="seat-map-container bg-light p-3 rounded border text-center">
                                     <div class="screen bg-secondary text-white w-100 mb-4 py-1 rounded-pill small fw-bold">MÀN HÌNH</div>
@@ -197,7 +230,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const movieId = <?= $movie['id'] ?>;
-    const ticketPrice = 100000;
+    let ticketPrice = 0; // Thay vì hardcode 100000, ta khởi tạo bằng 0
     let selectedSeatsArr = []; 
 
     const datePicker = document.getElementById('datePicker');
@@ -207,17 +240,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const seatMapSection = document.getElementById('seatMapSection');
     const seats = document.querySelectorAll('.seat');
 
+    // Thêm các biến lấy từ DOM
+    const ticketPriceInput = document.querySelector('input[name="ticket_price"]');
+    const ticketPriceLabel = document.querySelector('#seatMapSection .text-danger');
+
     // 1. Fetch Suất chiếu khi đổi Ngày
     datePicker.addEventListener('change', function() {
         const selectedDate = this.value;
         showtimeContainer.style.display = 'block';
         showtimeButtons.innerHTML = '<span class="text-muted small">Đang tải...</span>';
         
-        // Reset ghế
+        // Reset giao diện ghế và giá
         seatMapSection.style.opacity = '0.3';
         seatMapSection.style.pointerEvents = 'none';
         selectedShowtimeInput.value = '';
         selectedSeatsArr = [];
+        ticketPrice = 0;
+        ticketPriceInput.value = 0;
+        ticketPriceLabel.innerText = '(...đ/ghế)';
         updateSeatDisplay();
 
         fetch(`<?= BASE_URL ?>api/getShowtimes?movie_id=${movieId}&date=${selectedDate}`)
@@ -227,7 +267,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     let html = '';
                     data.data.forEach(st => {
                         let time = new Date(st.start_time).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
-                        html += `<button type="button" class="btn btn-outline-danger btn-sm st-btn" data-id="${st.id}">${time}</button>`;
+                        // THÊM: Truyền data-price vào từng nút bấm
+                        html += `<button type="button" class="btn btn-outline-danger btn-sm st-btn" data-id="${st.id}" data-price="${st.base_price}">${time}</button>`;
                     });
                     showtimeButtons.innerHTML = html;
                     attachShowtimeEvents();
@@ -237,10 +278,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     });
 
-    // 2. Fetch Ghế khi đổi Suất chiếu
+    // 2. Lắng nghe sự kiện click suất chiếu
     function attachShowtimeEvents() {
         document.querySelectorAll('.st-btn').forEach(btn => {
             btn.addEventListener('click', function() {
+                // Đổi UI trạng thái nút bấm
                 document.querySelectorAll('.st-btn').forEach(b => {
                     b.classList.remove('btn-danger', 'text-white');
                     b.classList.add('btn-outline-danger');
@@ -248,16 +290,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.classList.remove('btn-outline-danger');
                 this.classList.add('btn-danger', 'text-white');
                 
+                // Lấy ID và Giá vé từ suất chiếu hiện tại
                 const showtimeId = this.dataset.id;
-                selectedShowtimeInput.value = showtimeId;
+                ticketPrice = parseInt(this.dataset.price); // Gán giá động
                 
+                // Gán vào Form
+                selectedShowtimeInput.value = showtimeId;
+                ticketPriceInput.value = ticketPrice;
+                
+                // Hiển thị giá mới ra Label
+                ticketPriceLabel.innerText = `(${new Intl.NumberFormat('vi-VN').format(ticketPrice)}đ/ghế)`;
+
                 // Mở khóa bản đồ ghế
                 seatMapSection.style.opacity = '1';
                 seatMapSection.style.pointerEvents = 'auto';
-                
                 selectedSeatsArr = [];
                 updateSeatDisplay();
 
+                // Lấy dữ liệu ghế đã bán
                 fetch(`<?= BASE_URL ?>api/getOccupiedSeats?showtime_id=${showtimeId}`)
                     .then(res => res.json())
                     .then(data => {
@@ -298,6 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('ticketQtyInput').value = selectedSeatsArr.length;
         document.getElementById('selectedSeatsDisplay').innerText = selectedSeatsArr.length > 0 ? selectedSeatsArr.join(', ') : 'Chưa chọn ghế nào';
         
+        // Tổng tiền dựa trên giá vé ĐỘNG
         let total = selectedSeatsArr.length * ticketPrice;
         document.querySelectorAll('.combo-qty').forEach(input => {
             total += (parseInt(input.value) || 0) * parseInt(input.closest('.combo-item').querySelector('.combo-price').dataset.price);

@@ -10,15 +10,54 @@ class AdminMovieController extends Controller {
     }
 
     /**
-     * Hiển thị danh sách phim
+     * Trang danh sách Phim (Có Search, Filter và Bulk Delete)
      */
     public function index() {
         $movieModel = $this->model('Movie');
-        $movies = $movieModel->getAllMovies();
 
+        // 1. Nhận tham số Tìm kiếm & Lọc từ URL
+        $keyword = trim((string)($_GET['q'] ?? ''));
+        $status  = trim((string)($_GET['status'] ?? 'all'));
+        $sort    = trim((string)($_GET['sort'] ?? 'newest'));
+
+        // 2. Xử lý Xóa hàng loạt (Bulk Delete)
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' 
+            && !empty($_POST['action']) 
+            && $_POST['action'] === 'delete_selected') {
+            
+            $rawSelectedIds = $_POST['selected_ids'] ?? '';
+            
+            if (is_array($rawSelectedIds)) {
+                $selectedIds = array_map('intval', array_map('trim', $rawSelectedIds));
+            } elseif (is_string($rawSelectedIds) && $rawSelectedIds !== '') {
+                $selectedIds = array_map('intval', array_map('trim', explode(',', $rawSelectedIds)));
+            } else {
+                $selectedIds = [];
+            }
+            
+            $selectedIds = array_values(array_filter($selectedIds, static fn($id) => $id > 0));
+
+            if (!empty($selectedIds)) {
+                if ($movieModel->deleteMultipleMovies($selectedIds)) {
+                    $_SESSION['success'] = 'Đã xóa thành công ' . count($selectedIds) . ' Phim.';
+                } else {
+                    $_SESSION['error'] = 'Không thể xóa các Phim đã chọn.';
+                }
+                $this->redirect('admin/movie/index');
+                return;
+            }
+        }
+
+        // 3. Lấy dữ liệu Phim đã được lọc
+        $movies = $movieModel->searchAdminMovies($keyword, $status, $sort);
+
+        // 4. Gọi View và truyền dữ liệu (Không gọi hàm getStats thủ công nữa)
         $this->adminView('admin/movies/index', 'movie', [
-            'movies' => $movies,
-            'title' => 'Quản lý Phim'
+            'movies'  => $movies,
+            'title'   => 'Quản lý Phim',
+            'keyword' => $keyword,
+            'status'  => $status,
+            'sort'    => $sort,
         ]);
     }
 

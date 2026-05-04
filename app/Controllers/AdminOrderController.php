@@ -7,13 +7,55 @@ class AdminOrderController extends Controller {
     }
 
     // Hiển thị danh sách toàn bộ đơn hàng
+    // Hiển thị danh sách toàn bộ đơn hàng (Có Search, Filter và Bulk Delete)
     public function index() {
         $orderModel = $this->model('Order');
-        $orders = $orderModel->getAllOrders();
+
+        // 1. Nhận tham số Tìm kiếm & Lọc từ URL
+        $keyword       = trim((string)($_GET['q'] ?? ''));
+        $status        = trim((string)($_GET['status'] ?? 'all'));
+        $paymentStatus = trim((string)($_GET['payment_status'] ?? 'all'));
+        $sort          = trim((string)($_GET['sort'] ?? 'newest'));
+
+        // 2. Xử lý Xóa hàng loạt (Bulk Delete)
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' 
+            && !empty($_POST['action']) 
+            && $_POST['action'] === 'delete_selected') {
+            
+            $rawSelectedIds = $_POST['selected_ids'] ?? '';
+            
+            if (is_array($rawSelectedIds)) {
+                $selectedIds = array_map('intval', array_map('trim', $rawSelectedIds));
+            } elseif (is_string($rawSelectedIds) && $rawSelectedIds !== '') {
+                $selectedIds = array_map('intval', array_map('trim', explode(',', $rawSelectedIds)));
+            } else {
+                $selectedIds = [];
+            }
+            
+            $selectedIds = array_values(array_filter($selectedIds, static fn($id) => $id > 0));
+
+            if (!empty($selectedIds)) {
+                if ($orderModel->deleteMultipleOrders($selectedIds)) {
+                    $_SESSION['success'] = 'Đã xóa thành công ' . count($selectedIds) . ' Đơn hàng.';
+                } else {
+                    $_SESSION['error'] = 'Không thể xóa các Đơn hàng đã chọn.';
+                }
+                $this->redirect('admin/order/index');
+                return;
+            }
+        }
+
+        // 3. Lấy dữ liệu Đơn hàng đã được lọc
+        $orders = $orderModel->searchAdminOrders($keyword, $status, $paymentStatus, $sort);
         
+        // 4. Gọi View
         $this->adminView('admin/orders/index', 'order', [
-            'orders' => $orders,
-            'title' => 'Quản lý Đơn Hàng'
+            'orders'        => $orders,
+            'title'         => 'Quản lý Đơn Hàng',
+            'keyword'       => $keyword,
+            'status'        => $status,
+            'paymentStatus' => $paymentStatus,
+            'sort'          => $sort
         ]);
     }
 

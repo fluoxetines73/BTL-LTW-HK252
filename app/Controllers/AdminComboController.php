@@ -6,10 +6,58 @@ class AdminComboController extends Controller {
         $this->middlewareAdmin();
     }
 
+    /**
+     * Trang danh sách Combo (Có Search, Filter và Bulk Delete)
+     */
     public function index() {
         $comboModel = $this->model('Combo');
-        $combos = $comboModel->getAllCombos();
-        $this->adminView('admin/combo/index', 'combo', ['combos' => $combos, 'title' => 'Quản lý Combo']);
+
+        // 1. Nhận tham số Tìm kiếm & Lọc từ URL
+        $keyword = trim((string)($_GET['q'] ?? ''));
+        $status  = trim((string)($_GET['status'] ?? 'all'));
+        $sort    = trim((string)($_GET['sort'] ?? 'newest'));
+
+        // 2. Xử lý Xóa hàng loạt (Bulk Delete)
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' 
+            && !empty($_POST['action']) 
+            && $_POST['action'] === 'delete_selected') {
+            
+            $rawSelectedIds = $_POST['selected_ids'] ?? '';
+            
+            // Xử lý chuỗi ID gửi từ giao diện
+            if (is_array($rawSelectedIds)) {
+                $selectedIds = array_map('intval', array_map('trim', $rawSelectedIds));
+            } elseif (is_string($rawSelectedIds) && $rawSelectedIds !== '') {
+                $selectedIds = array_map('intval', array_map('trim', explode(',', $rawSelectedIds)));
+            } else {
+                $selectedIds = [];
+            }
+            
+            $selectedIds = array_values(array_filter($selectedIds, static fn($id) => $id > 0));
+
+            if (!empty($selectedIds)) {
+                if ($comboModel->deleteMultipleCombos($selectedIds)) {
+                    $_SESSION['success'] = 'Đã xóa thành công ' . count($selectedIds) . ' Combo.';
+                } else {
+                    $_SESSION['error'] = 'Không thể xóa các Combo đã chọn.';
+                }
+                $this->redirect('admin/combo/index');
+                return;
+            }
+        }
+
+        // 3. Lấy dữ liệu đã được lọc
+        $combos = $comboModel->searchAdminCombos($keyword, $status, $sort);
+
+        // 4. Gọi View và truyền dữ liệu
+        $this->adminView('admin/combo/index', 'combo', [
+            'combos'  => $combos,
+            'title'   => 'Quản lý Combo',
+            // ĐÃ XÓA dòng 'stats' => $this->getStats() ở đây
+            'keyword' => $keyword,
+            'status'  => $status,
+            'sort'    => $sort,
+        ]);
     }
 
     public function create() {

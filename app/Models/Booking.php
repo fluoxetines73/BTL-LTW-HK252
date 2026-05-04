@@ -97,17 +97,31 @@ class Booking extends Model {
      * Lưu thông tin từng chiếc vé (ghế)
      */
     public function createTicket($data) {
-        // Giả sử bạn có bảng tickets
-        $sql = "INSERT INTO tickets (booking_id, showtime_id, seat_code, price) 
-                VALUES (:booking_id, :showtime_id, :seat_code, :price)";
-        
+            $sql = "INSERT INTO tickets (booking_id, seat_id, price)
+                    VALUES (:booking_id, :seat_id, :price)";
+
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([
+                ':booking_id' => $data['booking_id'],
+                ':seat_id'    => $data['seat_id'], // Dùng seat_id theo schema[cite: 9]
+                ':price'      => $data['price']
+            ]);
+        }
+
+    /**
+     * Lưu thông tin combo đã chọn
+     */
+    public function createBookingCombo($data) {
+        $sql = "INSERT INTO booking_combos (booking_id, combo_id, quantity, price)
+                VALUES (:booking_id, :combo_id, :quantity, :price)";
+
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
             ':booking_id' => $data['booking_id'],
-            ':showtime_id' => $data['showtime_id'],
-            ':seat_code' => $data['seat_code'],
-            ':price' => $data['price']
+            ':combo_id'   => $data['combo_id'],
+            ':quantity'   => $data['quantity'],
+            ':price'      => $data['price']
         ]);
     }
-    
+
 }

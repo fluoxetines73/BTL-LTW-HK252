@@ -283,4 +283,55 @@ class Movie extends Model {
             return [];
         }
     }
+    /**
+     * Tìm kiếm, lọc và sắp xếp Phim cho Admin
+     */
+    public function searchAdminMovies($keyword = '', $status = 'all', $sort = 'newest') {
+        $db = Database::getInstance()->getPdo();
+        
+        $sql = "SELECT * FROM movies WHERE 1=1 ";
+        $params = [];
+
+        // SỬA LỖI TẠI ĐÂY: Dùng 3 tên biến khác nhau (:kw1, :kw2, :kw3)
+        if (!empty($keyword)) {
+            $sql .= " AND (title LIKE :kw1 OR description LIKE :kw2 OR director LIKE :kw3) ";
+            $params[':kw1'] = '%' . $keyword . '%';
+            $params[':kw2'] = '%' . $keyword . '%';
+            $params[':kw3'] = '%' . $keyword . '%';
+        }
+
+        // Lọc theo trạng thái
+        if ($status !== 'all') {
+            $sql .= " AND status = :status ";
+            $params[':status'] = $status;
+        }
+
+        // Sắp xếp
+        switch ($sort) {
+            case 'oldest':
+                $sql .= " ORDER BY id ASC ";
+                break;
+            case 'newest':
+            default:
+                $sql .= " ORDER BY id DESC ";
+                break;
+        }
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    /**
+     * Xóa hàng loạt Phim
+     */
+    public function deleteMultipleMovies(array $ids) {
+        if (empty($ids)) return false;
+        $db = Database::getInstance()->getPdo();
+        
+        // Tạo chuỗi dấu '?' tương ứng với số lượng ID cần xóa (VD: ?,?,?)
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        
+        $stmt = $db->prepare("DELETE FROM movies WHERE id IN ($placeholders)");
+        return $stmt->execute($ids);
+    }
 }
