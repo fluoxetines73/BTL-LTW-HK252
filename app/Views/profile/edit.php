@@ -1,8 +1,8 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-8 mx-auto">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white border-bottom">
+            <div class="card cgv-card">
+                <div class="card-header">
                     <h1 class="card-title mb-2">Chỉnh sửa hồ sơ</h1>
                     <p class="text-muted">Cập nhật thông tin cá nhân và ảnh đại diện của bạn.</p>
                 </div>
@@ -61,8 +61,8 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-success">Lưu thay đổi</button>
-                            <a href="<?= BASE_URL ?>profile/index" class="btn btn-outline-dark">Quay lại hồ sơ</a>
+                            <button type="submit" class="btn btn-cgv-primary">Lưu thay đổi</button>
+                            <a href="<?= BASE_URL ?>profile/index" class="btn btn-cgv-outline">Quay lại hồ sơ</a>
                         </div>
                     </form>
                 </div>
