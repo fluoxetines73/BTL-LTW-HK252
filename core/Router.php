@@ -3,6 +3,8 @@ class Router {
     private string $controller = 'HomeController';
     private string $method     = 'index';
     private array  $params     = [];
+    private bool   $controllerFoundFromUrl = false;
+    private bool   $methodFoundFromUrl = false;
 
     public function dispatch(): void {
         $url = $this->parseUrl();
@@ -13,13 +15,14 @@ class Router {
             // Ghép chuỗi tạo tên Controller, vd: 'movie' -> 'AdminMovieController'
             $adminControllerName = 'Admin' . ucfirst(strtolower($url[1])) . 'Controller';
             $adminFile = APPROOT . '/Controllers/' . $adminControllerName . '.php';
-            
+
             if (file_exists($adminFile)) {
                 $this->controller = $adminControllerName;
+                $this->controllerFoundFromUrl = true;
                 unset($url[0]); // Xóa chữ 'admin' khỏi URL
                 unset($url[1]); // Xóa chữ 'movie' khỏi URL
-                
-                // Re-index lại mảng sao cho Method (vd: 'create') nằm đúng ở vị trí $url[1] 
+
+                // Re-index lại mảng sao cho Method (vd: 'create') nằm đúng ở vị trí $url[1]
                 // để tương thích hoàn toàn với logic cũ của nhóm ở bên dưới
                 $newUrl = [];
                 $i = 1;
@@ -38,12 +41,22 @@ class Router {
             $file = APPROOT . '/Controllers/' . $controllerName . '.php';
             if (file_exists($file)) {
                 $this->controller = $controllerName;
+                $this->controllerFoundFromUrl = true;
                 unset($url[0]);
             }
         }
 
         $controllerFile = APPROOT . '/Controllers/' . $this->controller . '.php';
         if (!file_exists($controllerFile)) {
+            http_response_code(404);
+            require_once APPROOT . '/Controllers/HomeController.php';
+            $fallbackController = new HomeController();
+            $fallbackController->notFound();
+            return;
+        }
+
+        // If controller was specified in URL but not found, return 404
+        if (!$this->controllerFoundFromUrl && !empty($url[0])) {
             http_response_code(404);
             require_once APPROOT . '/Controllers/HomeController.php';
             $fallbackController = new HomeController();
@@ -58,6 +71,7 @@ class Router {
         if (!empty($url[1])) {
             if (method_exists($controller, $url[1])) {
                 $this->method = $url[1];
+                $this->methodFoundFromUrl = true;
                 unset($url[1]);
             }
         }
@@ -65,15 +79,32 @@ class Router {
         // 4. Phần còn lại là params (tham số)
         $this->params = array_values($url ?? []);
 
-        if (!method_exists($controller, $this->method)) {
+        // If method was specified in URL but doesn't exist, return 404
+        if (!$this->methodFoundFromUrl && !empty($url[1])) {
+            http_response_code(404);
             if (method_exists($controller, 'notFound')) {
-                http_response_code(404);
+                $controller->notFound();
+                return;
+            }
+            // Fallback to HomeController::notFound()
+            require_once APPROOT . '/Controllers/HomeController.php';
+            $fallbackController = new HomeController();
+            $fallbackController->notFound();
+            return;
+        }
+
+        if (!method_exists($controller, $this->method)) {
+            http_response_code(404);
+            if (method_exists($controller, 'notFound')) {
                 $controller->notFound();
                 return;
             }
 
-            http_response_code(404);
-            throw new RuntimeException('Method không tồn tại.');
+            // Fallback to HomeController::notFound()
+            require_once APPROOT . '/Controllers/HomeController.php';
+            $fallbackController = new HomeController();
+            $fallbackController->notFound();
+            return;
         }
 
         call_user_func_array([$controller, $this->method], $this->params);
