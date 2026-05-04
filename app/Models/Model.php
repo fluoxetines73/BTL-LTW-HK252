@@ -24,4 +24,12 @@ abstract class Model {
         $stmt = $this->db->prepare("DELETE FROM {$this->table} WHERE id = ?");
         return $stmt->execute([$id]);
     }
+
+    /**
+     * Get total count of records in the table
+     */
+    public function count(): int {
+        $stmt = $this->db->query("SELECT COUNT(*) FROM {$this->table}");
+        return (int)$stmt->fetchColumn();
+    }
 }

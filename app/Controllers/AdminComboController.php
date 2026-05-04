@@ -9,11 +9,11 @@ class AdminComboController extends Controller {
     public function index() {
         $comboModel = $this->model('Combo');
         $combos = $comboModel->getAllCombos();
-        $this->view('admin/combo/index', ['combos' => $combos]);
+        $this->adminView('admin/combo/index', 'combo', ['combos' => $combos, 'title' => 'Quản lý Combo']);
     }
 
     public function create() {
-        $this->view('admin/combo/create');
+        $this->adminView('admin/combo/create', 'combo', ['title' => 'Thêm Combo Mới']);
     }
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -91,7 +91,7 @@ class AdminComboController extends Controller {
 
         if (!$combo) { $this->redirect('admin/combo/index'); return; }
 
-        $this->view('admin/combo/edit', ['combo' => $combo]);
+        $this->adminView('admin/combo/edit', 'combo', ['combo' => $combo, 'title' => 'Sửa Combo']);
     }
 
     /**

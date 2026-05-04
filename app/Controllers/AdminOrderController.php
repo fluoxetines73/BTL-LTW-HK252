@@ -11,8 +11,9 @@ class AdminOrderController extends Controller {
         $orderModel = $this->model('Order');
         $orders = $orderModel->getAllOrders();
         
-        $this->view('admin/orders/index', [
-            'orders' => $orders
+        $this->adminView('admin/orders/index', 'order', [
+            'orders' => $orders,
+            'title' => 'Quản lý Đơn Hàng'
         ]);
     }
 
@@ -29,10 +30,11 @@ class AdminOrderController extends Controller {
         $tickets = $orderModel->getOrderTickets($id);
         $combos = $orderModel->getOrderCombos($id);
 
-        $this->view('admin/orders/detail', [
+        $this->adminView('admin/orders/detail', 'order', [
             'order' => $order,
             'tickets' => $tickets,
-            'combos' => $combos
+            'combos' => $combos,
+            'title' => 'Chi Tiết Đơn Hàng #' . $order['booking_code']
         ]);
     }
 
