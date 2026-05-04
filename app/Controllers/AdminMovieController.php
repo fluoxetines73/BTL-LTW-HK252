@@ -35,10 +35,6 @@ class AdminMovieController extends Controller {
      */
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Debug: Log upload information
-            error_log("[DEBUG] Movie Store - POST data received");
-            error_log("[DEBUG] FILES data: " . print_r($_FILES, true));
-            
             // Khởi tạo tên file mặc định
             $posterName = null;
             $bannerName = null;
@@ -46,38 +42,29 @@ class AdminMovieController extends Controller {
 
             // Xử lý Upload POSTER
             if (isset($_FILES['poster']) && $_FILES['poster']['error'] !== UPLOAD_ERR_NO_FILE) {
-                error_log("[DEBUG] Processing poster upload...");
-                
                 if ($_FILES['poster']['error'] === UPLOAD_ERR_OK) {
                     $uploadDir = ROOT . '/public/uploads/movies/';
                     
                     // Tạo thư mục nếu chưa tồn tại
                     if (!is_dir($uploadDir)) {
                         mkdir($uploadDir, 0777, true);
-                        error_log("[DEBUG] Created upload directory: " . $uploadDir);
                     }
 
                     $fileExtension = pathinfo($_FILES['poster']['name'], PATHINFO_EXTENSION);
                     $posterName = 'poster_' . time() . '_' . uniqid() . '.' . $fileExtension;
                     
                     if (move_uploaded_file($_FILES['poster']['tmp_name'], $uploadDir . $posterName)) {
-                        error_log("[DEBUG] Poster uploaded successfully: " . $posterName);
                     } else {
                         $uploadErrors[] = "Lỗi khi di chuyển file poster";
-                        error_log("[DEBUG] Failed to move poster file");
                     }
                 } else {
                     $uploadErrors[] = "Lỗi upload poster: " . $this->getUploadErrorMessage($_FILES['poster']['error']);
-                    error_log("[DEBUG] Poster upload error: " . $_FILES['poster']['error']);
                 }
             } else {
-                error_log("[DEBUG] No poster file uploaded");
             }
 
             // Xử lý Upload BANNER
             if (isset($_FILES['banner']) && $_FILES['banner']['error'] !== UPLOAD_ERR_NO_FILE) {
-                error_log("[DEBUG] Processing banner upload...");
-                
                 if ($_FILES['banner']['error'] === UPLOAD_ERR_OK) {
                     $uploadDir = ROOT . '/public/uploads/movies/';
                     
@@ -89,17 +76,13 @@ class AdminMovieController extends Controller {
                     $bannerName = 'banner_' . time() . '_' . uniqid() . '.' . $fileExtension;
                     
                     if (move_uploaded_file($_FILES['banner']['tmp_name'], $uploadDir . $bannerName)) {
-                        error_log("[DEBUG] Banner uploaded successfully: " . $bannerName);
                     } else {
                         $uploadErrors[] = "Lỗi khi di chuyển file banner";
-                        error_log("[DEBUG] Failed to move banner file");
                     }
                 } else {
                     $uploadErrors[] = "Lỗi upload banner: " . $this->getUploadErrorMessage($_FILES['banner']['error']);
-                    error_log("[DEBUG] Banner upload error: " . $_FILES['banner']['error']);
                 }
             } else {
-                error_log("[DEBUG] No banner file uploaded");
             }
 
             $data = [
@@ -116,8 +99,6 @@ class AdminMovieController extends Controller {
                 'banner' => $bannerName
             ];
 
-            error_log("[DEBUG] Movie data to save: " . print_r($data, true));
-
             // 1. Lấy mảng thể loại từ Form
             $selectedGenres = $_POST['genres'] ?? [];
 
@@ -125,7 +106,6 @@ class AdminMovieController extends Controller {
             $newMovieId = $movieModel->createMovieWithImages($data);
 
             if ($newMovieId) {
-                error_log("[DEBUG] Movie created successfully with ID: " . $newMovieId);
                 // 2. Đồng bộ thể loại vào Database
                 $movieModel->syncMovieGenres($newMovieId, $selectedGenres);
                 
@@ -133,7 +113,6 @@ class AdminMovieController extends Controller {
                 $_SESSION['success'] = 'Thêm phim thành công!' . (!empty($uploadErrors) ? ' (Có lỗi upload: ' . implode(', ', $uploadErrors) . ')' : '');
                 $this->redirect('admin/movie/index');
             } else {
-                error_log("[DEBUG] Failed to create movie");
                 $_SESSION['error'] = 'Có lỗi xảy ra khi lưu vào CSDL!';
                 $this->redirect('admin/movie/create');
             }
@@ -197,9 +176,6 @@ class AdminMovieController extends Controller {
      */
     public function update($id = null) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id) {
-            error_log("[DEBUG] Movie Update - POST data received for ID: " . $id);
-            error_log("[DEBUG] FILES data: " . print_r($_FILES, true));
-
             $movieModel = $this->model('Movie');
             $oldMovie = $movieModel->getMovieById($id);
             
@@ -217,8 +193,6 @@ class AdminMovieController extends Controller {
 
             // Xử lý Upload POSTER mới
             if (isset($_FILES['poster']) && $_FILES['poster']['error'] !== UPLOAD_ERR_NO_FILE) {
-                error_log("[DEBUG] Processing poster update...");
-                
                 if ($_FILES['poster']['error'] === UPLOAD_ERR_OK) {
                     $uploadDir = ROOT . '/public/uploads/movies/';
                     
@@ -231,7 +205,6 @@ class AdminMovieController extends Controller {
                         $oldPath = $uploadDir . $oldMovie['poster'];
                         if (file_exists($oldPath)) {
                             unlink($oldPath);
-                            error_log("[DEBUG] Deleted old poster: " . $oldMovie['poster']);
                         }
                     }
 
@@ -240,22 +213,17 @@ class AdminMovieController extends Controller {
                     
                     if (move_uploaded_file($_FILES['poster']['tmp_name'], $uploadDir . $posterName)) {
                         $uploadSuccess[] = "Poster";
-                        error_log("[DEBUG] Poster updated successfully: " . $posterName);
                     } else {
                         $uploadErrors[] = "Lỗi khi di chuyển file poster";
                         $posterName = $oldMovie['poster']; // Giữ ảnh cũ
-                        error_log("[DEBUG] Failed to move poster file");
                     }
                 } else {
                     $uploadErrors[] = "Lỗi upload poster: " . $this->getUploadErrorMessage($_FILES['poster']['error']);
-                    error_log("[DEBUG] Poster upload error: " . $_FILES['poster']['error']);
                 }
             }
 
             // Xử lý Upload BANNER mới
             if (isset($_FILES['banner']) && $_FILES['banner']['error'] !== UPLOAD_ERR_NO_FILE) {
-                error_log("[DEBUG] Processing banner update...");
-                
                 if ($_FILES['banner']['error'] === UPLOAD_ERR_OK) {
                     $uploadDir = ROOT . '/public/uploads/movies/';
                     
@@ -268,7 +236,6 @@ class AdminMovieController extends Controller {
                         $oldPath = $uploadDir . $oldMovie['banner'];
                         if (file_exists($oldPath)) {
                             unlink($oldPath);
-                            error_log("[DEBUG] Deleted old banner: " . $oldMovie['banner']);
                         }
                     }
 
@@ -277,15 +244,12 @@ class AdminMovieController extends Controller {
                     
                     if (move_uploaded_file($_FILES['banner']['tmp_name'], $uploadDir . $bannerName)) {
                         $uploadSuccess[] = "Banner";
-                        error_log("[DEBUG] Banner updated successfully: " . $bannerName);
                     } else {
                         $uploadErrors[] = "Lỗi khi di chuyển file banner";
                         $bannerName = $oldMovie['banner']; // Giữ ảnh cũ
-                        error_log("[DEBUG] Failed to move banner file");
                     }
                 } else {
                     $uploadErrors[] = "Lỗi upload banner: " . $this->getUploadErrorMessage($_FILES['banner']['error']);
-                    error_log("[DEBUG] Banner upload error: " . $_FILES['banner']['error']);
                 }
             }
 
@@ -303,15 +267,12 @@ class AdminMovieController extends Controller {
                 'banner' => $bannerName
             ];
 
-            error_log("[DEBUG] Movie data to update: " . print_r($data, true));
-
             // 1. Lấy mảng thể loại từ Form
             $selectedGenres = $_POST['genres'] ?? [];
 
             $success = $movieModel->updateMovieWithImages($id, $data);
 
             if ($success) {
-                error_log("[DEBUG] Movie updated successfully");
                 // 2. Đồng bộ thể loại vào Database
                 $movieModel->syncMovieGenres($id, $selectedGenres);
                 
@@ -328,7 +289,6 @@ class AdminMovieController extends Controller {
                 
                 $this->redirect('admin/movie/index');
             } else {
-                error_log("[DEBUG] Failed to update movie");
                 $_SESSION['error'] = 'Có lỗi xảy ra khi cập nhật CSDL!';
                 $this->redirect('admin/movie/edit/' . $id);
             }
