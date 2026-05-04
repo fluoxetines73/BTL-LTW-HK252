@@ -85,4 +85,28 @@ class Faq extends Model {
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
+
+    public function deleteMultiple(array $ids): bool {
+        if (empty($ids)) {
+            return false;
+        }
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $sql = "DELETE FROM {$this->table} WHERE id IN ($placeholders)";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($ids);
+    }
+
+    public function updateStatusMultiple(array $ids, string $status): bool {
+        if (empty($ids)) {
+            return false;
+        }
+        $allowedStatuses = ['active', 'inactive'];
+        if (!in_array($status, $allowedStatuses, true)) {
+            return false;
+        }
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $sql = "UPDATE {$this->table} SET status = ? WHERE id IN ($placeholders)";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute(array_merge([$status], $ids));
+    }
 }

@@ -12,6 +12,32 @@
     </a>
 </div>
 
+<!-- Bulk Action Bar -->
+<div id="bulk-action-bar" class="card shadow-sm border-0 mb-3" style="display: none;">
+    <div class="card-body py-2 d-flex align-items-center gap-2 flex-wrap">
+        <span class="fw-semibold text-muted"><i class="fas fa-tasks me-1"></i>Hành động hàng loạt:</span>
+        <form id="bulk-delete-form" method="POST" action="<?= BASE_URL ?>admin/faq/bulkDelete" class="d-inline">
+            <input type="hidden" name="selected_ids" id="bulk-delete-ids" value="">
+            <button type="button" id="bulk-delete-btn" class="btn btn-danger btn-sm" disabled onclick="confirmBulkDelete();">
+                <i class="fas fa-trash me-1"></i>Xóa đã chọn
+            </button>
+        </form>
+        <form id="bulk-status-form" method="POST" action="<?= BASE_URL ?>admin/faq/bulkUpdateStatus" class="d-inline">
+            <input type="hidden" name="selected_ids" id="bulk-status-ids" value="">
+            <div class="input-group input-group-sm" style="width: auto;">
+                <select name="status" id="bulk-status-select" class="form-select form-select-sm">
+                    <option value="active">Kích hoạt</option>
+                    <option value="inactive">Vô hiệu hóa</option>
+                </select>
+                <button type="button" id="bulk-status-btn" class="btn btn-outline-primary btn-sm" disabled onclick="submitBulkStatus();">
+                    <i class="fas fa-sync-alt me-1"></i>Áp dụng
+                </button>
+            </div>
+        </form>
+        <span id="selected-count" class="text-muted ms-auto" style="font-size: 0.875rem;"></span>
+    </div>
+</div>
+
 <div class="card shadow-sm border-0">
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -35,6 +61,9 @@
                                 : '<i class="fas fa-sort-down sort-icon"></i>';
                         }
                         ?>
+                        <th class="text-center" style="width: 40px;">
+                            <input type="checkbox" id="select-all" onclick="toggleSelectAll(this);">
+                        </th>
                         <th class="text-center sortable" style="width: 50px;">
                             <a href="<?= getSortUrl('id', $sortBy ?? null, $sortOrder ?? 'asc') ?>">
                                 ID <?= getSortIcon('id', $sortBy ?? null, $sortOrder ?? 'asc') ?>
@@ -67,6 +96,9 @@
                     <?php if (!empty($faqs)): ?>
                         <?php foreach ($faqs as $faq): ?>
                         <tr>
+                            <td class="text-center">
+                                <input type="checkbox" class="faq-checkbox" value="<?= (int)($faq['id'] ?? 0) ?>" onchange="updateBulkActions();">
+                            </td>
                             <td class="text-center"><?= (int)($faq['id'] ?? 0) ?></td>
                             <td><?= htmlspecialchars(substr($faq['question'] ?? '', 0, 80)) ?><?= strlen($faq['question'] ?? '') > 80 ? '...' : '' ?></td>
                             <td><span class="badge bg-info"><?= htmlspecialchars($faq['category'] ?? 'N/A') ?></span></td>
@@ -95,7 +127,7 @@
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="6" class="text-center py-4 text-muted">
+                            <td colspan="7" class="text-center py-4 text-muted">
                                 <i class="fas fa-inbox fa-2x mb-2"></i>
                                 <p>Chưa có câu hỏi nào. Hãy thêm câu hỏi đầu tiên!</p>
                             </td>
@@ -107,3 +139,63 @@
     </div>
 </div>
 
+<?php
+$extraScripts = ($extraScripts ?? '') . <<<'SCRIPT'
+<script>
+function toggleSelectAll(source) {
+    const checkboxes = document.querySelectorAll('.faq-checkbox');
+    checkboxes.forEach(cb => cb.checked = source.checked);
+    updateBulkActions();
+}
+
+function updateBulkActions() {
+    const checkboxes = document.querySelectorAll('.faq-checkbox');
+    const checkedCount = document.querySelectorAll('.faq-checkbox:checked').length;
+    const totalCheckboxes = checkboxes.length;
+
+    // Update select-all checkbox state
+    const selectAll = document.getElementById('select-all');
+    selectAll.checked = totalCheckboxes > 0 && checkedCount === totalCheckboxes;
+
+    // Show/hide bulk action bar
+    const actionBar = document.getElementById('bulk-action-bar');
+    actionBar.style.display = checkedCount > 0 ? 'block' : 'none';
+
+    // Enable/disable action buttons
+    const deleteBtn = document.getElementById('bulk-delete-btn');
+    const statusBtn = document.getElementById('bulk-status-btn');
+    deleteBtn.disabled = checkedCount === 0;
+    statusBtn.disabled = checkedCount === 0;
+
+    // Update selected count text
+    const countSpan = document.getElementById('selected-count');
+    countSpan.textContent = checkedCount > 0 ? 'Đã chọn ' + checkedCount + ' mục' : '';
+
+    // Update hidden inputs with selected IDs
+    const selectedIds = Array.from(document.querySelectorAll('.faq-checkbox:checked')).map(cb => cb.value);
+    document.getElementById('bulk-delete-ids').value = selectedIds.join(',');
+    document.getElementById('bulk-status-ids').value = selectedIds.join(',');
+}
+
+function confirmBulkDelete() {
+    const checkedCount = document.querySelectorAll('.faq-checkbox:checked').length;
+    if (checkedCount === 0) {
+        alert('Vui lòng chọn ít nhất một câu hỏi để xóa.');
+        return;
+    }
+    if (!confirm('Bạn có chắc chắn muốn xóa ' + checkedCount + ' câu hỏi đã chọn? Hành động này không thể hoàn tác!')) {
+        return;
+    }
+    document.getElementById('bulk-delete-form').submit();
+}
+
+function submitBulkStatus() {
+    const checkedCount = document.querySelectorAll('.faq-checkbox:checked').length;
+    if (checkedCount === 0) {
+        alert('Vui lòng chọn ít nhất một câu hỏi để cập nhật.');
+        return;
+    }
+    document.getElementById('bulk-status-form').submit();
+}
+</script>
+SCRIPT;
