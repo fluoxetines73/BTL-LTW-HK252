@@ -8,8 +8,43 @@ class AdminComboController extends Controller {
 
     public function index() {
         $comboModel = $this->model('Combo');
+
+        // Build query with search and sort
+        $search = trim($_GET['q'] ?? '');
+        $sort = $_GET['sort'] ?? 'price_asc';
+
+        // Get all combos from model
         $combos = $comboModel->getAllCombos();
-        $this->adminView('admin/combo/index', 'combo', ['combos' => $combos, 'title' => 'Quản lý Combo']);
+
+        // Filter by search term if provided
+        if ($search !== '') {
+            $combos = array_filter($combos, function($combo) use ($search) {
+                return stripos($combo['name'], $search) !== false;
+            });
+            $combos = array_values($combos); // Re-index array
+        }
+
+        // Sort order
+        usort($combos, function($a, $b) use ($sort) {
+            switch ($sort) {
+                case 'price_desc':
+                    return $b['price'] <=> $a['price'];
+                case 'name_asc':
+                    return strcasecmp($a['name'], $b['name']);
+                case 'name_desc':
+                    return strcasecmp($b['name'], $a['name']);
+                case 'price_asc':
+                default:
+                    return $a['price'] <=> $b['price'];
+            }
+        });
+
+        $this->adminView('admin/combo/index', 'combo', [
+            'combos' => $combos,
+            'title' => 'Quản lý Combo',
+            'search' => $search,
+            'sort' => $sort
+        ]);
     }
 
     public function create() {
