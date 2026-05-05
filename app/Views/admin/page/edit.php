@@ -31,7 +31,6 @@
                         <div class="col-md-12">
                             <label class="form-label fw-bold">Nội dung <span class="text-danger">*</span></label>
                             <textarea class="form-control" name="content" rows="15" required><?= htmlspecialchars($page['content']) ?></textarea>
-                            <small class="text-muted">Có thể sử dụng HTML để định dạng nội dung</small>
                         </div>
 
                         <div class="col-md-6">
@@ -59,3 +58,16 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.tiny.cloud/1/33b35zjg0gc8m9ftxqheh78jqjm46voyskdolw6oqpcjlhv3/tinymce/7/tinymce.min.js"></script>
+<script>
+tinymce.init({
+    selector: 'textarea[name="content"]',
+    height: 400,
+    menubar: true,
+    plugins: 'link lists code table image',
+    toolbar: 'undo redo | blocks | bold italic | alignleft aligncenter alignright | bullist numlist | link image | code',
+    content_style: 'body { font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif; font-size:14px }',
+    branding: false
+});
+</script>

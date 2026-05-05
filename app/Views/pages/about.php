@@ -328,8 +328,7 @@ if (!$hasStructuredData):
                 <div class="team-card <?= $member['status'] === 'retired' ? 'team-card-retired' : '' ?> text-center">
                     <div class="team-avatar fs-1 <?= $avatarClass ?>">
                         <?php if ($member['avatar_type'] === 'image' && $member['avatar_value']): ?>
-                            <img src="<?= BASE_URL . $member['avatar_value'] ?>" alt="<?= htmlspecialchars($member['name']) ?>" 
-                                 style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%;">
+                            <img src="<?= BASE_URL . $member['avatar_value'] ?>" alt="<?= htmlspecialchars($member['name']) ?>">
                         <?php else: ?>
                             <i class="<?= $member['avatar_value'] ?>"></i>
                         <?php endif; ?>

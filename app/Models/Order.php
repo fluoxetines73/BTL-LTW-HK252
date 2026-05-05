@@ -82,74 +82,65 @@ class Order extends Model {
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
-    /**
-     * Tìm kiếm, lọc và sắp xếp Đơn hàng cho Admin
+/**
+     * Tìm kiếm, lọc và sắp xếp Đơn hàng dành cho Admin
+     * Kết hợp: Tìm kiếm từ khóa, Lọc trạng thái đơn, Lọc trạng thái thanh toán và Sắp xếp
      */
-    /**
-     * Tìm kiếm, lọc và sắp xếp Đơn hàng cho Admin
-     */
-    /**
-     * Tìm kiếm, lọc và sắp xếp Đơn hàng cho Admin
-     */
-    /**
- * Tìm kiếm, lọc và sắp xếp Đơn hàng cho Admin
- * Đã sửa lỗi tên cột khớp với schema.sql (full_name)
- */
     public function searchAdminOrders($keyword = '', $status = 'all', $paymentStatus = 'all', $sort = 'newest') {
-        $db = Database::getInstance()->getPdo();
-        
-        
         $sql = "SELECT b.*, u.full_name, u.email 
-            FROM bookings b
-            LEFT JOIN users u ON b.user_id = u.id
-            WHERE 1=1 ";
+                FROM bookings b 
+                LEFT JOIN users u ON b.user_id = u.id";
+        
         $params = [];
+        $conditions = [];
 
-        // Lọc theo từ khóa (Mã đơn hàng, tên khách, email)
-        if (!empty($keyword)) {
-            // CẬP NHẬT: u.full_name thay vì u.fullname
-            $sql .= " AND (b.booking_code LIKE :kw1 OR u.full_name LIKE :kw2 OR u.email LIKE :kw3) ";
-            $params[':kw1'] = '%' . $keyword . '%';
-            $params[':kw2'] = '%' . $keyword . '%';
-            $params[':kw3'] = '%' . $keyword . '%';
+        // 1. Lọc theo từ khóa (Mã đơn, Tên khách, Email)
+        if ($keyword !== '') {
+            $conditions[] = "(b.booking_code LIKE :kw OR u.full_name LIKE :kw OR u.email LIKE :kw)";
+            $params[':kw'] = "%$keyword%";
         }
 
-        // Lọc theo trạng thái xác nhận (pending, confirmed, cancelled, completed)
+        // 2. Lọc theo trạng thái Đơn hàng (pending, confirmed, etc.)
         if ($status !== 'all') {
-            $sql .= " AND b.status = :status ";
+            $conditions[] = "b.status = :status";
             $params[':status'] = $status;
         }
 
-        // Lọc theo trạng thái thanh toán (pending, paid, failed, refunded)
+        // 3. Lọc theo trạng thái Thanh toán (pending, paid, failed, etc.)
         if ($paymentStatus !== 'all') {
-            $sql .= " AND b.payment_status = :payment_status ";
+            $conditions[] = "b.payment_status = :payment_status";
             $params[':payment_status'] = $paymentStatus;
         }
 
-        // Sắp xếp dữ liệu
-        switch ($sort) {
-            case 'oldest': $sql .= " ORDER BY b.created_at ASC "; break;
-            case 'total_desc': $sql .= " ORDER BY b.final_amount DESC "; break;
-            case 'newest':
-            default: $sql .= " ORDER BY b.created_at DESC "; break;
+        if (!empty($conditions)) {
+            $sql .= " WHERE " . implode(' AND ', $conditions);
         }
 
-        $stmt = $db->prepare($sql);
+        // 4. Sắp xếp dữ liệu (Kết hợp các tiêu chí từ cả hai bên)[cite: 5]
+        $orderBy = match($sort) {
+            'oldest'     => 'b.created_at ASC',
+            'total_desc' => 'b.final_amount DESC',
+            'price_asc'  => 'b.final_amount ASC',
+            default      => 'b.created_at DESC'
+        };
+        $sql .= " ORDER BY $orderBy";
+
+        $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
-     * Xóa hàng loạt Đơn hàng
+     * Xóa hàng loạt Đơn hàng[cite: 5]
+     * Lưu ý: CSDL cần thiết lập ON DELETE CASCADE cho tickets và booking_combos
      */
     public function deleteMultipleOrders(array $ids) {
         if (empty($ids)) return false;
-        $db = Database::getInstance()->getPdo();
-        $placeholders = implode(',', array_fill(0, count($ids), '?'));
         
-        // Cảnh báo: Tùy thuộc vào thiết lập CSDL của bạn (ON DELETE CASCADE), 
-        // có thể cần viết lệnh xóa tickets và booking_combos trước khi xóa bookings.
-        $stmt = $db->prepare("DELETE FROM bookings WHERE id IN ($placeholders)");
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $sql = "DELETE FROM bookings WHERE id IN ($placeholders)";
+        
+        $stmt = $this->db->prepare($sql);
         return $stmt->execute($ids);
     }
 }

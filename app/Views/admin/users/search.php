@@ -1,23 +1,59 @@
 <?php
 /**
  * Admin Search Users
- * Tầm kiếm ngườii dùng theo keyword
+ * Tìm kiếm người dùng theo keyword, sắp xếp và lọc trạng thái
  */
 ?>
 
+<!-- Breadcrumb -->
+<div class="admin-breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/users">Người dùng</a></li>
+        <li class="breadcrumb-item active">Tìm kiếm</li>
+    </ol>
+</div>
+
+<!-- Search & Filter Bar -->
+<form class="admin-search-form" method="GET" action="<?= BASE_URL ?>admin/search">
+    <div class="search-input-wrap">
+        <i class="fas fa-search"></i>
+        <input type="text" name="q" class="search-input" value="<?= htmlspecialchars($keyword ?? '') ?>" placeholder="Tìm kiếm email hoặc tên...">
+    </div>
+    <input type="hidden" name="sort" value="<?= htmlspecialchars($sort ?? 'newest') ?>">
+    <input type="hidden" name="status" value="<?= htmlspecialchars($status ?? 'all') ?>">
+    <button type="submit" class="btn-search"><i class="fas fa-search"></i> Tìm</button>
+    <a href="<?= BASE_URL ?>admin/users" class="btn-reset">Xóa lọc</a>
+</form>
+
+<!-- Filter Bar: Sort & Status -->
+<div class="admin-filter-bar">
+    <div class="filter-group">
+        <label class="filter-label">Sắp xếp:</label>
+        <select class="filter-select" id="sort-select" onchange="applySearchFilter()">
+            <option value="newest" <?= ($sort ?? 'newest') === 'newest' ? 'selected' : '' ?>>Mới nhất</option>
+            <option value="oldest" <?= ($sort ?? 'newest') === 'oldest' ? 'selected' : '' ?>>Cũ nhất</option>
+            <option value="name_asc" <?= ($sort ?? 'newest') === 'name_asc' ? 'selected' : '' ?>>Tên A→Z</option>
+            <option value="name_desc" <?= ($sort ?? 'newest') === 'name_desc' ? 'selected' : '' ?>>Tên Z→A</option>
+            <option value="email_asc" <?= ($sort ?? 'newest') === 'email_asc' ? 'selected' : '' ?>>Email A→Z</option>
+            <option value="email_desc" <?= ($sort ?? 'newest') === 'email_desc' ? 'selected' : '' ?>>Email Z→A</option>
+        </select>
+    </div>
+    <div class="filter-group">
+        <label class="filter-label">Trạng thái:</label>
+        <select class="filter-select" id="status-select" onchange="applySearchFilter()">
+            <option value="all" <?= ($status ?? 'all') === 'all' ? 'selected' : '' ?>>Tất cả</option>
+            <option value="active" <?= ($status ?? 'all') === 'active' ? 'selected' : '' ?>>Hoạt động</option>
+            <option value="inactive" <?= ($status ?? 'all') === 'inactive' ? 'selected' : '' ?>>Khóa</option>
+        </select>
+    </div>
+</div>
+
 <!-- Table Container -->
 <div class="table-container">
-    <!-- Table Header with Search -->
-    <div class="table-header">
-        <form class="search-form" method="GET" action="<?= BASE_URL ?>admin/search">
-            <input type="text" name="q" value="<?= htmlspecialchars($keyword ?? '') ?>" placeholder="Tìm kiếm email hoặc tên..." required>
-            <button type="submit"><i class="fas fa-search"></i></button>
-        </form>
-    </div>
-
     <!-- Info Bar -->
     <div class="info-bar">
-        <strong>Kết quả: <?= htmlspecialchars($total_users ?? 0) ?> ngườii dùng</strong>
+        <strong>Kết quả: <?= htmlspecialchars($total_users ?? 0) ?> người dùng</strong>
         | Trang <?= htmlspecialchars($current_page ?? 1) ?>/<?= htmlspecialchars($total_pages ?? 1) ?>
     </div>
 
@@ -90,15 +126,15 @@
                                 <?php endif; ?>
                                 <a href="<?= BASE_URL ?>admin/reset_password/<?= htmlspecialchars($user['id']) ?>" 
                                    class="btn-sm btn-reset" 
-                                   onclick="return confirm('Đặt lại mật khẩu của ngườii dùng này?');" 
+                                   onclick="return confirm('Đặt lại mật khẩu của người dùng này?');" 
                                    title="Đặt lại mật khẩu">
                                     <i class="fas fa-key"></i> Đặt lại
                                 </a>
                                 <?php if ($_SESSION['auth_user']['id'] !== $user['id']): ?>
                                     <a href="<?= BASE_URL ?>admin/delete_user/<?= htmlspecialchars($user['id']) ?>" 
                                        class="btn-sm btn-delete" 
-                                       onclick="return confirm('Xóa ngườii dùng này? Hành động này không thể hoàn lại!');" 
-                                       title="Xóa ngườii dùng">
+                                       onclick="return confirm('Xóa người dùng này? Hành động này không thể hoàn lại!');" 
+                                       title="Xóa người dùng">
                                         <i class="fas fa-trash"></i> Xóa
                                     </a>
                                 <?php endif; ?>
@@ -111,7 +147,7 @@
     <?php else: ?>
         <div class="no-data">
             <i class="fas fa-search" style="font-size: 48px; margin-bottom: 20px; display: block; color: #ddd;"></i>
-            <p>Không tìm thấy ngườii dùng nào với từ khóa: <strong><?= htmlspecialchars($keyword ?? '') ?></strong></p>
+            <p>Không tìm thấy người dùng nào với từ khóa: <strong><?= htmlspecialchars($keyword ?? '') ?></strong></p>
         </div>
     <?php endif; ?>
 
@@ -160,3 +196,12 @@
         </div>
     <?php endif; ?>
 </div>
+
+<script>
+function applySearchFilter() {
+    var sort = document.getElementById('sort-select').value;
+    var status = document.getElementById('status-select').value;
+    var keyword = '<?= htmlspecialchars($keyword ?? '', ENT_QUOTES) ?>';
+    window.location.href = '<?= BASE_URL ?>admin/search?q=' + encodeURIComponent(keyword) + '&sort=' + encodeURIComponent(sort) + '&status=' + encodeURIComponent(status);
+}
+</script>

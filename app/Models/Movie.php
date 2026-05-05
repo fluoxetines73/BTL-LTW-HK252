@@ -20,8 +20,9 @@ class Movie extends Model {
         // Nếu có từ khóa tìm kiếm
         if (!empty($keyword)) {
             // Cần thêm bí danh 'm.' phía trước cột title và director để tránh lỗi "ambiguous" (trùng tên cột)
-            $sql .= " WHERE m.title LIKE :keyword OR m.director LIKE :keyword";
-            $params[':keyword'] = "%{$keyword}%";
+            $sql .= " WHERE m.title LIKE :keyword_title OR m.director LIKE :keyword_director";
+            $params[':keyword_title'] = "%{$keyword}%";
+            $params[':keyword_director'] = "%{$keyword}%";
         }
 
         // Rất quan trọng: Bắt buộc phải gom nhóm (GROUP BY) theo ID phim 
@@ -248,6 +249,15 @@ class Movie extends Model {
         return true;
     }
     /**
+     * Tìm kiếm phim cho admin với bộ lọc và sắp xếp
+     * @param string|null $keyword Từ khóa tìm kiếm (tên phim hoặc đạo diễn)
+     * @param string|null $status Trạng thái phim (now_showing, coming_soon, ended)
+     * @param string $sort Cách sắp xếp (newest hoặc oldest)
+     * @return array
+     */
+    
+
+    /**
      * Lấy danh sách phim theo Trạng thái chiếu VÀ Slug Thể loại
      */
     /**
@@ -286,39 +296,43 @@ class Movie extends Model {
     /**
      * Tìm kiếm, lọc và sắp xếp Phim cho Admin
      */
-    public function searchAdminMovies($keyword = '', $status = 'all', $sort = 'newest') {
-        $db = Database::getInstance()->getPdo();
-        
-        $sql = "SELECT * FROM movies WHERE 1=1 ";
+    /**
+     * Tìm kiếm và lọc phim dành cho trang Admin
+     * Kết hợp tìm kiếm từ khóa, lọc trạng thái và sắp xếp[cite: 5]
+     */
+    /**
+     * Tìm kiếm và lọc phim dành cho trang Admin
+     * Đã sửa lỗi Invalid parameter number bằng cách tách biệt tham số placeholder
+     */
+    public function searchAdminMovies($keyword = null, $status = 'all', $sort = 'newest') {
+        $sql = "SELECT * FROM movies WHERE 1=1";
         $params = [];
 
-        // SỬA LỖI TẠI ĐÂY: Dùng 3 tên biến khác nhau (:kw1, :kw2, :kw3)
+        // 1. Lọc theo từ khóa (Tên phim hoặc đạo diễn)
         if (!empty($keyword)) {
-            $sql .= " AND (title LIKE :kw1 OR description LIKE :kw2 OR director LIKE :kw3) ";
-            $params[':kw1'] = '%' . $keyword . '%';
-            $params[':kw2'] = '%' . $keyword . '%';
-            $params[':kw3'] = '%' . $keyword . '%';
+            // Sử dụng :kw1 và :kw2 riêng biệt để tránh lỗi lệch tham số
+            $sql .= " AND (title LIKE :kw1 OR director LIKE :kw2)";
+            $searchTerm = '%' . $keyword . '%';
+            $params[':kw1'] = $searchTerm;
+            $params[':kw2'] = $searchTerm;
         }
 
-        // Lọc theo trạng thái
-        if ($status !== 'all') {
-            $sql .= " AND status = :status ";
+        // 2. Lọc theo trạng thái (now_showing, coming_soon, ended)
+        if ($status !== 'all' && !empty($status)) {
+            $sql .= " AND status = :status";
             $params[':status'] = $status;
         }
 
-        // Sắp xếp
-        switch ($sort) {
-            case 'oldest':
-                $sql .= " ORDER BY id ASC ";
-                break;
-            case 'newest':
-            default:
-                $sql .= " ORDER BY id DESC ";
-                break;
+        // 3. Sắp xếp dữ liệu
+        if ($sort === 'oldest') {
+            $sql .= " ORDER BY created_at ASC";
+        } else {
+            $sql .= " ORDER BY created_at DESC";
         }
 
-        $stmt = $db->prepare($sql);
-        $stmt->execute($params);
+        // Thực thi câu lệnh với mảng params đã chuẩn hóa
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params); 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     /**

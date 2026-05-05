@@ -1,16 +1,43 @@
-<nav aria-label="breadcrumb" class="mb-3">
+<nav aria-label="breadcrumb" class="admin-breadcrumb mb-3">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/admin_dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
         <li class="breadcrumb-item active" aria-current="page">Quản lý Trang</li>
     </ol>
 </nav>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold text-dark"><i class="fas fa-file-alt text-primary me-2"></i>Quản lý Trang</h2>
-    <a href="<?= BASE_URL ?>admin/page/create" class="btn btn-primary shadow-sm">
+<div class="d-flex justify-content-between align-items-center mb-4 page-header">
+    <h2 class="page-title fw-bold text-dark"><i class="fas fa-file-alt me-2"></i>Quản lý Trang</h2>
+    <a href="<?= BASE_URL ?>admin/page/create" class="btn btn-primary shadow-sm btn-add">
         <i class="fas fa-plus"></i> Thêm Trang Mới
     </a>
 </div>
+
+<form method="GET" action="<?= BASE_URL ?>admin/page/index" class="admin-search-form mb-3">
+    <div class="search-input-wrap">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" name="q" class="form-control" placeholder="Tìm kiếm tiêu đề trang..." value="<?= htmlspecialchars($search ?? '') ?>">
+    </div>
+    <button type="submit" class="btn btn-search">
+        <i class="fas fa-search"></i> Tìm
+    </button>
+    <a href="<?= BASE_URL ?>admin/page/index" class="btn btn-reset">
+        <i class="fas fa-times"></i> Reset
+    </a>
+</form>
+
+<form method="GET" action="<?= BASE_URL ?>admin/page/index" class="admin-filter-bar mb-4" id="filterForm">
+    <?php if ($search !== ''): ?>
+        <input type="hidden" name="q" value="<?= htmlspecialchars($search) ?>">
+    <?php endif; ?>
+    <div class="filter-group">
+        <label for="status">Lọc theo trạng thái:</label>
+        <select name="status" id="status" class="form-select" onchange="this.form.submit()">
+            <option value="">Tất cả</option>
+            <option value="published" <?= ($status ?? '') === 'published' ? 'selected' : '' ?>>Đã đăng</option>
+            <option value="draft" <?= ($status ?? '') === 'draft' ? 'selected' : '' ?>>Bản nháp</option>
+        </select>
+    </div>
+</form>
 
 <div class="card shadow-sm border-0">
     <div class="card-body p-0">
@@ -46,8 +73,8 @@
                                     <a href="<?= BASE_URL ?>admin/page/edit/<?= $page['id'] ?>" class="btn btn-outline-primary" title="Sửa">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="<?= BASE_URL ?>admin/page/delete/<?= $page['id'] ?>" 
-                                       class="btn btn-outline-danger" 
+                                    <a href="<?= BASE_URL ?>admin/page/delete/<?= $page['id'] ?>"
+                                       class="btn btn-outline-danger"
                                        onclick="return confirm('Bạn có chắc chắn muốn xóa trang này?');"
                                        title="Xóa">
                                         <i class="fas fa-trash"></i>
@@ -60,7 +87,7 @@
                         <tr>
                             <td colspan="6" class="text-center py-4 text-muted">
                                 <i class="fas fa-inbox fa-2x mb-2"></i>
-                                <p>Chưa có trang nào. Hãy thêm trang đầu tiên!</p>
+                                <p>Không tìm thấy trang nào.</p>
                             </td>
                         </tr>
                     <?php endif; ?>

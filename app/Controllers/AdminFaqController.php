@@ -16,7 +16,25 @@ class AdminFaqController extends Controller {
         // Validate sort order
         $sortOrder = in_array(strtolower($sortOrder), ['asc', 'desc']) ? strtolower($sortOrder) : 'asc';
         
-        $faqs = $faqModel->getAllFaqs($sortBy, $sortOrder);
+        // Get filter parameters
+        $keyword = trim((string)($_GET['q'] ?? ''));
+        $categoryFilter = trim((string)($_GET['category'] ?? ''));
+        $statusFilter = trim((string)($_GET['status'] ?? ''));
+        
+        // Validate status filter
+        $validStatuses = ['active', 'inactive'];
+        if (!in_array($statusFilter, $validStatuses, true)) {
+            $statusFilter = '';
+        }
+        
+        // Get filtered FAQs
+        $faqs = $faqModel->searchFaqs(
+            $keyword !== '' ? $keyword : null,
+            $categoryFilter !== '' ? $categoryFilter : null,
+            $statusFilter !== '' ? $statusFilter : null,
+            $sortBy,
+            $sortOrder
+        );
         $categories = $faqModel->findAllCategories();
         
         $this->adminView('admin/faq/index', 'faq', [
@@ -24,7 +42,10 @@ class AdminFaqController extends Controller {
             'faqs' => $faqs, 
             'categories' => $categories,
             'sortBy' => $sortBy,
-            'sortOrder' => $sortOrder
+            'sortOrder' => $sortOrder,
+            'keyword' => $keyword,
+            'categoryFilter' => $categoryFilter,
+            'statusFilter' => $statusFilter
         ]);
     }
 
@@ -167,6 +188,77 @@ class AdminFaqController extends Controller {
             } else {
                 $_SESSION['error'] = 'Lỗi khi xóa câu hỏi.';
             }
+        }
+        $this->redirect('admin/faq/index');
+    }
+
+    public function bulkDelete() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('admin/faq/index');
+            return;
+        }
+
+        $rawIds = $_POST['selected_ids'] ?? '';
+        if (is_array($rawIds)) {
+            $ids = array_map('intval', array_map('trim', $rawIds));
+        } elseif (is_string($rawIds) && $rawIds !== '') {
+            $ids = array_map('intval', array_map('trim', explode(',', $rawIds)));
+        } else {
+            $ids = [];
+        }
+        $ids = array_values(array_filter($ids, static function ($id) { return $id > 0; }));
+
+        if (empty($ids)) {
+            $_SESSION['error'] = 'Vui lòng chọn ít nhất một câu hỏi để xóa.';
+            $this->redirect('admin/faq/index');
+            return;
+        }
+
+        $faqModel = $this->model('Faq');
+        if ($faqModel->deleteMultiple($ids)) {
+            $_SESSION['success'] = 'Đã xóa ' . count($ids) . ' câu hỏi.';
+        } else {
+            $_SESSION['error'] = 'Lỗi khi xóa các câu hỏi đã chọn.';
+        }
+        $this->redirect('admin/faq/index');
+    }
+
+    public function bulkUpdateStatus() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('admin/faq/index');
+            return;
+        }
+
+        $rawIds = $_POST['selected_ids'] ?? '';
+        if (is_array($rawIds)) {
+            $ids = array_map('intval', array_map('trim', $rawIds));
+        } elseif (is_string($rawIds) && $rawIds !== '') {
+            $ids = array_map('intval', array_map('trim', explode(',', $rawIds)));
+        } else {
+            $ids = [];
+        }
+        $ids = array_values(array_filter($ids, static function ($id) { return $id > 0; }));
+
+        $status = $_POST['status'] ?? '';
+        $allowedStatuses = ['active', 'inactive'];
+        if (!in_array($status, $allowedStatuses, true)) {
+            $_SESSION['error'] = 'Trạng thái không hợp lệ.';
+            $this->redirect('admin/faq/index');
+            return;
+        }
+
+        if (empty($ids)) {
+            $_SESSION['error'] = 'Vui lòng chọn ít nhất một câu hỏi để cập nhật.';
+            $this->redirect('admin/faq/index');
+            return;
+        }
+
+        $faqModel = $this->model('Faq');
+        if ($faqModel->updateStatusMultiple($ids, $status)) {
+            $statusLabel = $status === 'active' ? 'Kích hoạt' : 'Vô hiệu hóa';
+            $_SESSION['success'] = 'Đã ' . $statusLabel . ' ' . count($ids) . ' câu hỏi.';
+        } else {
+            $_SESSION['error'] = 'Lỗi khi cập nhật trạng thái.';
         }
         $this->redirect('admin/faq/index');
     }

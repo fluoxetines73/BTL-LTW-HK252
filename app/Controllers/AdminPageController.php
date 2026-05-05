@@ -8,11 +8,26 @@ class AdminPageController extends Controller {
 
     public function index() {
         $pageModel = $this->model('Page');
-        $pages = $pageModel->getAllPages();
+
+        $search = trim($_GET['q'] ?? '');
+        $status = $_GET['status'] ?? '';
+
+        if ($search !== '' || $status !== '') {
+            $pages = $pageModel->searchPages($search, $status);
+        } else {
+            $pages = $pageModel->getAllPages();
+        }
+
+        // Filter out About page from listing
+        $pages = array_values(array_filter($pages, function($page) {
+            return !in_array($page['slug'] ?? '', ['gioi-thieu', 'about']);
+        }));
 
         $this->adminView('admin/page/index', 'page', [
             'title' => 'Quản lý Trang',
-            'pages' => $pages
+            'pages' => $pages,
+            'search' => $search,
+            'status' => $status
         ]);
     }
 

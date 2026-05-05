@@ -10,8 +10,29 @@ class AdminShowtimeController extends Controller {
      * Trang danh sách Suất chiếu (Có Search, Filter và Bulk Delete)
      */
     public function index() {
+        // 1. Khởi tạo các Model cần thiết
         $showtimeModel = $this->model('Showtime');
-        $roomModel     = $this->model('Room'); // Gọi thêm Room model để lấy danh sách phòng cho thanh Lọc
+        $roomModel     = $this->model('Room'); // Để lấy danh sách phòng kèm rạp cho dropdown lọc
+
+        // 2. Lấy và làm sạch các tham số tìm kiếm/lọc từ URL
+        $keyword    = trim($_GET['q'] ?? '');
+        $dateFilter = trim($_GET['date'] ?? '');
+        $sort       = $_GET['sort'] ?? 'newest';
+
+        // 3. Kiểm tra tính hợp lệ của giá trị sắp xếp
+        $allowedSorts = ['newest', 'oldest', 'price_asc', 'price_desc'];
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'newest'; // Mặc định là mới nhất nếu giá trị không hợp lệ
+        }
+
+        // 4. Logic lấy dữ liệu suất chiếu dựa trên bộ lọc[cite: 5]
+        if (!empty($keyword) || !empty($dateFilter) || $sort !== 'newest') {
+            // Sử dụng hàm search nếu người dùng có nhập từ khóa, chọn ngày hoặc đổi kiểu sắp xếp
+            $showtimes = $showtimeModel->searchShowtimes($keyword, $dateFilter, $sort);
+        } else {
+            // Ngược lại, lấy toàn bộ suất chiếu mặc định
+            $showtimes = $showtimeModel->getAllShowtimes();
+        }
 
         // 1. Nhận tham số Tìm kiếm & Lọc từ URL
         $keyword = trim((string)($_GET['q'] ?? ''));
@@ -57,15 +78,17 @@ class AdminShowtimeController extends Controller {
             ")->fetchAll(PDO::FETCH_ASSOC);
 
         // 4. Gọi View và truyền dữ liệu (Đã xóa getStats() để tránh lỗi 500)
-        $this->adminView('admin/showtimes/index', 'showtime', [
-            
-            'showtimes' => $showtimes,
-            'rooms'     => $rooms,
-            'title'     => 'Quản lý Suất chiếu',
-            'keyword'   => $keyword,
-            'roomId'    => $roomId,
-            'sort'      => $sort,
-        ]);
+        
+            // 4. Gọi View và truyền đầy đủ dữ liệu từ cả hai bên[cite: 4]
+            $this->adminView('admin/showtimes/index', 'showtime', [
+                'title'      => 'Quản lý Suất chiếu',
+                'showtimes'  => $showtimes,  // Danh sách suất chiếu đã được lọc
+                'rooms'      => $rooms,      // Danh sách phòng kèm rạp (Code của Duy Nhất)
+                'keyword'    => $keyword,    // Từ khóa tìm kiếm (Code của bạn mình)
+                'roomId'     => $roomId,     // Lọc theo phòng (Code của Duy Nhất)
+                'dateFilter' => $dateFilter, // Lọc theo ngày (Code của bạn mình)[cite: 5]
+                'sort'       => $sort        // Sắp xếp dữ liệu
+            ]);
     }
 
     public function create() {

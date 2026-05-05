@@ -9,22 +9,22 @@ class AdminComboController extends Controller {
     /**
      * Trang danh sách Combo (Có Search, Filter và Bulk Delete)
      */
-    public function index() {
+public function index() {
         $comboModel = $this->model('Combo');
 
-        // 1. Nhận tham số Tìm kiếm & Lọc từ URL
+        // 1. Nhận tham số Tìm kiếm, Lọc & Sắp xếp từ URL
         $keyword = trim((string)($_GET['q'] ?? ''));
         $status  = trim((string)($_GET['status'] ?? 'all'));
+        // Lấy kiểu sắp xếp, nếu không có thì mặc định là mới nhất
         $sort    = trim((string)($_GET['sort'] ?? 'newest'));
 
-        // 2. Xử lý Xóa hàng loạt (Bulk Delete)
+        // 2. Xử lý Xóa hàng loạt (Bulk Delete) - Giữ logic của Duy Nhất
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' 
             && !empty($_POST['action']) 
             && $_POST['action'] === 'delete_selected') {
             
             $rawSelectedIds = $_POST['selected_ids'] ?? '';
             
-            // Xử lý chuỗi ID gửi từ giao diện
             if (is_array($rawSelectedIds)) {
                 $selectedIds = array_map('intval', array_map('trim', $rawSelectedIds));
             } elseif (is_string($rawSelectedIds) && $rawSelectedIds !== '') {
@@ -46,20 +46,19 @@ class AdminComboController extends Controller {
             }
         }
 
-        // 3. Lấy dữ liệu đã được lọc
+        // 3. Lấy dữ liệu đã được lọc và sắp xếp trực tiếp từ Model
+        // Phương thức này tối ưu hơn việc dùng array_filter và usort trong Controller
         $combos = $comboModel->searchAdminCombos($keyword, $status, $sort);
 
-        // 4. Gọi View và truyền dữ liệu
+        // 4. Gọi View và truyền dữ liệu đồng bộ cho cả hai bên
         $this->adminView('admin/combo/index', 'combo', [
             'combos'  => $combos,
             'title'   => 'Quản lý Combo',
-            // ĐÃ XÓA dòng 'stats' => $this->getStats() ở đây
-            'keyword' => $keyword,
-            'status'  => $status,
-            'sort'    => $sort,
+            'keyword' => $keyword, // Dùng cho ô tìm kiếm
+            'status'  => $status,  // Dùng cho bộ lọc trạng thái
+            'sort'    => $sort     // Dùng cho bộ chọn sắp xếp
         ]);
     }
-
     public function create() {
         $this->adminView('admin/combo/create', 'combo', ['title' => 'Thêm Combo Mới']);
     }
