@@ -171,11 +171,25 @@ class Movie extends Model {
      * Xóa một bộ phim
      */
     public function deleteMovie($id) {
-        $sql = "DELETE FROM {$this->table} WHERE id = :id";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        return $stmt->execute();
+    $db = Database::getInstance()->getPdo();
+    try {
+        $db->beginTransaction();
+
+        // 1. Xóa các suất chiếu liên quan trước
+        $stmt1 = $db->prepare("DELETE FROM showtimes WHERE movie_id = :id");
+        $stmt1->execute([':id' => $id]);
+
+        // 2. Sau đó mới xóa phim
+        $stmt2 = $db->prepare("DELETE FROM movies WHERE id = :id");
+        $stmt2->execute([':id' => $id]);
+
+        $db->commit();
+        return true;
+    } catch (Exception $e) {
+        $db->rollBack();
+        return false;
     }
+}
     // Hàm lấy danh sách phim theo trạng thái (Đang chiếu / Sắp chiếu)
     public function getMoviesByStatus($status) {
         $stmt = $this->db->prepare("SELECT * FROM movies WHERE status = :status ORDER BY release_date DESC");
@@ -339,13 +353,34 @@ class Movie extends Model {
      * Xóa hàng loạt Phim
      */
     public function deleteMultipleMovies(array $ids) {
-        if (empty($ids)) return false;
-        $db = Database::getInstance()->getPdo();
-        
-        // Tạo chuỗi dấu '?' tương ứng với số lượng ID cần xóa (VD: ?,?,?)
+    if (empty($ids)) return false;
+    
+    $db = Database::getInstance()->getPdo();
+    try {
+        // Bắt đầu giao dịch để đảm bảo an toàn dữ liệu
+        $db->beginTransaction();
+
+        // Tạo chuỗi placeholders (?,?,?) dựa trên số lượng ID
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
-        
-        $stmt = $db->prepare("DELETE FROM movies WHERE id IN ($placeholders)");
-        return $stmt->execute($ids);
+
+        // Bước 1: Xóa tất cả suất chiếu của các phim này trước
+        $sqlShowtimes = "DELETE FROM showtimes WHERE movie_id IN ($placeholders)";
+        $stmt1 = $db->prepare($sqlShowtimes);
+        $stmt1->execute($ids);
+
+        // Bước 2: Xóa các phim khỏi bảng movies
+        $sqlMovies = "DELETE FROM movies WHERE id IN ($placeholders)";
+        $stmt2 = $db->prepare($sqlMovies);
+        $stmt2->execute($ids);
+
+        // Hoàn tất giao dịch
+        $db->commit();
+        return true;
+    } catch (Exception $e) {
+        // Nếu có lỗi, quay lại trạng thái cũ
+        $db->rollBack();
+        error_log("Bulk Delete Error: " . $e->getMessage());
+        return false;
     }
+}
 }
