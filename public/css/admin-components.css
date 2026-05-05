@@ -1,0 +1,396 @@
+/**
+ * Admin Shared Components CSS - CGV Cinema Booking
+ * Breadcrumb, search bar, filter/sort, add button, page header
+ */
+
+/* CSS Custom Properties (mirrors admin.css) */
+:root {
+    --cgv-red: #E71A0F;
+    --cgv-dark: #1A1A2E;
+    --cgv-gold: #D4A843;
+    --cgv-white: #FFFFFF;
+    --cgv-gray: #666666;
+    --cgv-text: #333333;
+    --cgv-light-bg: #f8f9fa;
+    --cgv-border: #e5e7eb;
+    --cgv-hover-bg: #fef2f2;
+}
+
+/* ========================================
+   1. CGV-RED BREADCRUMB STYLES
+   ======================================== */
+
+.admin-breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+.admin-breadcrumb .breadcrumb {
+    background: linear-gradient(135deg, rgba(231, 26, 15, 0.08), rgba(231, 26, 15, 0.04));
+    border: 1px solid rgba(231, 26, 15, 0.15);
+    border-radius: 8px;
+    padding: 8px 16px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.admin-breadcrumb .breadcrumb-item {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.admin-breadcrumb .breadcrumb-item a {
+    color: #E71A0F;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.admin-breadcrumb .breadcrumb-item a:hover {
+    color: #b9150b;
+    text-decoration: underline;
+}
+
+.admin-breadcrumb .breadcrumb-item.active {
+    color: #1A1A2E;
+    font-weight: 600;
+}
+
+.admin-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+    content: '›';
+    color: #E71A0F;
+    font-weight: 700;
+    margin: 0 8px;
+    font-size: 16px;
+}
+
+/* ========================================
+   2. SEARCH BAR COMPONENT
+   ======================================== */
+
+.admin-search-form {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.admin-search-form .search-input-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    max-width: 320px;
+}
+
+.admin-search-form .search-input-wrap i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.admin-search-form .search-input {
+    width: 100%;
+    padding: 9px 12px 9px 36px;
+    border: 1px solid var(--cgv-border);
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.admin-search-form .search-input:focus {
+    outline: none;
+    border-color: var(--cgv-red);
+    box-shadow: 0 0 0 3px rgba(231, 26, 15, 0.1);
+}
+
+.admin-search-form .search-input::placeholder {
+    color: #9ca3af;
+}
+
+.admin-search-form .btn-search {
+    background: var(--cgv-red);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 9px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.admin-search-form .btn-search:hover {
+    background: #ca170c;
+}
+
+.admin-search-form .btn-reset {
+    background: #fff;
+    color: var(--cgv-gray);
+    border: 1px solid var(--cgv-border);
+    border-radius: 6px;
+    padding: 9px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.admin-search-form .btn-reset:hover {
+    background: var(--cgv-hover-bg);
+    border-color: var(--cgv-red);
+    color: var(--cgv-red);
+}
+
+/* ========================================
+   3. FILTER / SORT COMPONENT
+   ======================================== */
+
+.admin-filter-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: #fff;
+    border: 1px solid var(--cgv-border);
+    border-radius: 8px;
+}
+
+.admin-filter-bar .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-filter-bar .filter-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cgv-gray);
+}
+
+.admin-filter-bar .filter-select {
+    padding: 6px 10px;
+    border: 1px solid var(--cgv-border);
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--cgv-text);
+    background: #fff;
+    cursor: pointer;
+    min-width: 120px;
+}
+
+.admin-filter-bar .filter-select:focus {
+    outline: none;
+    border-color: var(--cgv-red);
+}
+
+/* Type Switcher (pill-style filter) */
+.type-switcher {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.type-switcher a {
+    text-decoration: none;
+    padding: 9px 14px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    background: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.type-switcher a:hover {
+    background: var(--cgv-hover-bg);
+    border-color: var(--cgv-red);
+    color: var(--cgv-red);
+}
+
+.type-switcher a.active {
+    background: var(--cgv-red);
+    color: #fff;
+    border-color: var(--cgv-red);
+}
+
+/* ========================================
+   4. ADD BUTTON COMPONENT
+   ======================================== */
+
+.btn-add {
+    background: var(--cgv-red);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-add:hover {
+    color: #fff;
+    background: #ca170c;
+    text-decoration: none;
+}
+
+.btn-add i {
+    font-size: 12px;
+}
+
+/* ========================================
+   5. PAGE HEADER COMPONENT
+   ======================================== */
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--cgv-border);
+}
+
+.page-header .page-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--cgv-dark);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-header .page-title i {
+    color: var(--cgv-red);
+}
+
+.page-header .page-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Compact page header variant */
+.page-header-compact {
+    margin-bottom: 16px;
+}
+
+.page-header-compact .page-title {
+    font-size: 18px;
+}
+
+/* ========================================
+   6. ACTION BUTTONS (Table Row Actions)
+   ======================================== */
+
+.action-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    transition: opacity 0.2s;
+}
+
+.btn-action:hover {
+    opacity: 0.85;
+    color: #fff;
+}
+
+.btn-action.btn-view {
+    background: #2196F3;
+}
+
+.btn-action.btn-edit {
+    background: #ff9800;
+}
+
+.btn-action.btn-delete {
+    background: #f44336;
+}
+
+.btn-action.btn-primary {
+    background: var(--cgv-red);
+}
+
+/* ========================================
+   7. UTILITY CLASSES
+   ======================================== */
+
+.text-cgv-red {
+    color: var(--cgv-red);
+}
+
+.bg-cgv-red {
+    background: var(--cgv-red);
+}
+
+.border-cgv-red {
+    border-color: var(--cgv-red);
+}
+
+/* ========================================
+   8. CGV-RED OUTLINE BUTTON
+   ======================================== */
+
+.btn-outline-cgv {
+    color: var(--cgv-red);
+    border: 1px solid var(--cgv-red);
+    background: transparent;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-cgv:hover {
+    background: var(--cgv-red);
+    color: #fff;
+    text-decoration: none;
+}
+
+.btn-outline-cgv.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+}
