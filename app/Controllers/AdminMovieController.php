@@ -10,15 +10,36 @@ class AdminMovieController extends Controller {
     }
 
     /**
-     * Hiển thị danh sách phim
+     * Hiển thị danh sách phim (có tìm kiếm, lọc trạng thái, sắp xếp)
      */
     public function index() {
         $movieModel = $this->model('Movie');
-        $movies = $movieModel->getAllMovies();
+
+        // Lấy tham số tìm kiếm / lọc / sắp xếp từ GET
+        $keyword = trim((string)($_GET['q'] ?? ''));
+        $status = trim((string)($_GET['status'] ?? ''));
+        $sort = trim((string)($_GET['sort'] ?? 'newest'));
+
+        // Validate sort
+        $sort = in_array($sort, ['newest', 'oldest'], true) ? $sort : 'newest';
+
+        // Validate status
+        $validStatuses = ['now_showing', 'coming_soon', 'ended'];
+        $statusFilter = in_array($status, $validStatuses, true) ? $status : '';
+
+        // Tìm kiếm phim với bộ lọc
+        $movies = $movieModel->searchAdminMovies(
+            $keyword !== '' ? $keyword : null,
+            $statusFilter !== '' ? $statusFilter : null,
+            $sort
+        );
 
         $this->adminView('admin/movies/index', 'movie', [
             'movies' => $movies,
-            'title' => 'Quản lý Phim'
+            'title' => 'Quản lý Phim',
+            'keyword' => $keyword,
+            'status' => $status,
+            'sort' => $sort,
         ]);
     }
 

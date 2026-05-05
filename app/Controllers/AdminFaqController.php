@@ -16,7 +16,25 @@ class AdminFaqController extends Controller {
         // Validate sort order
         $sortOrder = in_array(strtolower($sortOrder), ['asc', 'desc']) ? strtolower($sortOrder) : 'asc';
         
-        $faqs = $faqModel->getAllFaqs($sortBy, $sortOrder);
+        // Get filter parameters
+        $keyword = trim((string)($_GET['q'] ?? ''));
+        $categoryFilter = trim((string)($_GET['category'] ?? ''));
+        $statusFilter = trim((string)($_GET['status'] ?? ''));
+        
+        // Validate status filter
+        $validStatuses = ['active', 'inactive'];
+        if (!in_array($statusFilter, $validStatuses, true)) {
+            $statusFilter = '';
+        }
+        
+        // Get filtered FAQs
+        $faqs = $faqModel->searchFaqs(
+            $keyword !== '' ? $keyword : null,
+            $categoryFilter !== '' ? $categoryFilter : null,
+            $statusFilter !== '' ? $statusFilter : null,
+            $sortBy,
+            $sortOrder
+        );
         $categories = $faqModel->findAllCategories();
         
         $this->adminView('admin/faq/index', 'faq', [
@@ -24,7 +42,10 @@ class AdminFaqController extends Controller {
             'faqs' => $faqs, 
             'categories' => $categories,
             'sortBy' => $sortBy,
-            'sortOrder' => $sortOrder
+            'sortOrder' => $sortOrder,
+            'keyword' => $keyword,
+            'categoryFilter' => $categoryFilter,
+            'statusFilter' => $statusFilter
         ]);
     }
 

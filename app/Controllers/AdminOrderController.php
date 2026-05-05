@@ -9,11 +9,35 @@ class AdminOrderController extends Controller {
     // Hiển thị danh sách toàn bộ đơn hàng
     public function index() {
         $orderModel = $this->model('Order');
-        $orders = $orderModel->getAllOrders();
+        
+        $keyword = trim($_GET['q'] ?? '');
+        $status = $_GET['status'] ?? 'all';
+        $sort = $_GET['sort'] ?? 'newest';
+        
+        // Validate sort parameter
+        $validSorts = ['newest', 'oldest', 'price_asc', 'price_desc'];
+        if (!in_array($sort, $validSorts)) {
+            $sort = 'newest';
+        }
+        
+        // Validate status parameter
+        $validStatuses = ['all', 'pending', 'confirmed', 'completed', 'cancelled'];
+        if (!in_array($status, $validStatuses)) {
+            $status = 'all';
+        }
+        
+        if ($keyword !== '' || $status !== 'all') {
+            $orders = $orderModel->searchOrders($keyword, $status, $sort);
+        } else {
+            $orders = $orderModel->getAllOrders();
+        }
         
         $this->adminView('admin/orders/index', 'order', [
             'orders' => $orders,
-            'title' => 'Quản lý Đơn Hàng'
+            'title' => 'Quản lý Đơn Hàng',
+            'keyword' => $keyword,
+            'status' => $status,
+            'sort' => $sort
         ]);
     }
 

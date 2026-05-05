@@ -7,11 +7,28 @@ class AdminShowtimeController extends Controller {
     }
 
     public function index() {
-        $showtimes = $this->model('Showtime')->getAllShowtimes();
+        $keyword = trim($_GET['q'] ?? '');
+        $dateFilter = trim($_GET['date'] ?? '');
+        $sort = $_GET['sort'] ?? 'newest';
+
+        // Validate sort value
+        $allowedSorts = ['newest', 'oldest', 'price_asc', 'price_desc'];
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'newest';
+        }
+
+        if (!empty($keyword) || !empty($dateFilter) || $sort !== 'newest') {
+            $showtimes = $this->model('Showtime')->searchShowtimes($keyword, $dateFilter, $sort);
+        } else {
+            $showtimes = $this->model('Showtime')->getAllShowtimes();
+        }
 
         $this->adminView('admin/showtimes/index', 'showtime', [
             'title' => 'Quản lý Suất chiếu',
-            'showtimes' => $showtimes
+            'showtimes' => $showtimes,
+            'keyword' => $keyword,
+            'dateFilter' => $dateFilter,
+            'sort' => $sort
         ]);
     }
 
