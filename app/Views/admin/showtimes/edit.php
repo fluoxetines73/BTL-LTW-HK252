@@ -53,10 +53,10 @@
                         </div>
                         
                         <div class="d-flex justify-content-between">
-                            <a href="<?= BASE_URL ?>admin/showtime/index" class="btn btn-outline-secondary">
+                            <a href="<?= BASE_URL ?>admin/showtime/index" class="btn btn-outline-cgv">
                                 <i class="fas fa-arrow-left me-1"></i> Quay lại
                             </a>
-                            <button type="submit" class="btn btn-primary px-4">
+                            <button type="submit" class="btn px-4" style="background-color: #E71A0F; color: white; border-color: #E71A0F;">
                                 <i class="fas fa-save me-1"></i> Cập nhật Suất Chiếu
                             </button>
                         </div>

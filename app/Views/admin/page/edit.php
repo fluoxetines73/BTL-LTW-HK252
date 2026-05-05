@@ -45,10 +45,10 @@
                     <hr class="my-4">
                     
                     <div class="d-flex justify-content-end gap-2">
-                        <a href="<?= BASE_URL ?>admin/page/index" class="btn btn-secondary px-4">
+                        <a href="<?= BASE_URL ?>admin/page/index" class="btn btn-outline-cgv px-4">
                             <i class="fas fa-arrow-left me-1"></i> Quay lại
                         </a>
-                        <button type="submit" class="btn btn-warning px-4 fw-bold">
+                        <button type="submit" class="btn px-4 fw-bold" style="background-color: #E71A0F; color: white; border-color: #E71A0F;">
                             <i class="fas fa-save me-1"></i> Lưu Thay Đổi
                         </button>
                     </div>

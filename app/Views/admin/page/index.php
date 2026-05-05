@@ -6,7 +6,6 @@
 </nav>
 
 <div class="d-flex justify-content-between align-items-center mb-4 page-header">
-    <h2 class="page-title fw-bold text-dark"><i class="fas fa-file-alt me-2"></i>Quản lý Trang</h2>
     <a href="<?= BASE_URL ?>admin/page/create" class="btn btn-primary shadow-sm btn-add">
         <i class="fas fa-plus"></i> Thêm Trang Mới
     </a>

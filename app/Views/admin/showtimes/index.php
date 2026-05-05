@@ -9,7 +9,6 @@
 
     <!-- Page Header -->
     <div class="page-header">
-        <h5 class="page-title"><i class="fas fa-calendar-alt"></i> Danh Sách Suất Chiếu</h5>
         <div class="page-actions">
             <a href="<?= BASE_URL ?>admin/showtime/create" class="btn-add">
                 <i class="fas fa-plus-circle"></i> Thêm Suất Chiếu Mới

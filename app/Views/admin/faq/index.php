@@ -6,7 +6,6 @@
 </nav>
 
 <div class="page-header">
-    <h1 class="page-title"><i class="fas fa-question-circle"></i>Quản lý FAQ</h1>
     <div class="page-actions">
         <a href="<?= BASE_URL ?>admin/faq/create" class="btn-add">
             <i class="fas fa-plus"></i> Thêm Câu Hỏi Mới

@@ -12,7 +12,6 @@
 </nav>
 
 <div class="page-header">
-    <h2 class="page-title"><i class="fas fa-hamburger"></i>Quản lý Bắp & Nước</h2>
     <a href="<?= BASE_URL ?>admin/combo/create" class="btn-add">
         <i class="fas fa-plus"></i> Thêm Combo Mới
     </a>

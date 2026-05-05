@@ -6,7 +6,6 @@
 </nav>
 
 <div class="d-flex justify-content-between align-items-center mb-4 page-header">
-    <h2 class="page-title fw-bold text-dark"><i class="fas fa-info-circle me-2"></i>Quản lý Trang Giới thiệu</h2>
     <a href="<?= BASE_URL ?>home/about" target="_blank" class="btn-outline-cgv">
         <i class="fas fa-eye"></i> Xem trang
     </a>
@@ -438,10 +437,10 @@
                     <p class="text-muted mb-0">Tất cả các thay đổi sẽ được áp dụng ngay lập tức lên trang Giới thiệu.</p>
                 </div>
                 <div class="d-flex gap-2">
-                    <a href="<?= BASE_URL ?>admin/admin_dashboard" class="btn btn-secondary px-4">
+                    <a href="<?= BASE_URL ?>admin/admin_dashboard" class="btn btn-outline-cgv px-4">
                         <i class="fas fa-arrow-left me-1"></i> Dashboard
                     </a>
-                    <button type="submit" class="btn btn-success btn-lg px-5">
+                    <button type="submit" class="btn btn-lg px-5" style="background-color: #E71A0F; color: white; border-color: #E71A0F;">
                         <i class="fas fa-save me-2"></i>Lưu tất cả thay đổi
                     </button>
                 </div>

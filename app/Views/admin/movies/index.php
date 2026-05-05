@@ -14,7 +14,6 @@
 
 <!-- Page Header -->
 <div class="page-header">
-    <h1 class="page-title"><i class="fas fa-film"></i> Danh Sách Phim</h1>
     <div class="page-actions">
         <a href="<?= BASE_URL ?>admin/movie/create" class="btn-add">
             <i class="fas fa-plus-circle"></i> Thêm Phim Mới

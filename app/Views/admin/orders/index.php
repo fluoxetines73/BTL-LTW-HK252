@@ -8,7 +8,6 @@
 <div class="card shadow-sm border-0">
     <div class="card-header bg-white">
         <div class="page-header">
-            <h5 class="page-title"><i class="fas fa-receipt me-2"></i>Danh Sách Đơn Đặt Vé</h5>
         </div>
         
         <form method="GET" action="<?= BASE_URL ?>admin/order/index" class="admin-search-form">
