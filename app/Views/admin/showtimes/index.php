@@ -1,19 +1,55 @@
 <div class="container-fluid py-4">
-    <nav aria-label="breadcrumb">
+    <!-- Breadcrumb -->
+    <div class="admin-breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/admin_dashboard">Dashboard</a></li>
             <li class="breadcrumb-item active" aria-current="page">Quản lý Suất chiếu</li>
         </ol>
-    </nav>
+    </div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-            <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-calendar-alt me-2"></i>Danh Sách Suất Chiếu</h5>
-            <a href="<?= BASE_URL ?>admin/showtime/create" class="btn btn-success shadow-sm">
-                <i class="fas fa-plus-circle me-1"></i> Thêm Suất Chiếu Mới
+    <!-- Page Header -->
+    <div class="page-header">
+        <h5 class="page-title"><i class="fas fa-calendar-alt"></i> Danh Sách Suất Chiếu</h5>
+        <div class="page-actions">
+            <a href="<?= BASE_URL ?>admin/showtime/create" class="btn-add">
+                <i class="fas fa-plus-circle"></i> Thêm Suất Chiếu Mới
             </a>
         </div>
-        
+    </div>
+
+    <!-- Search Bar -->
+    <form method="GET" action="<?= BASE_URL ?>admin/showtime/index" class="admin-search-form">
+        <div class="search-input-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" name="q" class="search-input" placeholder="Tìm theo tên phim..." value="<?= htmlspecialchars($keyword ?? '') ?>">
+        </div>
+        <button type="submit" class="btn-search"><i class="fas fa-search me-1"></i> Tìm</button>
+        <a href="<?= BASE_URL ?>admin/showtime/index" class="btn-reset"><i class="fas fa-times me-1"></i> Xóa lọc</a>
+    </form>
+
+    <!-- Filter & Sort Bar -->
+    <form method="GET" action="<?= BASE_URL ?>admin/showtime/index" class="admin-filter-bar">
+        <?php if (!empty($keyword)): ?>
+            <input type="hidden" name="q" value="<?= htmlspecialchars($keyword) ?>">
+        <?php endif; ?>
+        <div class="filter-group">
+            <label class="filter-label">Lọc theo ngày:</label>
+            <input type="date" name="date" class="filter-select" value="<?= htmlspecialchars($dateFilter ?? '') ?>">
+        </div>
+        <div class="filter-group">
+            <label class="filter-label">Sắp xếp:</label>
+            <select name="sort" class="filter-select">
+                <option value="newest" <?= ($sort ?? 'newest') === 'newest' ? 'selected' : '' ?>>Mới nhất</option>
+                <option value="oldest" <?= ($sort ?? 'newest') === 'oldest' ? 'selected' : '' ?>>Cũ nhất</option>
+                <option value="price_asc" <?= ($sort ?? '') === 'price_asc' ? 'selected' : '' ?>>Giá tăng dần</option>
+                <option value="price_desc" <?= ($sort ?? '') === 'price_desc' ? 'selected' : '' ?>>Giá giảm dần</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-search"><i class="fas fa-filter me-1"></i> Lọc</button>
+        <a href="<?= BASE_URL ?>admin/showtime/index" class="btn-reset"><i class="fas fa-times me-1"></i> Xóa lọc</a>
+    </form>
+
+    <div class="card shadow-sm border-0">
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover table-bordered align-middle text-center">
@@ -53,7 +89,11 @@
                             <tr>
                                 <td colspan="6" class="text-muted py-5">
                                     <i class="fas fa-folder-open fa-3x mb-3 text-light"></i><br>
-                                    Chưa có suất chiếu nào trong cơ sở dữ liệu.
+                                    <?php if (!empty($keyword) || !empty($dateFilter)): ?>
+                                        Không tìm thấy suất chiếu phù hợp với bộ lọc.
+                                    <?php else: ?>
+                                        Chưa có suất chiếu nào trong cơ sở dữ liệu.
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endif; ?>

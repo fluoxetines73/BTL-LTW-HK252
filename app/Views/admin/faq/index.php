@@ -1,16 +1,45 @@
-<nav aria-label="breadcrumb" class="mb-3">
+<nav aria-label="breadcrumb" class="admin-breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/admin_dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
         <li class="breadcrumb-item active" aria-current="page">Quản lý FAQ</li>
     </ol>
 </nav>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold text-dark"><i class="fas fa-question-circle text-primary me-2"></i>Quản lý FAQ</h2>
-    <a href="<?= BASE_URL ?>admin/faq/create" class="btn btn-primary shadow-sm">
-        <i class="fas fa-plus"></i> Thêm Câu Hỏi Mới
-    </a>
+<div class="page-header">
+    <h1 class="page-title"><i class="fas fa-question-circle"></i>Quản lý FAQ</h1>
+    <div class="page-actions">
+        <a href="<?= BASE_URL ?>admin/faq/create" class="btn-add">
+            <i class="fas fa-plus"></i> Thêm Câu Hỏi Mới
+        </a>
+    </div>
 </div>
+
+<!-- Search & Filter Bar -->
+<form method="GET" action="<?= BASE_URL ?>admin/faq/index" class="admin-search-form">
+    <div class="search-input-wrap">
+        <i class="fas fa-search"></i>
+        <input type="text" name="q" class="search-input" placeholder="Tìm kiếm câu hỏi..." value="<?= htmlspecialchars($keyword ?? '') ?>">
+    </div>
+    <div class="filter-group">
+        <select name="category" class="filter-select">
+            <option value="">Tất cả danh mục</option>
+            <?php foreach ($categories as $cat): ?>
+                <option value="<?= htmlspecialchars($cat) ?>" <?= ($categoryFilter ?? '') === $cat ? 'selected' : '' ?>><?= htmlspecialchars($cat) ?></option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="filter-group">
+        <select name="status" class="filter-select">
+            <option value="">Tất cả trạng thái</option>
+            <option value="active" <?= ($statusFilter ?? '') === 'active' ? 'selected' : '' ?>>Hiển thị</option>
+            <option value="inactive" <?= ($statusFilter ?? '') === 'inactive' ? 'selected' : '' ?>>Ẩn</option>
+        </select>
+    </div>
+    <input type="hidden" name="sort" value="<?= htmlspecialchars($sortBy ?? 'id') ?>">
+    <input type="hidden" name="order" value="<?= htmlspecialchars($sortOrder ?? 'asc') ?>">
+    <button type="submit" class="btn-search"><i class="fas fa-filter me-1"></i>Lọc</button>
+    <a href="<?= BASE_URL ?>admin/faq/index" class="btn-reset"><i class="fas fa-times me-1"></i>Xóa lọc</a>
+</form>
 
 <!-- Bulk Action Bar -->
 <div id="bulk-action-bar" class="card shadow-sm border-0 mb-3" style="display: none;">
@@ -45,10 +74,16 @@
                 <thead class="admin-table-header">
                     <tr>
                         <?php
-                        // Helper function to generate sort URL
-                        function getSortUrl($column, $currentSortBy, $currentSortOrder) {
+                        // Helper function to generate sort URL (preserves filter params)
+                        function getSortUrl($column, $currentSortBy, $currentSortOrder, $extraParams = []) {
                             $newOrder = ($currentSortBy === $column && $currentSortOrder === 'asc') ? 'desc' : 'asc';
-                            return BASE_URL . 'admin/faq/index?sort=' . $column . '&order=' . $newOrder;
+                            $url = BASE_URL . 'admin/faq/index?sort=' . $column . '&order=' . $newOrder;
+                            foreach ($extraParams as $key => $val) {
+                                if ($val !== '') {
+                                    $url .= '&' . urlencode($key) . '=' . urlencode($val);
+                                }
+                            }
+                            return $url;
                         }
                         
                         // Helper function to get sort icon
@@ -60,32 +95,39 @@
                                 ? '<i class="fas fa-sort-up sort-icon"></i>' 
                                 : '<i class="fas fa-sort-down sort-icon"></i>';
                         }
+
+                        // Build extra filter params for sort URLs
+                        $sortExtraParams = [
+                            'q' => $keyword ?? '',
+                            'category' => $categoryFilter ?? '',
+                            'status' => $statusFilter ?? '',
+                        ];
                         ?>
                         <th class="text-center" style="width: 40px;">
                             <input type="checkbox" id="select-all" onclick="toggleSelectAll(this);">
                         </th>
                         <th class="text-center sortable" style="width: 50px;">
-                            <a href="<?= getSortUrl('id', $sortBy ?? null, $sortOrder ?? 'asc') ?>">
+                            <a href="<?= getSortUrl('id', $sortBy ?? null, $sortOrder ?? 'asc', $sortExtraParams) ?>">
                                 ID <?= getSortIcon('id', $sortBy ?? null, $sortOrder ?? 'asc') ?>
                             </a>
                         </th>
                         <th class="sortable" style="width: 35%;">
-                            <a href="<?= getSortUrl('question', $sortBy ?? null, $sortOrder ?? 'asc') ?>">
+                            <a href="<?= getSortUrl('question', $sortBy ?? null, $sortOrder ?? 'asc', $sortExtraParams) ?>">
                                 Câu hỏi <?= getSortIcon('question', $sortBy ?? null, $sortOrder ?? 'asc') ?>
                             </a>
                         </th>
                         <th class="sortable" style="width: 18%;">
-                            <a href="<?= getSortUrl('category', $sortBy ?? null, $sortOrder ?? 'asc') ?>">
+                            <a href="<?= getSortUrl('category', $sortBy ?? null, $sortOrder ?? 'asc', $sortExtraParams) ?>">
                                 Danh mục <?= getSortIcon('category', $sortBy ?? null, $sortOrder ?? 'asc') ?>
                             </a>
                         </th>
                         <th class="text-center sortable" style="width: 80px;">
-                            <a href="<?= getSortUrl('sort_order', $sortBy ?? null, $sortOrder ?? 'asc') ?>">
+                            <a href="<?= getSortUrl('sort_order', $sortBy ?? null, $sortOrder ?? 'asc', $sortExtraParams) ?>">
                                 Thứ tự <?= getSortIcon('sort_order', $sortBy ?? null, $sortOrder ?? 'asc') ?>
                             </a>
                         </th>
                         <th class="text-center sortable" style="width: 100px;">
-                            <a href="<?= getSortUrl('status', $sortBy ?? null, $sortOrder ?? 'asc') ?>">
+                            <a href="<?= getSortUrl('status', $sortBy ?? null, $sortOrder ?? 'asc', $sortExtraParams) ?>">
                                 Trạng thái <?= getSortIcon('status', $sortBy ?? null, $sortOrder ?? 'asc') ?>
                             </a>
                         </th>
