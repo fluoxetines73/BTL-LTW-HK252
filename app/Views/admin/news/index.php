@@ -4,6 +4,14 @@
  */
 ?>
 
+<!-- Breadcrumb -->
+<nav class="admin-breadcrumb" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/admin_dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Quản lý Tin tức</li>
+    </ol>
+</nav>
+
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
     <a href="<?= BASE_URL ?>admin/create_news" class="btn-add"><i class="fas fa-plus" style="margin-right:8px;"></i>Đăng tin mới</a>
 </div>

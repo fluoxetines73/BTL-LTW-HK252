@@ -1,14 +1,14 @@
-<nav aria-label="breadcrumb" class="mb-3">
+<nav aria-label="breadcrumb" class="admin-breadcrumb mb-3">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/admin_dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
         <li class="breadcrumb-item active" aria-current="page">Quản lý Trang Giới thiệu</li>
     </ol>
 </nav>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold text-dark"><i class="fas fa-info-circle text-primary me-2"></i>Quản lý Trang Giới thiệu</h2>
-    <a href="<?= BASE_URL ?>page/about" target="_blank" class="btn btn-outline-primary">
-        <i class="fas fa-eye me-1"></i> Xem trang
+<div class="d-flex justify-content-between align-items-center mb-4 page-header">
+    <h2 class="page-title fw-bold text-dark"><i class="fas fa-info-circle me-2"></i>Quản lý Trang Giới thiệu</h2>
+    <a href="<?= BASE_URL ?>home/about" target="_blank" class="btn-outline-cgv">
+        <i class="fas fa-eye"></i> Xem trang
     </a>
 </div>
 
@@ -126,7 +126,7 @@
                         </div>
                         <div class="row">
                             <div class="col-md-3">
-                                <label class="form-label">Năm/Thờ kỳ</label>
+                                <label class="form-label">Năm/Thời kỳ</label>
                                 <input type="text" class="form-control" 
                                        name="timeline[<?= $index ?>][year_label]" 
                                        value="<?= htmlspecialchars($item['year_label']) ?>" 
