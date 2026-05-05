@@ -58,4 +58,25 @@ class Page extends Model {
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
+
+    public function searchPages(string $keyword = '', string $status = ''): array {
+        $sql = "SELECT * FROM {$this->table} WHERE 1=1";
+        $params = [];
+
+        if ($keyword !== '') {
+            $sql .= " AND title LIKE :keyword";
+            $params[':keyword'] = "%$keyword%";
+        }
+
+        if ($status !== '' && in_array($status, ['published', 'draft'])) {
+            $sql .= " AND status = :status";
+            $params[':status'] = $status;
+        }
+
+        $sql .= " ORDER BY created_at DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

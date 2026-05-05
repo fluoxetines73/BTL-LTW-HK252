@@ -20,6 +20,40 @@ class Faq extends Model {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function searchFaqs($keyword = null, $category = null, $status = null, $sortBy = 'id', $sortOrder = 'asc') {
+        $allowedSortColumns = ['id', 'question', 'category', 'sort_order', 'status'];
+        if (!in_array($sortBy, $allowedSortColumns)) {
+            $sortBy = 'id';
+        }
+        $orderDirection = strtoupper($sortOrder) === 'DESC' ? 'DESC' : 'ASC';
+
+        $conditions = [];
+        $params = [];
+
+        if ($keyword !== null && $keyword !== '') {
+            $conditions[] = 'question LIKE ?';
+            $params[] = '%' . $keyword . '%';
+        }
+        if ($category !== null && $category !== '') {
+            $conditions[] = 'category = ?';
+            $params[] = $category;
+        }
+        if ($status !== null && $status !== '') {
+            $conditions[] = 'status = ?';
+            $params[] = $status;
+        }
+
+        $where = '';
+        if (!empty($conditions)) {
+            $where = 'WHERE ' . implode(' AND ', $conditions);
+        }
+
+        $sql = "SELECT * FROM {$this->table} {$where} ORDER BY {$sortBy} {$orderDirection}, id ASC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function findAllGroupedByCategory(): array {
         $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE status = 'active' ORDER BY category, sort_order, id");
         $stmt->execute();

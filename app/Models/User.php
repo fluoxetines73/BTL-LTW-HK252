@@ -146,22 +146,85 @@ class User extends Model {
 	}
 
 	/**
-	 * Tìm kiếm người dùng theo email hoặc tên
+	 * Lấy danh sách người dùng với phân trang, sắp xếp và lọc trạng thái
+	 * @param int $page Trang hiện tại
+	 * @param int $perPage Số bản ghi mỗi trang
+	 * @param string $sort Cột sắp xếp (name_asc, name_desc, email_asc, email_desc, newest, oldest)
+	 * @param string $status Lọc trạng thái (all, active, inactive)
+	 * @return array
 	 */
-	public function search(string $keyword, int $page = 1, int $perPage = 10): array {
+	public function getUsersFiltered(int $page = 1, int $perPage = 10, string $sort = 'newest', string $status = 'all'): array {
+		$page = max(1, $page);
+		$offset = ($page - 1) * $perPage;
+
+		$where = '';
+		$params = [];
+
+		if ($status !== 'all' && in_array($status, ['active', 'inactive'], true)) {
+			$where = 'WHERE status = ?';
+			$params[] = $status;
+		}
+
+		$orderBy = match ($sort) {
+			'name_asc' => 'ORDER BY full_name ASC, id ASC',
+			'name_desc' => 'ORDER BY full_name DESC, id ASC',
+			'email_asc' => 'ORDER BY email ASC, id ASC',
+			'email_desc' => 'ORDER BY email DESC, id ASC',
+			'oldest' => 'ORDER BY CASE WHEN role = \'admin\' THEN 0 ELSE 1 END ASC, id ASC',
+			default => 'ORDER BY CASE WHEN role = \'admin\' THEN 0 ELSE 1 END ASC, id DESC',
+		};
+
+		$stmtCount = $this->db->prepare("SELECT COUNT(*) FROM {$this->table} $where");
+		$stmtCount->execute($params);
+		$total = (int)$stmtCount->fetchColumn();
+		$pages = max(1, ceil($total / $perPage));
+
+		$stmt = $this->db->prepare("SELECT * FROM {$this->table} $where $orderBy LIMIT ? OFFSET ?");
+		$stmt->execute(array_merge($params, [$perPage, $offset]));
+		$users = $stmt->fetchAll();
+
+		return [
+			'users' => $users,
+			'total' => $total,
+			'pages' => $pages,
+			'current_page' => $page,
+		];
+	}
+
+	/**
+	 * Tìm kiếm người dùng theo email hoặc tên, có sắp xếp và lọc trạng thái
+	 */
+	public function search(string $keyword, int $page = 1, int $perPage = 10, string $sort = 'newest', string $status = 'all'): array {
 		$page = max(1, $page);
 		$offset = ($page - 1) * $perPage;
 		$searchTerm = '%' . $keyword . '%';
 
-		// Lấy tổng số bản ghi
-		$stmtCount = $this->db->prepare("SELECT COUNT(*) FROM {$this->table} WHERE email LIKE ? OR full_name LIKE ?");
-		$stmtCount->execute([$searchTerm, $searchTerm]);
-		$total = (int)$stmtCount->fetchColumn();
-		$pages = ceil($total / $perPage);
+		$whereParts = ['(email LIKE ? OR full_name LIKE ?)'];
+		$params = [$searchTerm, $searchTerm];
 
-		// Lấy dữ liệu cho trang hiện tại
-		$stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE email LIKE ? OR full_name LIKE ? ORDER BY CASE WHEN role = 'admin' THEN 0 ELSE 1 END ASC, id ASC LIMIT ? OFFSET ?");
-		$stmt->execute([$searchTerm, $searchTerm, $perPage, $offset]);
+		if ($status !== 'all' && in_array($status, ['active', 'inactive'], true)) {
+			$whereParts[] = 'status = ?';
+			$params[] = $status;
+		}
+
+		$where = 'WHERE ' . implode(' AND ', $whereParts);
+
+		$orderBy = match ($sort) {
+			'name_asc' => 'ORDER BY full_name ASC, id ASC',
+			'name_desc' => 'ORDER BY full_name DESC, id ASC',
+			'email_asc' => 'ORDER BY email ASC, id ASC',
+			'email_desc' => 'ORDER BY email DESC, id ASC',
+			'oldest' => 'ORDER BY CASE WHEN role = \'admin\' THEN 0 ELSE 1 END ASC, id ASC',
+			default => 'ORDER BY CASE WHEN role = \'admin\' THEN 0 ELSE 1 END ASC, id DESC',
+		};
+
+		$stmtCount = $this->db->prepare("SELECT COUNT(*) FROM {$this->table} $where");
+		$stmtCount->execute($params);
+		$total = (int)$stmtCount->fetchColumn();
+		$pages = max(1, ceil($total / $perPage));
+
+		$stmt = $this->db->prepare("SELECT * FROM {$this->table} $where $orderBy LIMIT ? OFFSET ?");
+		$stmt->execute(array_merge($params, [$perPage, $offset]));
 		$users = $stmt->fetchAll();
 
 		return [
