@@ -13,7 +13,7 @@
             <h1 class="display-4 fw-bold">Câu hỏi thường gặp <i class="fa-solid fa-circle-question"></i></h1>
             <p class="faq-hero-lead mb-4">Tra cứu nhanh câu trả lời về vé, rạp chiếu, thành viên, thanh toán và các dịch vụ CGV.</p>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb justify-content-center">
+                <ol class="breadcrumb justify-content-center mx-auto">
                     <li class="breadcrumb-item"><a href="<?= BASE_URL ?>">Trang chủ</a></li>
                     <li class="breadcrumb-item active" aria-current="page">FAQ</li>
                 </ol>
