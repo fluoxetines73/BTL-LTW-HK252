@@ -11,6 +11,147 @@
     max-width: 640px;
 }
 
+.news-page {
+    overflow-x: hidden;
+}
+
+.news-search-panel {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #111827 0%, #1f2937 70%, #2b1212 100%);
+    border: 1px solid rgba(231, 26, 15, 0.18);
+    box-shadow: 0 14px 32px rgba(17, 24, 39, 0.14);
+}
+
+.news-search-copy {
+    min-width: 0;
+}
+
+.news-search-kicker {
+    color: #ffb4ae;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.news-search-title {
+    color: #fff;
+    font-size: clamp(1.15rem, 2vw, 1.5rem);
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.news-search-description {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.95rem;
+}
+
+.news-search-form {
+    display: grid;
+    gap: 12px;
+    width: min(100%, 560px);
+}
+
+.news-search-input-wrap {
+    position: relative;
+}
+
+.news-search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+.news-search-input {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px 0 40px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.96);
+    color: #111827;
+    outline: none;
+}
+
+.news-search-input:focus {
+    border-color: #E71A0F;
+    box-shadow: 0 0 0 4px rgba(231, 26, 15, 0.15);
+}
+
+.news-search-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.news-search-chip {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.9);
+    border-radius: 999px;
+    padding: 9px 14px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.news-search-chip:hover,
+.news-search-chip:focus {
+    transform: translateY(-1px);
+    border-color: rgba(231, 26, 15, 0.6);
+}
+
+.news-search-chip.is-active {
+    background: rgba(231, 26, 15, 0.18);
+    border-color: rgba(231, 26, 15, 0.75);
+    color: #fff;
+}
+
+.news-search-btn {
+    height: 48px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #E71A0F 0%, #c41408 100%);
+    color: #fff;
+    font-weight: 700;
+    align-self: start;
+    box-shadow: 0 10px 18px rgba(231, 26, 15, 0.22);
+}
+
+.news-slider-caption h3 {
+    font-size: clamp(1.25rem, 2.4vw, 2rem);
+    line-height: 1.2;
+}
+
+.news-slider-caption p {
+    font-size: 0.98rem;
+    line-height: 1.6;
+    max-width: 56ch;
+}
+
+.news-highlight-title {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(231, 26, 15, 0.9);
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
 .timeline-wrap {
     position: relative;
     padding: 10px 0 40px;
@@ -143,5 +284,56 @@
 
     .news-slider-image {
         height: 280px;
+    }
+}
+
+@media (max-width: 576px) {
+    .news-search-panel {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 16px;
+    }
+
+    .news-search-form {
+        width: 100%;
+    }
+
+    .news-search-chip,
+    .news-search-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .news-slider-image {
+        height: 220px;
+    }
+
+    .news-slider-caption {
+        padding: 12px;
+        max-width: calc(100vw - 48px);
+    }
+
+    .news-slider-caption h3 {
+        font-size: 1.15rem;
+    }
+
+    .news-slider-caption p {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        font-size: 0.92rem;
+    }
+
+    .timeline-wrap h2 {
+        font-size: 1.4rem;
+    }
+
+    .timeline-content-box {
+        padding: 14px;
+    }
+
+    .timeline-image-box img {
+        height: 180px;
     }
 }
