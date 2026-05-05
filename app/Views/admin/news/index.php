@@ -12,7 +12,7 @@
     </ol>
 </nav>
 
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+<div class="admin-news-toolbar d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
     <a href="<?= BASE_URL ?>admin/create_news" class="btn-add"><i class="fas fa-plus" style="margin-right:8px;"></i>Đăng tin mới</a>
 </div>
 
@@ -22,8 +22,8 @@
     <a href="<?= BASE_URL ?>admin/news" class="<?= empty($newsCategory) ? 'active' : '' ?>">Tất cả</a>
 </div>
 
-<div style="background:#fff;padding:20px;border-radius:8px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,.1);">
-    <form method="GET" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+<div class="admin-news-filter">
+    <form method="GET" class="d-flex gap-2 flex-wrap align-items-end">
         <div style="flex:1;min-width:200px;">
             <label style="display:block;font-weight:600;margin-bottom:6px;">Tìm kiếm</label>
             <input type="text" name="q" placeholder="Tiêu đề bài viết..." value="<?= htmlspecialchars($keyword ?? '') ?>" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;">
@@ -51,7 +51,7 @@
     </form>
 </div>
 
-<div class="table-container">
+<div class="table-container admin-news-table-shell">
     <div class="table-header">
         <div style="display:flex;justify-content:space-between;align-items:center;">
             <strong>Danh sách bài viết đã đăng</strong>

@@ -18,41 +18,118 @@ class Email {
         $subject = 'Mã OTP xác thực đăng ký tài khoản';
         $safeName = htmlspecialchars($fullName, ENT_QUOTES, 'UTF-8');
         $safeOtp = htmlspecialchars($otp, ENT_QUOTES, 'UTF-8');
+        $logoMeta = $this->buildLogoMarkup();
+        $verifyUrl = htmlspecialchars($this->buildVerifyUrl($toEmail), ENT_QUOTES, 'UTF-8');
 
         $message = "
             <html>
             <head>
                 <meta charset=\"UTF-8\">
             </head>
-            <body style=\"font-family: Arial, sans-serif; color: #1e293b;\">
-                <h2 style=\"margin: 0 0 12px;\">Xin chào {$safeName},</h2>
-                <p>Cảm ơn bạn đã đăng ký tài khoản.</p>
-                <p>Mã OTP của bạn là:</p>
-                <p style=\"font-size: 28px; font-weight: bold; letter-spacing: 3px; color: #0f766e; margin: 10px 0;\">{$safeOtp}</p>
-                <p>Mã có hiệu lực trong {$expireMinutes} phút.</p>
-                <p>Nếu bạn không thực hiện đăng ký, vui lòng bỏ qua email này.</p>
+            <body style=\"font-family: Arial, sans-serif; color: #1e293b; background: #f3f4f6; margin: 0; padding: 0;\">
+                <div style=\"max-width: 620px; margin: 0 auto; padding: 28px 18px;\">
+                    <div style=\"background: linear-gradient(135deg, #111827 0%, #1f2937 100%); padding: 24px 24px 20px; border-radius: 18px 18px 0 0; text-align: center;\">
+                        {$logoMeta['markup']}
+                        <div style=\"margin-top: 12px; font-size: 13px; letter-spacing: 1.8px; text-transform: uppercase; color: #f9fafb; opacity: 0.9;\">Xác thực đăng ký tài khoản</div>
+                    </div>
+                    <div style=\"background: #ffffff; border: 1px solid #e5e7eb; border-top: 0; border-radius: 0 0 18px 18px; padding: 30px 26px 28px; box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);\">
+                        <h2 style=\"margin: 0 0 12px; color: #0f172a; font-size: 24px; line-height: 1.25;\">Xin chào {$safeName},</h2>
+                        <p style=\"margin: 0 0 12px; line-height: 1.7;\">Cảm ơn bạn đã đăng ký tài khoản. Để hoàn tất, hãy nhập mã OTP bên dưới vào trang xác thực.</p>
+
+                        <div style=\"margin: 22px 0 18px; padding: 18px; border: 1px solid #d1fae5; background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%); border-radius: 16px; text-align: center;\">
+                            <div style=\"font-size: 12px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: #047857; margin-bottom: 10px;\">Mã OTP của bạn</div>
+                            <div style=\"display: inline-block; padding: 14px 18px; min-width: 220px; border-radius: 14px; background: #ffffff; border: 2px dashed #10b981; color: #047857; font-size: 34px; font-weight: 800; letter-spacing: 8px; line-height: 1;\">{$safeOtp}</div>
+                            <div style=\"margin-top: 12px; font-size: 14px; color: #475569;\">Mã có hiệu lực trong {$expireMinutes} phút.</div>
+                        </div>
+
+                        <div style=\"text-align: center; margin: 22px 0 12px;\">
+                            <a href=\"{$verifyUrl}\" style=\"display: inline-block; background: #e71a0f; color: #ffffff; text-decoration: none; font-weight: 700; padding: 12px 22px; border-radius: 999px;\">Xác nhận tài khoản</a>
+                        </div>
+
+                        <p style=\"margin: 14px 0 0; line-height: 1.7; color: #64748b; font-size: 14px;\">Nếu bạn không thực hiện đăng ký, vui lòng bỏ qua email này.</p>
+                    </div>
+                </div>
             </body>
             </html>
         ";
 
-        return $this->sendSmtpMail($toEmail, $subject, $message);
+        return $this->sendSmtpMail($toEmail, $subject, $message, $logoMeta['path'], $logoMeta['contentId']);
     }
 
-    private function sendSmtpMail(string $toEmail, string $subject, string $htmlBody): bool {
+    private function buildLogoMarkup(): array {
+        $logoPath = ROOT . '/public/images/logo/cgvlogo.png';
+        $contentId = 'cgv-logo';
+
+        if (!is_file($logoPath) || !is_readable($logoPath)) {
+            return [
+                'markup' => '<div style="font-size: 30px; font-weight: 800; letter-spacing: 2px; color: #ffffff;">CGV</div>',
+                'path' => null,
+                'contentId' => null,
+            ];
+        }
+
+        return [
+            'markup' => '<img src="cid:' . $contentId . '" alt="CGV Booking" style="display:block; margin:0 auto; max-width:150px; width:150px; height:auto;">',
+            'path' => $logoPath,
+            'contentId' => $contentId,
+        ];
+    }
+
+    private function buildVerifyUrl(string $toEmail): string {
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? '/'), '/\\');
+        $path = $basePath === '' ? '' : $basePath;
+
+        return $scheme . '://' . $host . $path . '/auth/verifyOtp?email=' . urlencode($toEmail);
+    }
+
+    private function sendSmtpMail(string $toEmail, string $subject, string $htmlBody, ?string $inlineImagePath = null, ?string $inlineContentId = null): bool {
         $fromEmail = SMTP_FROM_EMAIL;
         $fromName = $this->encodeMimeHeader(SMTP_FROM_NAME);
         $subjectEncoded = $this->encodeMimeHeader($subject);
+        $boundaryOuter = '=_outer_' . bin2hex(random_bytes(12));
+        $boundaryAlt = '=_alt_' . bin2hex(random_bytes(12));
 
         $headers = [
             'MIME-Version: 1.0',
-            'Content-type: text/html; charset=UTF-8',
+            'Content-Type: multipart/related; boundary="' . $boundaryOuter . '"',
             "From: {$fromName} <{$fromEmail}>",
             "To: <{$toEmail}>",
             "Subject: {$subjectEncoded}",
             'Date: ' . date(DATE_RFC2822),
         ];
 
-        $body = implode("\r\n", $headers) . "\r\n\r\n" . $this->normalizeBody($htmlBody);
+        $bodyParts = [];
+        $bodyParts[] = '--' . $boundaryOuter;
+        $bodyParts[] = 'Content-Type: multipart/alternative; boundary="' . $boundaryAlt . '"';
+        $bodyParts[] = '';
+        $bodyParts[] = '--' . $boundaryAlt;
+        $bodyParts[] = 'Content-Type: text/plain; charset=UTF-8';
+        $bodyParts[] = 'Content-Transfer-Encoding: 7bit';
+        $bodyParts[] = '';
+        $bodyParts[] = 'Xin chào, bạn có một mã OTP mới để xác thực tài khoản. Vui lòng mở email HTML để xem đầy đủ nội dung.';
+        $bodyParts[] = '--' . $boundaryAlt;
+        $bodyParts[] = 'Content-Type: text/html; charset=UTF-8';
+        $bodyParts[] = 'Content-Transfer-Encoding: 7bit';
+        $bodyParts[] = '';
+        $bodyParts[] = $this->normalizeBody($htmlBody);
+        $bodyParts[] = '--' . $boundaryAlt . '--';
+
+        if ($inlineImagePath && $inlineContentId) {
+            $bodyParts[] = '';
+            $bodyParts[] = '--' . $boundaryOuter;
+            $bodyParts[] = 'Content-Type: ' . $this->detectMimeType($inlineImagePath);
+            $bodyParts[] = 'Content-Transfer-Encoding: base64';
+            $bodyParts[] = 'Content-ID: <' . $inlineContentId . '>';
+            $bodyParts[] = 'Content-Disposition: inline; filename="' . basename($inlineImagePath) . '"';
+            $bodyParts[] = '';
+            $bodyParts[] = chunk_split(base64_encode((string)file_get_contents($inlineImagePath)), 76, "\r\n");
+        }
+
+        $bodyParts[] = '--' . $boundaryOuter . '--';
+
+        $body = implode("\r\n", $headers) . "\r\n\r\n" . implode("\r\n", $bodyParts);
 
         $host = SMTP_HOST;
         $port = (int)SMTP_PORT;
@@ -185,6 +262,18 @@ class Email {
         }
 
         return implode("\r\n", $lines);
+    }
+
+    private function detectMimeType(string $filePath): string {
+        $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+
+        return match ($extension) {
+            'png' => 'image/png',
+            'jpg', 'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            default => 'application/octet-stream',
+        };
     }
 
     public function getError(): string {
