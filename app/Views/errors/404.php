@@ -73,9 +73,6 @@
 
 <section class="error-page">
     <div class="error-content">
-        <div class="error-icon">
-            <i class="fa-solid fa-film"></i>
-        </div>
         <div class="error-code">404</div>
         <h1 class="error-title">Không tìm thấy trang</h1>
         <p class="error-message">

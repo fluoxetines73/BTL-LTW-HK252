@@ -1,13 +1,13 @@
 <!-- app/Views/movies/coming.php -->
 <div class="container py-5">
-    <h3 class="mb-4 fw-bold text-uppercase border-start border-5 border-info ps-3 text-white">Phim Sắp Chiếu</h3>
+    <h3 class="mb-4 fw-bold text-uppercase border-start border-5 border-info ps-3 text-dark">Phim Sắp Chiếu</h3>
     
    <!-- Thanh Bộ Lọc (Filter) Thể Loại -->
     <?php if (!empty($genres)): ?>
         <div class="genre-filter-wrapper mb-5 d-flex flex-wrap justify-content-center gap-2">
             <!-- Nút Tất cả: Xóa toàn bộ filter -->
             <a href="<?= BASE_URL ?>movies/coming" 
-               class="btn rounded-pill px-4 py-2 <?= empty($selectedGenres) ? 'btn-info text-dark fw-bold text-white' : 'btn-outline-secondary text-light' ?>">
+               class="btn rounded-pill px-4 py-2 <?= empty($selectedGenres) ? 'btn-info text-dark fw-bold' : 'btn-outline-secondary text-dark' ?>">
                 Tất cả
             </a>
             
@@ -31,7 +31,7 @@
                 ?>
                 <!-- In nút bấm -->
                 <a href="<?= $url ?>" 
-                   class="btn rounded-pill px-4 py-2 <?= in_array($genre['slug'], $selectedGenres) ? 'btn-info text-dark fw-bold text-white' : 'btn-outline-secondary text-light' ?>">
+                   class="btn rounded-pill px-4 py-2 <?= in_array($genre['slug'], $selectedGenres) ? 'btn-info text-dark fw-bold' : 'btn-outline-secondary text-dark' ?>">
                     <?= htmlspecialchars($genre['name']) ?>
                 </a>
             <?php endforeach; ?>
@@ -44,7 +44,7 @@
             <?php foreach ($comingSoon as $movie): ?>
                 <div class="col">
                     <!-- Thêm hiệu ứng opacity cho phim chưa chiếu -->
-                    <div class="card h-100 shadow-sm bg-dark text-white border-0" style="opacity: 0.95;">
+                    <div class="card h-100 shadow-sm bg-white text-dark border-0" style="opacity: 0.95;">
                         <!-- Hình ảnh Poster phim -->
                         <img src="<?= !empty($movie['poster']) ? BASE_URL . 'public/uploads/movies/' . htmlspecialchars($movie['poster']) : 'https://via.placeholder.com/300x450?text=No+Poster' ?>" 
                              class="card-img-top" 
@@ -76,8 +76,8 @@
         <?php else: ?>
             <!-- Hiển thị khi không có phim nào -->
             <div class="col-12 text-center py-5">
-                <p class="text-white fs-5">Hiện không có phim sắp chiếu nào thuộc thể loại này.</p>
-                <a href="<?= BASE_URL ?>movies/coming" class="btn btn-outline-light mt-3">Xem tất cả phim sắp chiếu</a>
+                <p class="text-dark fs-5">Hiện không có phim sắp chiếu nào thuộc thể loại này.</p>
+                <a href="<?= BASE_URL ?>movies/coming" class="btn btn-outline-info mt-3">Xem tất cả phim sắp chiếu</a>
             </div>
         <?php endif; ?>
     </div>
