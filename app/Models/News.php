@@ -11,6 +11,31 @@ class News extends Model {
         return $stmt->fetchAll();
     }
 
+    public function searchPublished(string $keyword, ?string $category = null): array {
+        $sql = "SELECT n.*, u.full_name AS author_name
+                FROM {$this->table} n
+                LEFT JOIN users u ON u.id = n.author_id
+                WHERE n.status = 'published'";
+        $params = [];
+
+        if ($category !== null && $category !== '') {
+            $sql .= " AND n.category = ?";
+            $params[] = $category;
+        }
+
+        $sql .= " AND (n.title LIKE ? OR n.content LIKE ? OR n.highlight_title LIKE ?)
+                ORDER BY COALESCE(n.published_at, n.created_at) DESC, n.id DESC";
+
+        $like = '%' . $keyword . '%';
+        $params[] = $like;
+        $params[] = $like;
+        $params[] = $like;
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
     public function getPublished(): array {
         $sql = "SELECT n.*,
                        u.full_name AS author_name

@@ -62,7 +62,7 @@
     </div>
 </div>
 
-<div class="table-container">
+<div class="table-container admin-news-table-shell">
     <div class="table-header">
         <div class="d-flex justify-content-between align-items-center">
             <strong>Danh sách bài viết đã đăng</strong>

@@ -16,22 +16,62 @@ class NewsController extends Controller {
     }
 
     public function index(): void {
-        $articles = $this->newsModel ? $this->newsModel->getPublished() : $this->seedNews();
-        $this->renderNewsTimelinePage($articles, 'Tin tức mới nhất');
+        $keyword = trim((string)($_GET['q'] ?? ''));
+        $section = trim((string)($_GET['section'] ?? ''));
+        $allowedSections = ['tin-tuc', 'khuyen-mai', 'phim-hay-thang'];
+        if (!in_array($section, $allowedSections, true)) {
+            $section = '';
+        }
+
+        if ($keyword !== '' && $this->newsModel) {
+            $articles = $this->newsModel->searchPublished($keyword, $section !== '' ? $section : null);
+            $timelineTitle = 'Kết quả tìm kiếm: ' . $keyword;
+            if ($section !== '') {
+                $timelineTitle .= ' · ' . $this->sectionLabel($section);
+            }
+        } elseif ($section !== '' && $this->newsModel) {
+            $articles = $this->newsModel->getPublishedByCategory($section);
+            $timelineTitle = $this->sectionLabel($section);
+        } else {
+            $articles = $this->newsModel ? $this->newsModel->getPublished() : $this->seedNews();
+            $timelineTitle = 'Tin tức mới nhất';
+        }
+
+        $this->renderNewsTimelinePage($articles, $timelineTitle, $section !== '' ? $section : null, $keyword);
     }
 
     public function promotions(): void {
         $articles = $this->newsModel ? $this->newsModel->getPublishedByCategory('khuyen-mai') : [];
-        $this->renderNewsTimelinePage($articles, 'Khuyến mãi và ưu đãi');
+        $this->renderNewsTimelinePage($articles, 'Khuyến mãi và ưu đãi', 'khuyen-mai');
     }
 
     public function monthlyMovies(): void {
         $articles = $this->newsModel ? $this->newsModel->getPublishedByCategory('phim-hay-thang') : [];
-        $this->renderNewsTimelinePage($articles, 'Phim hay tháng');
+        $this->renderNewsTimelinePage($articles, 'Phim hay tháng', 'phim-hay-thang');
     }
 
-    private function renderNewsTimelinePage(array $articles, string $timelineTitle): void {
-        $latest = array_slice($articles, 0, 5);
+    private function renderNewsTimelinePage(array $articles, string $timelineTitle, ?string $category = null, string $keyword = ''): void {
+        // Prefer featured items for the top slider. If none found, fall back to latest published.
+        $latest = [];
+        if ($this->newsModel) {
+            try {
+                $featured = $this->newsModel->getFeaturedNews(5);
+                if ($category !== null) {
+                    $featured = array_values(array_filter($featured, function($a) use ($category) {
+                        return (($a['category'] ?? '') === $category);
+                    }));
+                }
+                if (!empty($featured)) {
+                    $latest = $featured;
+                } else {
+                    $latest = array_slice($articles, 0, 5);
+                }
+            } catch (Throwable $e) {
+                $latest = array_slice($articles, 0, 5);
+            }
+        } else {
+            $latest = array_slice($articles, 0, 5);
+        }
 
         $timelineItems = [];
         foreach ($articles as $article) {
@@ -61,6 +101,7 @@ class NewsController extends Controller {
             'latestNews' => $latest,
             'timelineItems' => $timelineItems,
             'timelineTitle' => $timelineTitle,
+            'searchKeyword' => $keyword,
             'extraHead' => '<link rel="stylesheet" href="' . BASE_URL . 'public/css/news-timeline.css">',
             'extraScripts' => '<script src="' . BASE_URL . 'public/js/news-timeline.js"></script>',
         ]);
@@ -163,5 +204,14 @@ class NewsController extends Controller {
         }
 
         return BASE_URL . 'public/' . ltrim($path, '/');
+    }
+
+    private function sectionLabel(string $section): string {
+        return match ($section) {
+            'tin-tuc' => 'Tin tức',
+            'khuyen-mai' => 'Khuyến mãi',
+            'phim-hay-thang' => 'Phim hay tháng',
+            default => 'Tin tức',
+        };
     }
 }
