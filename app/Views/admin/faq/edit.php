@@ -1,4 +1,4 @@
-<nav aria-label="breadcrumb" class="mb-3">
+<nav aria-label="breadcrumb" class="admin-breadcrumb mb-3">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/admin_dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
         <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/faq/index">Quản lý FAQ</a></li>
@@ -9,7 +9,7 @@
 <div class="row justify-content-center">
     <div class="col-lg-10">
         <div class="card shadow-sm border-0">
-            <div class="card-header bg-dark text-white py-3">
+            <div class="card-header text-white py-3" style="background-color: var(--cgv-red);">
                 <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Chỉnh sửa Câu Hỏi</h5>
             </div>
             
@@ -53,10 +53,10 @@
                     <hr class="my-4">
                     
                     <div class="d-flex justify-content-end gap-2">
-                        <a href="<?= BASE_URL ?>admin/faq/index" class="btn btn-secondary px-4">
+                        <a href="<?= BASE_URL ?>admin/faq/index" class="btn btn-outline-cgv px-4">
                             <i class="fas fa-arrow-left me-1"></i> Quay lại
                         </a>
-                        <button type="submit" class="btn btn-warning px-4 fw-bold">
+                        <button type="submit" class="btn px-4 fw-bold text-white" style="background-color: var(--cgv-red); border-color: var(--cgv-red);">
                             <i class="fas fa-save me-1"></i> Lưu Thay Đổi
                         </button>
                     </div>

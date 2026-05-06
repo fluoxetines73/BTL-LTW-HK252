@@ -1,13 +1,13 @@
 <!-- app/Views/movies/current.php -->
 <div class="container py-5">
-    <h3 class="mb-4 fw-bold text-uppercase border-start border-5 border-danger ps-3 text-white">Phim Đang Chiếu</h3>
+    <h3 class="mb-4 fw-bold text-uppercase border-start border-5 border-danger ps-3 text-dark">Phim Đang Chiếu</h3>
     
    <!-- Thanh Bộ Lọc (Filter) Thể Loại -->
     <?php if (!empty($genres)): ?>
         <div class="genre-filter-wrapper mb-5 d-flex flex-wrap justify-content-center gap-2">
             <!-- Nút Tất cả: Xóa toàn bộ filter -->
             <a href="<?= BASE_URL ?>movies/current" 
-               class="btn rounded-pill px-4 py-2 <?= empty($selectedGenres) ? 'btn-danger text-white' : 'btn-outline-secondary text-light' ?>">
+               class="btn rounded-pill px-4 py-2 <?= empty($selectedGenres) ? 'btn-danger text-white' : 'btn-outline-secondary text-dark' ?>">
                 Tất cả
             </a>
             
@@ -31,7 +31,7 @@
                 ?>
                 <!-- In nút bấm -->
                 <a href="<?= $url ?>" 
-                   class="btn rounded-pill px-4 py-2 <?= in_array($genre['slug'], $selectedGenres) ? 'btn-danger text-white' : 'btn-outline-secondary text-light' ?>">
+                   class="btn rounded-pill px-4 py-2 <?= in_array($genre['slug'], $selectedGenres) ? 'btn-danger text-white' : 'btn-outline-secondary text-dark' ?>">
                     <?= htmlspecialchars($genre['name']) ?>
                 </a>
             <?php endforeach; ?>
@@ -43,7 +43,7 @@
         <?php if (!empty($nowShowing)): ?>
             <?php foreach ($nowShowing as $movie): ?>
                 <div class="col">
-                    <div class="card h-100 shadow-sm bg-dark text-white border-0">
+                    <div class="card h-100 shadow-sm bg-white text-dark border-0">
                         <!-- Hình ảnh Poster phim -->
                         <img src="<?= !empty($movie['poster']) ? BASE_URL . 'public/uploads/movies/' . htmlspecialchars($movie['poster']) : 'https://via.placeholder.com/300x450?text=No+Poster' ?>" 
                              class="card-img-top" 
@@ -56,7 +56,7 @@
                                 <?= htmlspecialchars($movie['title']) ?>
                             </h5>
                             
-                            <!-- Thông tin thời lượng và độ tuổi -->
+                            <!-- Thông tin thờ i lượng và độ tuổi -->
                             <p class="card-text text-muted small mb-3">
                                 <i class="fas fa-clock me-1"></i> <?= (int)($movie['duration_min'] ?? 0) ?> phút | 
                                 <span class="badge bg-warning text-dark"><?= htmlspecialchars($movie['age_rating'] ?? 'P') ?></span>
@@ -75,8 +75,8 @@
         <?php else: ?>
             <!-- Hiển thị khi không có phim nào (hoặc khi lọc không có kết quả) -->
             <div class="col-12 text-center py-5">
-                <p class="text-white fs-5">Hiện không có phim nào thuộc thể loại này đang chiếu.</p>
-                <a href="<?= BASE_URL ?>movies/current" class="btn btn-outline-light mt-3">Xem tất cả phim</a>
+                <p class="text-dark fs-5">Hiện không có phim nào thuộc thể loại này đang chiếu.</p>
+                <a href="<?= BASE_URL ?>movies/current" class="btn btn-outline-danger mt-3">Xem tất cả phim</a>
             </div>
         <?php endif; ?>
     </div>

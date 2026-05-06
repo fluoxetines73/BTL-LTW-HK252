@@ -60,11 +60,6 @@
             </a>
         </li>
         <li>
-            <a href="<?= BASE_URL ?>profile/edit" class="<?= ($activeSection ?? '') === 'profile' ? 'active' : '' ?>">
-                <i class="fas fa-user-edit"></i> <span class="sidebar-text">Hồ sơ cá nhân</span>
-            </a>
-        </li>
-        <li>
             <a href="<?= BASE_URL ?>auth/logout" onclick="return confirm('Bạn chắc chắn muốn đăng xuất?');">
                 <i class="fas fa-sign-out-alt"></i> <span class="sidebar-text">Đăng xuất</span>
             </a>

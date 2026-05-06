@@ -28,6 +28,52 @@ class Showtime extends Model {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Cho Admin: Tìm kiếm và lọc suất chiếu
+    public function searchShowtimes($keyword = '', $date = '', $sort = 'newest') {
+        $sql = "SELECT s.*, m.title as movie_title, r.name as room_name 
+                FROM {$this->table} s
+                JOIN movies m ON s.movie_id = m.id
+                JOIN rooms r ON s.room_id = r.id";
+        
+        $where = [];
+        $params = [];
+
+        if (!empty($keyword)) {
+            $where[] = "m.title LIKE :keyword";
+            $params[':keyword'] = "%$keyword%";
+        }
+
+        if (!empty($date)) {
+            $where[] = "DATE(s.start_time) = :date";
+            $params[':date'] = $date;
+        }
+
+        if (!empty($where)) {
+            $sql .= " WHERE " . implode(' AND ', $where);
+        }
+
+        // Sort order
+        switch ($sort) {
+            case 'oldest':
+                $sql .= " ORDER BY s.start_time ASC";
+                break;
+            case 'price_asc':
+                $sql .= " ORDER BY s.base_price ASC";
+                break;
+            case 'price_desc':
+                $sql .= " ORDER BY s.base_price DESC";
+                break;
+            case 'newest':
+            default:
+                $sql .= " ORDER BY s.start_time DESC";
+                break;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // Cho Admin: Thêm suất chiếu mới
     public function createShowtime($data) {
         $sql = "INSERT INTO {$this->table} (movie_id, room_id, start_time, end_time, base_price, status) 

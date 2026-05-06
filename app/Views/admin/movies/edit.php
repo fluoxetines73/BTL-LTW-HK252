@@ -122,8 +122,8 @@
             </div>
 
             <div class="mt-4 d-flex justify-content-end gap-2">
-                <a href="<?= BASE_URL ?>admin/movie/index" class="btn btn-outline-secondary px-4">Hủy</a>
-                <button type="submit" class="btn btn-warning px-4 fw-bold">
+                <a href="<?= BASE_URL ?>admin/movie/index" class="btn btn-outline-cgv px-4">Hủy</a>
+                <button type="submit" class="btn px-4 fw-bold" style="background-color: #E71A0F; color: white; border-color: #E71A0F;">
                     <i class="fas fa-check-circle me-1"></i> Cập Nhật Thay Đổi
                 </button>
             </div>

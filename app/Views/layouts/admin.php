@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <?php if (!empty($extraHead)) echo $extraHead; ?>
     <link rel="stylesheet" href="<?= BASE_URL ?>public/css/admin.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/css/admin-components.css">
 </head>
 <body>
 
@@ -23,8 +24,8 @@
                     <h1 class="admin-header-title"><?= htmlspecialchars($title ?? 'Dashboard') ?></h1>
                 </div>
                 <div class="d-flex align-items-center gap-3">
-                    <a href="<?= BASE_URL ?>" class="btn btn-outline-primary btn-sm" target="_blank" title="Xem trang chủ">
-                        <i class="fas fa-external-link-alt me-1"></i> Xem trang chủ
+                    <a href="<?= BASE_URL ?>" class="btn-outline-cgv btn-sm" target="_blank" title="Xem trang chủ">
+                        <i class="fas fa-external-link-alt"></i> Xem trang chủ
                     </a>
                     <div class="user-profile">
                         <span class="user-profile-name"><?= htmlspecialchars($_SESSION['auth_user']['name'] ?? 'Admin') ?></span>

@@ -1,12 +1,14 @@
 <style>
     /* CSS bọc riêng cho trang chi tiết, không ảnh hưởng layout chung */
     .movie-detail-wrapper { background-color: #f8f9fa; padding-bottom: 50px; }
-    .movie-banner-dark {
-        background: linear-gradient(to right, #141414, #2b2b2b);
-        color: white; border-radius: 12px; padding: 30px; margin-top: 30px;
+    .movie-banner-light {
+        background: linear-gradient(to right, #ffffff, #f8f9fa);
+        color: #333; border-radius: 12px; padding: 30px; margin-top: 30px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
     .poster-img {
-        border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); width: 100%;
+        border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.15); width: 100%;
     }
     .combo-item {
         background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 12px; margin-bottom: 12px; transition: 0.2s;
@@ -44,21 +46,21 @@
 
         <div class="row g-4">
             <div class="col-lg-8">
-                <div class="movie-banner-dark shadow-lg">
+                <div class="movie-banner-light shadow-lg">
                     <div class="row g-4">
                         <div class="col-md-4">
                             <img src="<?= !empty($movie['poster']) ? BASE_URL . 'public/uploads/movies/' . htmlspecialchars($movie['poster']) : 'https://via.placeholder.com/300x450?text=Poster' ?>" class="poster-img" alt="Poster">
                         </div>
                         <div class="col-md-8">
                             <h1 class="fw-bold text-danger mb-2"><?= htmlspecialchars($movie['title']) ?></h1>
-                            <p class="text-light mb-3"><i class="fas fa-calendar-alt text-info me-2"></i>Khởi chiếu: <?= date('d/m/Y', strtotime($movie['release_date'])) ?></p>
+                            <p class="text-muted mb-3"><i class="fas fa-calendar-alt text-info me-2"></i>Khởi chiếu: <?= date('d/m/Y', strtotime($movie['release_date'])) ?></p>
                             
                             <div class="mb-4">
                                 <span class="badge bg-warning text-dark fs-6 me-2"><?= $movie['age_rating'] ?></span>
                                 <span class="badge bg-secondary fs-6"><i class="fas fa-clock me-1"></i><?= $movie['duration_min'] ?> phút</span>
                             </div>
                             
-                            <table class="table table-borderless text-light table-sm">
+                            <table class="table table-borderless text-dark table-sm">
                                 <tr>
                                     <td width="120" class="text-muted">Đạo diễn:</td>
                                     <td class="fw-bold"><?= htmlspecialchars($movie['director']) ?></td>
@@ -77,7 +79,7 @@
 
                             <hr class="border-secondary my-4">
                             <h5 class="text-info fw-bold mb-3"><i class="fas fa-align-left me-2"></i>Nội dung tóm tắt</h5>
-                            <p class="text-light" style="line-height: 1.6; opacity: 0.9;">
+                            <p class="text-dark" style="line-height: 1.6;">
                                 <?= nl2br(htmlspecialchars($movie['description'])) ?>
                             </p>
                         </div>
@@ -89,7 +91,7 @@
             <div class="col-lg-4">
                 <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
                     <div class="card-header bg-danger text-white py-3 text-center">
-                        <h5 class="mb-0 fw-bold"><i class="fas fa-ticket-alt me-2"></i>Giỏ Hàng Của Bạn</h5>
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-ticket-alt me-2"></i>Giỏ Hàng Củ a Bạn</h5>
                     </div>
                     
                     <div class="card-body p-4">

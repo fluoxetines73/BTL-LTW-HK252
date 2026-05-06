@@ -4,8 +4,21 @@
  */
 ?>
 
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-    <a href="<?= BASE_URL ?>admin/create_news" class="btn-add"><i class="fas fa-plus" style="margin-right:8px;"></i>Đăng tin mới</a>
+<!-- Breadcrumb -->
+<nav class="admin-breadcrumb" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/admin_dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Quản lý Tin tức</li>
+    </ol>
+</nav>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-actions">
+        <a href="<?= BASE_URL ?>admin/create_news" class="btn-add">
+            <i class="fas fa-plus-circle"></i> Đăng tin mới
+        </a>
+    </div>
 </div>
 
 <div class="type-switcher">
@@ -14,44 +27,50 @@
     <a href="<?= BASE_URL ?>admin/news" class="<?= empty($newsCategory) ? 'active' : '' ?>">Tất cả</a>
 </div>
 
-<div style="background:#fff;padding:20px;border-radius:8px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,.1);">
-    <form method="GET" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
-        <div style="flex:1;min-width:200px;">
-            <label style="display:block;font-weight:600;margin-bottom:6px;">Tìm kiếm</label>
-            <input type="text" name="q" placeholder="Tiêu đề bài viết..." value="<?= htmlspecialchars($keyword ?? '') ?>" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;">
-        </div>
-        <div>
-            <label style="display:block;font-weight:600;margin-bottom:6px;">Sắp xếp</label>
-            <select name="sort" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;">
-                <option value="newest" <?= ($sort ?? 'newest') === 'newest' ? 'selected' : '' ?>>Mới nhất</option>
-                <option value="oldest" <?= ($sort ?? 'newest') === 'oldest' ? 'selected' : '' ?>>Cũ nhất</option>
-            </select>
-        </div>
-        <button type="submit" style="background:#E71A0F;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:600;">Tìm</button>
-        <a href="<?php
-            // Preserve category when resetting filters
-            $resetUrl = BASE_URL . 'admin/news';
-            if (!empty($newsCategory)) {
-                if ($newsCategory === 'khuyen-mai') {
-                    $resetUrl = BASE_URL . 'admin/news_promotions';
-                } elseif ($newsCategory === 'phim-hay-thang') {
-                    $resetUrl = BASE_URL . 'admin/news_monthly_movies';
-                }
+<!-- Search Bar -->
+<form method="GET" class="admin-search-form">
+    <div class="search-input-wrap">
+        <i class="fas fa-search"></i>
+        <input type="text" name="q" class="search-input" placeholder="Tiêu đề bài viết..." value="<?= htmlspecialchars($keyword ?? '') ?>">
+    </div>
+    <?php if (($sort ?? 'newest') !== 'newest'): ?>
+        <input type="hidden" name="sort" value="<?= htmlspecialchars($sort) ?>">
+    <?php endif; ?>
+    <button type="submit" class="btn-search"><i class="fas fa-search"></i> Tìm</button>
+    <a href="<?php
+        // Preserve category when resetting filters
+        $resetUrl = BASE_URL . 'admin/news';
+        if (!empty($newsCategory)) {
+            if ($newsCategory === 'khuyen-mai') {
+                $resetUrl = BASE_URL . 'admin/news_promotions';
+            } elseif ($newsCategory === 'phim-hay-thang') {
+                $resetUrl = BASE_URL . 'admin/news_monthly_movies';
             }
-            echo $resetUrl;
-        ?>" style="background:#6b7280;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:600;">Xóa lọc</a>
-    </form>
+        }
+        echo $resetUrl;
+    ?>" class="btn-reset"><i class="fas fa-times"></i> Xóa lọc</a>
+</form>
+
+<!-- Filter Bar -->
+<div class="admin-filter-bar">
+    <div class="filter-group">
+        <label class="filter-label">Sắp xếp:</label>
+        <select class="filter-select" onchange="applySort(this)">
+            <option value="newest" <?= ($sort ?? 'newest') === 'newest' ? 'selected' : '' ?>>Mới nhất</option>
+            <option value="oldest" <?= ($sort ?? 'newest') === 'oldest' ? 'selected' : '' ?>>Cũ nhất</option>
+        </select>
+    </div>
 </div>
 
 <div class="table-container">
     <div class="table-header">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="d-flex justify-content-between align-items-center">
             <strong>Danh sách bài viết đã đăng</strong>
             <?php if (!empty($articles)): ?>
-                <form method="POST" style="display:inline;" id="bulk-delete-form">
+                <form method="POST" class="d-inline" id="bulk-delete-form">
                     <input type="hidden" name="action" value="delete_selected">
                     <input type="hidden" name="selected_ids" id="selected_ids" value="">
-                    <button type="button" id="bulk-delete-btn" style="background:#dc2626;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:600;display:none;" onclick="deleteSelected();">Xóa đã chọn</button>
+                    <button type="button" id="bulk-delete-btn" class="btn-action btn-delete" style="display:none;" onclick="deleteSelected();">Xóa đã chọn</button>
                 </form>
             <?php endif; ?>
         </div>
@@ -60,20 +79,20 @@
     <table class="table">
         <thead class="admin-table-header">
             <tr>
-                <th style="width:14%;text-align:center;">
+                <th width="14%" class="text-center">
                     <label for="select-all" class="select-all-label">
                         <input type="checkbox" id="select-all" onchange="toggleSelectAll(this);">
                         <span>Chọn tất cả</span>
                     </label>
                 </th>
-                <th style="width:5%;">#</th>
-                <th style="width:12%;">Ảnh</th>
-                <th style="width:25%;">Tiêu đề</th>
-                <th style="width:12%;">Danh mục</th>
-                <th style="width:15%;">Ngày đăng</th>
-                <th style="width:10%;">Ngườii đăng</th>
-                <th style="width:8%;text-align:center;">Slider</th>
-                <th style="width:10%;">Thao tác</th>
+                <th width="5%">#</th>
+                <th width="12%">Ảnh</th>
+                <th width="25%">Tiêu đề</th>
+                <th width="12%">Danh mục</th>
+                <th width="15%">Ngày đăng</th>
+                <th width="10%">Ngườii đăng</th>
+                <th width="8%" class="text-center">Slider</th>
+                <th width="10%">Thao tác</th>
             </tr>
         </thead>
         <tbody>
@@ -104,14 +123,14 @@
                     }
                     ?>
                     <tr>
-                        <td style="text-align:center;"><input type="checkbox" class="select-item" value="<?= (int)($article['id'] ?? 0) ?>" onchange="updateSelectAll();"></td>
+                        <td class="text-center"><input type="checkbox" class="select-item" value="<?= (int)($article['id'] ?? 0) ?>" onchange="updateSelectAll();"></td>
                         <td><?= (int)$idx + 1 ?></td>
                         <td><img src="<?= htmlspecialchars($articleImage) ?>" alt="Ảnh tin" class="news-thumb"></td>
                         <td><?= htmlspecialchars((string)($article['title'] ?? '')) ?></td>
                         <td><?= htmlspecialchars($categoryLabel) ?></td>
                         <td><?= htmlspecialchars((string)($article['published_at'] ?? $article['created_at'] ?? '')) ?></td>
                         <td><?= htmlspecialchars((string)($article['author_name'] ?? 'Admin')) ?></td>
-                        <td style="text-align:center;"><?= ($article['featured'] ?? 0) ? '★ Có' : '- Không' ?></td>
+                        <td class="text-center"><?= ($article['featured'] ?? 0) ? '★ Có' : '- Không' ?></td>
                         <td>
                             <div class="news-action-buttons">
                                 <a href="<?= BASE_URL ?>news/detail/<?= (int)($article['id'] ?? 0) ?>" class="btn-news-action btn-view">Xem</a>
@@ -155,6 +174,11 @@ function deleteSelected() {
     }
     document.getElementById('selected_ids').value = selectedIds.join(',');
     document.getElementById('bulk-delete-form').submit();
+}
+function applySort(select) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sort', select.value);
+    window.location.href = url.toString();
 }
 </script>
 SCRIPT;

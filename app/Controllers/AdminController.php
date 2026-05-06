@@ -43,17 +43,23 @@ class AdminController extends Controller {
     // ===== USER MANAGEMENT =====
 
     /**
-     * Danh sách người dùng với phân trang
+     * Danh sách người dùng với phân trang, sắp xếp và lọc trạng thái
      * Route: /admin/users hoặc /admin/users/1 (page 1)
+     * Query params: ?sort=name_asc&status=active
      */
     public function users($page = 1) {
         $this->middlewareAdmin();
 
+        $sort = trim((string)($_GET['sort'] ?? 'newest'));
+        $sort = in_array($sort, ['newest', 'oldest', 'name_asc', 'name_desc', 'email_asc', 'email_desc'], true) ? $sort : 'newest';
+        $status = trim((string)($_GET['status'] ?? 'all'));
+        $status = in_array($status, ['all', 'active', 'inactive'], true) ? $status : 'all';
+
         $userModel = $this->model('User');
         $perPage = 10;
-        $data = $userModel->getUsersPaginated((int)$page, $perPage);
+        $data = $userModel->getUsersFiltered((int)$page, $perPage, $sort, $status);
 
-        // Tính url phân trang
+        // Tính url phân trang (preserve sort/status params)
         $baseUrl = BASE_URL . 'admin/users';
 
         $this->adminView('admin/users/index', 'users', [
@@ -63,28 +69,35 @@ class AdminController extends Controller {
             'total_pages' => $data['pages'],
             'total_users' => $data['total'],
             'base_url' => $baseUrl,
+            'sort' => $sort,
+            'status' => $status,
         ]);
     }
 
     /**
-     * Tìm kiếm người dùng
-     * Route: /admin/search?q=keyword&page=1
+     * Tìm kiếm người dùng với sắp xếp và lọc trạng thái
+     * Route: /admin/search?q=keyword&sort=name_asc&status=active&page=1
      */
     public function search() {
         $this->middlewareAdmin();
 
         $keyword = $_GET['q'] ?? '';
         $page = $_GET['page'] ?? 1;
+        $sort = trim((string)($_GET['sort'] ?? 'newest'));
+        $sort = in_array($sort, ['newest', 'oldest', 'name_asc', 'name_desc', 'email_asc', 'email_desc'], true) ? $sort : 'newest';
+        $status = trim((string)($_GET['status'] ?? 'all'));
+        $status = in_array($status, ['all', 'active', 'inactive'], true) ? $status : 'all';
+
         $perPage = 10;
 
         $userModel = $this->model('User');
         if (!empty($keyword)) {
-            $data = $userModel->search($keyword, (int)$page, $perPage);
+            $data = $userModel->search($keyword, (int)$page, $perPage, $sort, $status);
         } else {
-            $data = $userModel->getUsersPaginated((int)$page, $perPage);
+            $data = $userModel->getUsersFiltered((int)$page, $perPage, $sort, $status);
         }
 
-        $baseUrl = BASE_URL . 'admin/search?q=' . urlencode($keyword);
+        $baseUrl = BASE_URL . 'admin/search?q=' . urlencode($keyword) . '&sort=' . urlencode($sort) . '&status=' . urlencode($status);
 
         $this->adminView('admin/users/search', 'users', [
             'title' => 'Tìm kiếm Người dùng',
@@ -94,6 +107,8 @@ class AdminController extends Controller {
             'total_users' => $data['total'],
             'keyword' => $keyword,
             'base_url' => $baseUrl,
+            'sort' => $sort,
+            'status' => $status,
         ]);
     }
 
@@ -565,13 +580,23 @@ class AdminController extends Controller {
             'name' => $name,
             'email' => $email,
             'phone' => $phone,
-            'avatar' => $avatarPath,
             'role' => $role,
             'status' => $status,
         ];
 
+        if ($avatarPath !== null) {
+            $updateData['avatar'] = $avatarPath;
+        }
+
         if ($userModel->updateUserFull((int)$user['id'], $updateData)) {
             $_SESSION['success'] = 'Thông tin người dùng đã được cập nhật.';
+
+            // Refresh session if admin updates themselves
+            if ((int)$user['id'] === (int)($_SESSION['auth_user']['id'] ?? 0)) {
+                $_SESSION['auth_user']['avatar'] = $avatarPath ?? $user['avatar'] ?? '';
+                $_SESSION['auth_user']['name'] = $name;
+                $_SESSION['auth_user']['email'] = $email;
+            }
         } else {
             $_SESSION['error'] = 'Không thể cập nhật thông tin người dùng.';
         }

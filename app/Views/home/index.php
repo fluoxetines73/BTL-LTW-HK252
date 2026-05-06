@@ -141,9 +141,9 @@
                                 <div class="movie-card-content p-3">
                                     <!-- CHỖ SỬA 1: Title Link -->
                                     <h5 class="movie-card-title mb-2">
-                                        <a 
-                                            href="<?= BASE_URL ?>product/detail/<?= (int)($movie['id'] ?? 0) ?>" 
-                                            class="text-decoration-none text-white"
+                                        <a
+                                            href="<?= BASE_URL ?>product/detail/<?= (int)($movie['id'] ?? 0) ?>"
+                                            class="text-decoration-none"
                                             title="<?= htmlspecialchars($movie['title'] ?? 'Unknown') ?>">
                                             <?= htmlspecialchars(strlen($movie['title'] ?? '') > 25 ? substr($movie['title'], 0, 25) . '...' : ($movie['title'] ?? 'Unknown')) ?>
                                         </a>
@@ -156,7 +156,7 @@
                                                 <i class="fas fa-star me-1"></i><?= htmlspecialchars($movie['rating']) ?>
                                             </span>
                                         <?php else: ?>
-                                            <span class="movie-rating badge bg-secondary text-white">
+                                            <span class="movie-rating badge bg-secondary">
                                                 <i class="fas fa-star me-1"></i>N/A
                                             </span>
                                         <?php endif; ?>

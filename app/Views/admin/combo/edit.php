@@ -54,8 +54,8 @@
                     <hr class="my-4">
                     
                     <div class="d-flex justify-content-end gap-2">
-                        <a href="<?= BASE_URL ?>admin/combo/index" class="btn btn-secondary px-4">Hủy</a>
-                        <button type="submit" class="btn btn-warning px-4 fw-bold">Lưu Thay Đổi</button>
+                        <a href="<?= BASE_URL ?>admin/combo/index" class="btn btn-outline-cgv px-4">Hủy</a>
+                        <button type="submit" class="btn px-4 fw-bold" style="background-color: #E71A0F; color: white; border-color: #E71A0F;">Lưu Thay Đổi</button>
                     </div>
                 </form>
             </div>
