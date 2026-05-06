@@ -3,6 +3,7 @@
     border-radius: 12px;
     padding: 22px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
 }
 
 .news-detail-back {
@@ -98,4 +99,28 @@
     .news-detail-content-grid {
         grid-template-columns: 1fr;
     }
+}
+
+@media (max-width: 576px) {
+    .news-detail-page {
+        padding: 16px;
+        border-radius: 10px;
+    }
+
+    .news-detail-main-title {
+        font-size: clamp(1.5rem, 8vw, 2rem);
+    }
+
+    .news-detail-content-grid {
+        gap: 14px;
+    }
+
+    .news-detail-article-body {
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+
+    .news-detail-article-body h1 { font-size: 1.45rem; }
+    .news-detail-article-body h2 { font-size: 1.3rem; }
+    .news-detail-article-body h3 { font-size: 1.18rem; }
 }

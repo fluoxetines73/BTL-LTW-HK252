@@ -7,39 +7,70 @@ class AdminOrderController extends Controller {
     }
 
     // Hiển thị danh sách toàn bộ đơn hàng
+    // Hiển thị danh sách toàn bộ đơn hàng (Có Search, Filter và Bulk Delete)
     public function index() {
-        $orderModel = $this->model('Order');
-        
-        $keyword = trim($_GET['q'] ?? '');
-        $status = $_GET['status'] ?? 'all';
-        $sort = $_GET['sort'] ?? 'newest';
-        
-        // Validate sort parameter
-        $validSorts = ['newest', 'oldest', 'price_asc', 'price_desc'];
-        if (!in_array($sort, $validSorts)) {
-            $sort = 'newest';
-        }
-        
-        // Validate status parameter
-        $validStatuses = ['all', 'pending', 'confirmed', 'completed', 'cancelled'];
-        if (!in_array($status, $validStatuses)) {
-            $status = 'all';
-        }
-        
-        if ($keyword !== '' || $status !== 'all') {
-            $orders = $orderModel->searchOrders($keyword, $status, $sort);
-        } else {
-            $orders = $orderModel->getAllOrders();
-        }
-        
-        $this->adminView('admin/orders/index', 'order', [
-            'orders' => $orders,
-            'title' => 'Quản lý Đơn Hàng',
-            'keyword' => $keyword,
-            'status' => $status,
-            'sort' => $sort
-        ]);
+    $orderModel = $this->model('Order');
+
+    // 1. Nhận và Làm sạch tham số Tìm kiếm & Lọc từ URL
+    $keyword       = trim((string)($_GET['q'] ?? ''));
+    $status        = trim((string)($_GET['status'] ?? 'all'));
+    $paymentStatus = trim((string)($_GET['payment_status'] ?? 'all'));
+    $sort          = trim((string)($_GET['sort'] ?? 'newest'));
+
+    // Kiểm tra tính hợp lệ của tham số Sắp xếp (Validation từ bạn của bạn)
+    $validSorts = ['newest', 'oldest', 'price_asc', 'price_desc'];
+    if (!in_array($sort, $validSorts)) {
+        $sort = 'newest';
     }
+
+    // Kiểm tra tính hợp lệ của Trạng thái đơn hàng
+    $validStatuses = ['all', 'pending', 'confirmed', 'completed', 'cancelled'];
+    if (!in_array($status, $validStatuses)) {
+        $status = 'all';
+    }
+
+    // 2. Xử lý Xóa hàng loạt (Bulk Delete - Giữ logic của Duy Nhất)[cite: 5]
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' 
+        && !empty($_POST['action']) 
+        && $_POST['action'] === 'delete_selected') {
+        
+        $rawSelectedIds = $_POST['selected_ids'] ?? '';
+        
+        if (is_array($rawSelectedIds)) {
+            $selectedIds = array_map('intval', array_map('trim', $rawSelectedIds));
+        } elseif (is_string($rawSelectedIds) && $rawSelectedIds !== '') {
+            $selectedIds = array_map('intval', array_map('trim', explode(',', $rawSelectedIds)));
+        } else {
+            $selectedIds = [];
+        }
+        
+        $selectedIds = array_values(array_filter($selectedIds, static fn($id) => $id > 0));
+
+        if (!empty($selectedIds)) {
+            if ($orderModel->deleteMultipleOrders($selectedIds)) {
+                $_SESSION['success'] = 'Đã xóa thành công ' . count($selectedIds) . ' Đơn hàng.';
+            } else {
+                $_SESSION['error'] = 'Không thể xóa các Đơn hàng đã chọn.';
+            }
+            $this->redirect('admin/order/index');
+            return;
+        }
+    }
+
+    // 3. Lấy dữ liệu Đơn hàng đã được lọc (Sử dụng hàm mạnh mẽ nhất)[cite: 5]
+    // Hàm searchAdminOrders của Duy Nhất bao quát hơn vì có thêm paymentStatus
+    $orders = $orderModel->searchAdminOrders($keyword, $status, $paymentStatus, $sort);
+
+    // 4. Gọi View và truyền đầy đủ dữ liệu cho cả hai bên
+    $this->adminView('admin/orders/index', 'order', [
+        'orders'        => $orders,
+        'title'         => 'Quản lý Đơn Hàng',
+        'keyword'       => $keyword,
+        'status'        => $status,
+        'paymentStatus' => $paymentStatus, // Giữ để UI hiển thị đúng bộ lọc thanh toán
+        'sort'          => $sort
+    ]);
+}
 
     // Hiển thị chi tiết 1 đơn hàng
     public function detail($id = null) {

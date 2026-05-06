@@ -37,15 +37,24 @@ class Order extends Model {
     /**
      * 3. Lấy danh sách các vé (ghế) mà khách đã đặt trong đơn này
      */
-    public function getOrderTickets($booking_id) {
-        $sql = "SELECT t.*, s.row_label, s.col_number, st_type.name as seat_type
+    /**
+ * Lấy danh sách vé (ghế) của một đơn hàng
+ * Giải pháp: JOIN với bảng seats để lấy row_label và col_number
+ */
+/**
+ * Lấy danh sách vé chi tiết của một đơn hàng
+ * Giải pháp: JOIN bảng tickets với bảng seats để lấy nhãn hàng và số cột
+ */
+    public function getOrderTickets($bookingId) {
+        $db = Database::getInstance()->getPdo();
+        // JOIN bảng tickets với bảng seats để lấy nhãn hàng và số cột[cite: 9]
+        $sql = "SELECT t.*, s.row_label, s.col_number 
                 FROM tickets t
                 JOIN seats s ON t.seat_id = s.id
-                JOIN seat_types st_type ON s.seat_type_id = st_type.id
                 WHERE t.booking_id = :booking_id";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':booking_id', $booking_id, PDO::PARAM_INT);
-        $stmt->execute();
+        
+        $stmt = $db->prepare($sql);
+        $stmt->execute([':booking_id' => $bookingId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -73,46 +82,65 @@ class Order extends Model {
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
-
-    /**
-     * 6. Tìm kiếm và lọc đơn hàng (cho admin)
-     * @param string $keyword - tìm theo booking_code hoặc customer name
-     * @param string $status - lọc theo status (pending/confirmed/completed/cancelled)
-     * @param string $sort - sắp xếp: newest (default), oldest, price_asc, price_desc
-     * @return array Danh sách đơn hàng
+/**
+     * Tìm kiếm, lọc và sắp xếp Đơn hàng dành cho Admin
+     * Kết hợp: Tìm kiếm từ khóa, Lọc trạng thái đơn, Lọc trạng thái thanh toán và Sắp xếp
      */
-    public function searchOrders($keyword = '', $status = 'all', $sort = 'newest') {
+    public function searchAdminOrders($keyword = '', $status = 'all', $paymentStatus = 'all', $sort = 'newest') {
         $sql = "SELECT b.*, u.full_name, u.email 
                 FROM bookings b 
-                JOIN users u ON b.user_id = u.id";
+                LEFT JOIN users u ON b.user_id = u.id";
+        
         $params = [];
         $conditions = [];
 
+        // 1. Lọc theo từ khóa (Mã đơn, Tên khách, Email)
         if ($keyword !== '') {
-            $conditions[] = "(b.booking_code LIKE :keyword_code OR u.full_name LIKE :keyword_name)";
-            $params[':keyword_code'] = "%$keyword%";
-            $params[':keyword_name'] = "%$keyword%";
+            $conditions[] = "(b.booking_code LIKE :kw OR u.full_name LIKE :kw OR u.email LIKE :kw)";
+            $params[':kw'] = "%$keyword%";
         }
 
-        if ($status !== 'all' && in_array($status, ['pending', 'confirmed', 'completed', 'cancelled'])) {
+        // 2. Lọc theo trạng thái Đơn hàng (pending, confirmed, etc.)
+        if ($status !== 'all') {
             $conditions[] = "b.status = :status";
             $params[':status'] = $status;
+        }
+
+        // 3. Lọc theo trạng thái Thanh toán (pending, paid, failed, etc.)
+        if ($paymentStatus !== 'all') {
+            $conditions[] = "b.payment_status = :payment_status";
+            $params[':payment_status'] = $paymentStatus;
         }
 
         if (!empty($conditions)) {
             $sql .= " WHERE " . implode(' AND ', $conditions);
         }
 
-        $order = match($sort) {
-            'oldest' => 'b.created_at ASC',
-            'price_asc' => 'b.final_amount ASC',
-            'price_desc' => 'b.final_amount DESC',
-            default => 'b.created_at DESC'
+        // 4. Sắp xếp dữ liệu (Kết hợp các tiêu chí từ cả hai bên)[cite: 5]
+        $orderBy = match($sort) {
+            'oldest'     => 'b.created_at ASC',
+            'total_desc' => 'b.final_amount DESC',
+            'price_asc'  => 'b.final_amount ASC',
+            default      => 'b.created_at DESC'
         };
-        $sql .= " ORDER BY $order";
+        $sql .= " ORDER BY $orderBy";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Xóa hàng loạt Đơn hàng[cite: 5]
+     * Lưu ý: CSDL cần thiết lập ON DELETE CASCADE cho tickets và booking_combos
+     */
+    public function deleteMultipleOrders(array $ids) {
+        if (empty($ids)) return false;
+        
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $sql = "DELETE FROM bookings WHERE id IN ($placeholders)";
+        
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($ids);
     }
 }

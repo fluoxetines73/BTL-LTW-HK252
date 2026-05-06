@@ -37,25 +37,58 @@ class HomeController extends Controller {
     $stmt = $db->query("SELECT g.id, g.name, g.slug, COUNT(m.id) as movie_count FROM genres g LEFT JOIN movie_genres mg ON g.id = mg.genre_id LEFT JOIN movies m ON mg.movie_id = m.id GROUP BY g.id ORDER BY movie_count DESC LIMIT 7");
     $data['genres'] = $stmt->fetchAll();
 
-    // 4. Lấy 4 Tin tức mới nhất (News)
-    $stmt = $db->query("SELECT id, title, slug, content, image, category, published_at FROM news WHERE status = 'published' ORDER BY published_at DESC LIMIT 4");
-    $data['news'] = $stmt->fetchAll();
+// 4. Lấy 4 Tin tức mới nhất (News) — use News model for consistency
+    try {
+        $newsModel = $this->model('News');
+        $rawNews = $newsModel->getLatestPublished(4);
+    } catch (Throwable $e) {
+        $rawNews = [];
+    }
+
+	// Helper to resolve image paths the same way as NewsController::resolveNewsImageUrl
+	$resolveImage = function(string $path) {
+		$path = trim($path);
+		if ($path === '') {
+			return BASE_URL . 'public/images/about/about-6.png';
+		}
+		if (preg_match('#^https?://#i', $path) === 1) {
+			return $path;
+		}
+		if (str_starts_with($path, 'public/')) {
+			return BASE_URL . $path;
+		}
+		if (str_starts_with($path, 'uploads/')) {
+			return BASE_URL . 'public/' . ltrim($path, '/');
+		}
+		return BASE_URL . 'public/' . ltrim($path, '/');
+	};
+
+	// Resolve image URLs for news
+	$data['news'] = [];
+	foreach ($rawNews as $n) {
+		$n['image'] = $resolveImage((string)($n['image'] ?? ''));
+		$data['news'][] = $n;
+	}
 
     // 5. Dữ liệu quảng cáo/Khuyến mãi từ bảng news (category = 'khuyen-mai')
-    $stmt = $db->query("SELECT id, title, slug, content as description, image, category, published_at FROM news WHERE status = 'published' AND category = 'khuyen-mai' ORDER BY published_at DESC LIMIT 5");
-    $promotions = $stmt->fetchAll();
-    
+try {
+        $promotionsRaw = $newsModel->getPublishedByCategory('khuyen-mai');
+    } catch (Throwable $e) {
+        $promotionsRaw = [];
+    }
+
     // Format promotions data for the view
     $data['ads'] = [];
-    foreach ($promotions as $promo) {
+    foreach ($promotionsRaw as $promo) {
+        $img = !empty($promo['image']) ? $resolveImage((string)$promo['image']) : null;
         $data['ads'][] = [
             'id' => $promo['id'],
             'title' => $promo['title'],
-            'image' => !empty($promo['image']) ? $promo['image'] : null,
+            'image' => $img,
             'link' => BASE_URL . 'news/' . ($promo['slug'] ?? ''),
-            'description' => $promo['description'] ?? ''
-        ];
-    }
+            'description' => $promo['content'] ?? ''
+		];
+	}
 
     // --- PHẦN 3: GỌI VIEW VÀ TRUYỀN TOÀN BỘ DỮ LIỆU ---
     $this->view('layouts/main', [

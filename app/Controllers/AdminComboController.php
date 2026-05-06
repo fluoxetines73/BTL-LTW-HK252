@@ -6,47 +6,59 @@ class AdminComboController extends Controller {
         $this->middlewareAdmin();
     }
 
-    public function index() {
+    /**
+     * Trang danh sách Combo (Có Search, Filter và Bulk Delete)
+     */
+public function index() {
         $comboModel = $this->model('Combo');
 
-        // Build query with search and sort
-        $search = trim($_GET['q'] ?? '');
-        $sort = $_GET['sort'] ?? 'price_asc';
+        // 1. Nhận tham số Tìm kiếm, Lọc & Sắp xếp từ URL
+        $keyword = trim((string)($_GET['q'] ?? ''));
+        $status  = trim((string)($_GET['status'] ?? 'all'));
+        // Lấy kiểu sắp xếp, nếu không có thì mặc định là mới nhất
+        $sort    = trim((string)($_GET['sort'] ?? 'newest'));
 
-        // Get all combos from model
-        $combos = $comboModel->getAllCombos();
+        // 2. Xử lý Xóa hàng loạt (Bulk Delete) - Giữ logic của Duy Nhất
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' 
+            && !empty($_POST['action']) 
+            && $_POST['action'] === 'delete_selected') {
+            
+            $rawSelectedIds = $_POST['selected_ids'] ?? '';
+            
+            if (is_array($rawSelectedIds)) {
+                $selectedIds = array_map('intval', array_map('trim', $rawSelectedIds));
+            } elseif (is_string($rawSelectedIds) && $rawSelectedIds !== '') {
+                $selectedIds = array_map('intval', array_map('trim', explode(',', $rawSelectedIds)));
+            } else {
+                $selectedIds = [];
+            }
+            
+            $selectedIds = array_values(array_filter($selectedIds, static fn($id) => $id > 0));
 
-        // Filter by search term if provided
-        if ($search !== '') {
-            $combos = array_filter($combos, function($combo) use ($search) {
-                return stripos($combo['name'], $search) !== false;
-            });
-            $combos = array_values($combos); // Re-index array
+            if (!empty($selectedIds)) {
+                if ($comboModel->deleteMultipleCombos($selectedIds)) {
+                    $_SESSION['success'] = 'Đã xóa thành công ' . count($selectedIds) . ' Combo.';
+                } else {
+                    $_SESSION['error'] = 'Không thể xóa các Combo đã chọn.';
+                }
+                $this->redirect('admin/combo/index');
+                return;
+            }
         }
 
-        // Sort order
-        usort($combos, function($a, $b) use ($sort) {
-            switch ($sort) {
-                case 'price_desc':
-                    return $b['price'] <=> $a['price'];
-                case 'name_asc':
-                    return strcasecmp($a['name'], $b['name']);
-                case 'name_desc':
-                    return strcasecmp($b['name'], $a['name']);
-                case 'price_asc':
-                default:
-                    return $a['price'] <=> $b['price'];
-            }
-        });
+        // 3. Lấy dữ liệu đã được lọc và sắp xếp trực tiếp từ Model
+        // Phương thức này tối ưu hơn việc dùng array_filter và usort trong Controller
+        $combos = $comboModel->searchAdminCombos($keyword, $status, $sort);
 
+        // 4. Gọi View và truyền dữ liệu đồng bộ cho cả hai bên
         $this->adminView('admin/combo/index', 'combo', [
-            'combos' => $combos,
-            'title' => 'Quản lý Combo',
-            'search' => $search,
-            'sort' => $sort
+            'combos'  => $combos,
+            'title'   => 'Quản lý Combo',
+            'keyword' => $keyword, // Dùng cho ô tìm kiếm
+            'status'  => $status,  // Dùng cho bộ lọc trạng thái
+            'sort'    => $sort     // Dùng cho bộ chọn sắp xếp
         ]);
     }
-
     public function create() {
         $this->adminView('admin/combo/create', 'combo', ['title' => 'Thêm Combo Mới']);
     }

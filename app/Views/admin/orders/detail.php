@@ -40,18 +40,21 @@
                 <p class="mb-3"><i class="fas fa-door-open me-2 text-muted"></i>Phòng chiếu: <strong><?= htmlspecialchars($order['room_name']) ?></strong></p>
                 
                 <h6 class="fw-bold mt-4 mb-2 border-bottom pb-2">Danh sách ghế đã chọn:</h6>
-                <?php if(!empty($tickets)): ?>
-                    <div class="d-flex flex-wrap gap-2 mt-3">
-                        <?php foreach($tickets as $ticket): ?>
-                            <span class="badge bg-dark fs-6 px-3 py-2 shadow-sm">
-                                Ghế <?= htmlspecialchars($ticket['row_label']) ?><?= htmlspecialchars($ticket['col_number']) ?> 
-                                <small class="fw-normal text-warning ms-1">(<?= htmlspecialchars($ticket['seat_type']) ?>)</small>
-                            </span>
-                        <?php endforeach; ?>
-                    </div>
-                <?php else: ?>
-                    <p class="text-muted">Không có dữ liệu ghế.</p>
-                <?php endif; ?>
+                    <?php if(!empty($tickets)): ?>
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <?php foreach($tickets as $ticket): ?>
+                                <span class="badge bg-dark fs-6 px-3 py-2 shadow-sm">
+                                    <!-- Ghép Row (A, B, C...) và Column (1, 2, 3...) -->
+                                    <i class="fas fa-couch me-1 text-secondary"></i>
+                                    Ghế <?= htmlspecialchars($ticket['row_label']) ?><?= htmlspecialchars($ticket['col_number']) ?> 
+                                </span>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="alert alert-warning py-2 mt-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i> Không có dữ liệu ghế cho đơn hàng này.
+                        </div>
+                    <?php endif; ?>
             </div>
         </div>
 
