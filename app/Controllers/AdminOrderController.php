@@ -58,20 +58,32 @@ class AdminOrderController extends Controller {
         ]);
     }
 
-    // Xử lý cập nhật trạng thái đơn hàng từ Form
     public function updateStatus($id = null) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id) {
             $status = $_POST['status'];
             $orderModel = $this->model('Order');
             
+            // Audit: Có thể thêm logic chặn khách hàng đã hoàn thành quay về chờ xác nhận tại đây
+            
             if ($orderModel->updateStatus($id, $status)) {
-                // Set flash message (nếu hệ thống của bạn có làm hàm flash message)
-                $_SESSION['success'] = "Cập nhật trạng thái đơn hàng thành công!";
+                $_SESSION['success'] = "Cập nhật trạng thái đơn hàng #$id thành công!";
             } else {
-                $_SESSION['error'] = "Cập nhật trạng thái thất bại!";
+                $_SESSION['error'] = "Cập nhật thất bại!";
             }
         }
-        // Cập nhật xong thì quay lại trang chi tiết đơn đó
         $this->redirect('admin/order/detail/' . $id);
+    }
+    public function deleteMultiple() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ids'])) {
+            $ids = explode(',', $_POST['ids']);
+            $orderModel = $this->model('Order');
+            
+            if ($orderModel->cancelMultipleOrders($ids)) {
+                $_SESSION['success'] = "Đã chuyển trạng thái " . count($ids) . " đơn hàng sang 'Đã hủy'.";
+            } else {
+                $_SESSION['error'] = "Lỗi hệ thống khi cập nhật!";
+            }
+        }
+        $this->redirect('admin/order/index');
     }
 }

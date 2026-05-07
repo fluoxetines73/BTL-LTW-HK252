@@ -76,7 +76,7 @@
                             'hanh-dong' => 'Hành Động', 'hai' => 'Hài', 'khoa-hoc-vien-tuong' => 'Khoa Học Viễn Tưởng',
                             'tam-ly' => 'Tâm Lý', 'phieu-luu' => 'Phiêu Lưu', 'kinh-di' => 'Kinh Dị',
                             'hoat-hinh' => 'Hoạt Hình', 'tinh-cam' => 'Tình Cảm', 'gia-dinh' => 'Gia Đình',
-                            'bi-an' => 'Bí Ẩn'
+                            'bi-an' => 'Bí Ẩn', 'tai-lieu' => "Tài liệu", 'vo-thuat' => "Võ Thuật"
                         ];
 
                         foreach ($allGenres as $slug => $name):

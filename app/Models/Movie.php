@@ -326,24 +326,43 @@ class Movie extends Model {
                 LEFT JOIN genres g ON mg.genre_id = g.id
                 WHERE 1=1";
         $params = [];
+
+        // 1. Lọc theo từ khóa
         if (!empty($keyword)) {
             $sql .= " AND (m.title LIKE :q1 OR m.director LIKE :q2)";
             $params[':q1'] = $params[':q2'] = "%$keyword%";
         }
+
+        // 2. Lọc theo trạng thái
         if ($status !== 'all') {
             $sql .= " AND m.status = :status";
             $params[':status'] = $status;
         }
+
+        // 3. Gom nhóm theo ID phim
         $sql .= " GROUP BY m.id";
-        $sql .= ($sort === 'oldest') ? " ORDER BY m.created_at ASC" : " ORDER BY m.created_at DESC";
+
+        // 4. Sắp xếp: Bổ sung m.id để phân biệt khi created_at bị trùng
+        if ($sort === 'oldest') {
+            $sql .= " ORDER BY m.created_at ASC, m.id ASC";
+        } else {
+            $sql .= " ORDER BY m.created_at DESC, m.id DESC";
+        }
         
-        // Thêm Phân trang
+        // 5. Phân trang
         $sql .= " LIMIT :limit OFFSET :offset";
         
         $stmt = $this->db->prepare($sql);
-        foreach ($params as $key => $val) $stmt->bindValue($key, $val);
+
+        // Bind các tham số lọc
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val);
+        }
+
+        // Bind tham số phân trang (bắt buộc kiểu INT)
         $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -396,5 +415,16 @@ class Movie extends Model {
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchColumn();
+    }
+    public function isSlugExists($slug, $excludeId = null) {
+        $sql = "SELECT COUNT(*) FROM movies WHERE slug = :slug";
+        $params = [':slug' => $slug];
+        if ($excludeId) {
+            $sql .= " AND id != :id";
+            $params[':id'] = $excludeId;
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchColumn() > 0;
     }
 }

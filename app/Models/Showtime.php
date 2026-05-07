@@ -47,7 +47,6 @@ class Showtime extends Model {
         return $stmt->fetchColumn();
     }
 
-    // Cập nhật hàm search có phân trang
     public function searchShowtimes($keyword = '', $date = '', $sort = 'newest', $limit = 10, $offset = 0) {
         $sql = "SELECT s.*, m.title as movie_title, r.name as room_name 
                 FROM showtimes s
@@ -64,11 +63,12 @@ class Showtime extends Model {
             $params[':date'] = $date;
         }
 
+        // Sắp xếp: Bổ sung s.id để phân định khi start_time trùng nhau
         switch ($sort) {
-            case 'price_asc': $sql .= " ORDER BY s.base_price ASC"; break;
-            case 'price_desc': $sql .= " ORDER BY s.base_price DESC"; break;
-            case 'oldest': $sql .= " ORDER BY s.start_time ASC"; break;
-            default: $sql .= " ORDER BY s.start_time DESC"; break;
+            case 'price_asc': $sql .= " ORDER BY s.base_price ASC, s.id ASC"; break;
+            case 'price_desc': $sql .= " ORDER BY s.base_price DESC, s.id DESC"; break;
+            case 'oldest': $sql .= " ORDER BY s.start_time ASC, s.id ASC"; break;
+            default: $sql .= " ORDER BY s.start_time DESC, s.id DESC"; break;
         }
 
         $sql .= " LIMIT :limit OFFSET :offset";
@@ -127,36 +127,30 @@ class Showtime extends Model {
      * Kiểm tra xem phòng chiếu có trống trong khoảng thời gian chỉ định không
      * Đã bao gồm 10 phút dọn dẹp sau khi phim kết thúc.
      */
+    /**
+ * Cập nhật lại logic kiểm tra phòng trống: Bỏ qua các suất chiếu đã bị hủy
+ */
     public function isRoomAvailable($roomId, $startTime, $endTime, $excludeShowtimeId = null): bool {
         $db = Database::getInstance()->getPdo();
-        
-        // Logic: Hai khoảng thời gian (A và B) bị trùng nhau KHI VÀ CHỈ KHI:
-        // Bắt đầu A < Kết thúc B (đã tính 10p dọn dẹp) VÀ Kết thúc A (đã tính 10p dọn dẹp) > Bắt đầu B
         $sql = "SELECT COUNT(*) FROM showtimes 
-                WHERE room_id = :room_id ";
+                WHERE room_id = :room_id 
+                AND status != 'cancelled' "; // SUY NHẤT: Chỉ kiểm tra các suất chưa bị hủy
         
-        // Nếu đang update, cần loại trừ chính suất chiếu đang được sửa
         if ($excludeShowtimeId) {
             $sql .= " AND id != :exclude_id ";
         }
 
         $sql .= " AND ( :start_time < DATE_ADD(end_time, INTERVAL 10 MINUTE) )
-                  AND ( DATE_ADD(:end_time, INTERVAL 10 MINUTE) > start_time )";
+                AND ( DATE_ADD(:end_time, INTERVAL 10 MINUTE) > start_time )";
 
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':room_id', $roomId, PDO::PARAM_INT);
         $stmt->bindValue(':start_time', $startTime);
         $stmt->bindValue(':end_time', $endTime);
-        
-        if ($excludeShowtimeId) {
-            $stmt->bindValue(':exclude_id', $excludeShowtimeId, PDO::PARAM_INT);
-        }
+        if ($excludeShowtimeId) $stmt->bindValue(':exclude_id', $excludeShowtimeId, PDO::PARAM_INT);
         
         $stmt->execute();
-        $count = $stmt->fetchColumn();
-
-        // Nếu count == 0 nghĩa là phòng trống, trả về true
-        return $count == 0;
+        return $stmt->fetchColumn() == 0;
     }
     /**
      * Kiểm tra xem bộ phim này có đang được chiếu ở phòng khác trong cùng khung giờ hay không
@@ -164,30 +158,23 @@ class Showtime extends Model {
      */
     public function isMovieAvailable($movieId, $startTime, $endTime, $excludeShowtimeId = null): bool {
         $db = Database::getInstance()->getPdo();
-        
         $sql = "SELECT COUNT(*) FROM showtimes 
-                WHERE movie_id = :movie_id ";
+                WHERE movie_id = :movie_id 
+                AND status != 'cancelled' "; // SUY NHẤT: Bỏ qua suất đã hủy
         
-        if ($excludeShowtimeId) {
-            $sql .= " AND id != :exclude_id ";
-        }
+        if ($excludeShowtimeId) $sql .= " AND id != :exclude_id ";
 
         $sql .= " AND ( :start_time < DATE_ADD(end_time, INTERVAL 10 MINUTE) )
-                  AND ( DATE_ADD(:end_time, INTERVAL 10 MINUTE) > start_time )";
+                AND ( DATE_ADD(:end_time, INTERVAL 10 MINUTE) > start_time )";
 
         $stmt = $db->prepare($sql);
         $stmt->bindValue(':movie_id', $movieId, PDO::PARAM_INT);
         $stmt->bindValue(':start_time', $startTime);
         $stmt->bindValue(':end_time', $endTime);
-        
-        if ($excludeShowtimeId) {
-            $stmt->bindValue(':exclude_id', $excludeShowtimeId, PDO::PARAM_INT);
-        }
+        if ($excludeShowtimeId) $stmt->bindValue(':exclude_id', $excludeShowtimeId, PDO::PARAM_INT);
         
         $stmt->execute();
-        $count = $stmt->fetchColumn();
-
-        return $count == 0;
+        return $stmt->fetchColumn() == 0;
     }
     /**
      * Tìm kiếm, lọc và sắp xếp Suất chiếu cho Admin
@@ -268,5 +255,24 @@ class Showtime extends Model {
         $stmt->execute();
         
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    /**
+ * Kiểm tra xem suất chiếu này đã có khách đặt vé (booking) chưa
+ */
+    public function hasBookings($id) {
+        // Chúng ta kiểm tra trong bảng bookings (hoặc tickets tùy cấu trúc DB của bạn)
+        // Nếu có ít nhất 1 dòng bản ghi trùng showtime_id thì nghĩa là đã có vé bán ra
+        $sql = "SELECT COUNT(*) FROM bookings WHERE showtime_id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':id' => $id]);
+        return $stmt->fetchColumn() > 0;
+    }
+        /**
+     * Cập nhật trạng thái suất chiếu (scheduled, cancelled, ended)
+     */
+    public function updateStatus($id, $status) {
+        $sql = "UPDATE {$this->table} SET status = :status WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([':status' => $status, ':id' => $id]);
     }
 }

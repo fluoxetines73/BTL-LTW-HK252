@@ -74,6 +74,19 @@ class AdminShowtimeController extends Controller {
             $roomId    = (int)$_POST['room_id'];
             $startTime = $_POST['start_time'];
             $basePrice = (float)$_POST['base_price'];
+            // 1. Chặn giá vé âm
+            if ($basePrice < 0) {
+                $_SESSION['error'] = "Giá vé không được nhỏ hơn 0!";
+                $this->redirect('admin/showtime/create');
+                return;
+            }
+
+            // 2. Chặn suất chiếu trong quá khứ
+            if (strtotime($startTime) < time()) {
+                $_SESSION['error'] = "Không thể tạo suất chiếu trong quá khứ!";
+                $this->redirect('admin/showtime/create');
+                return;
+            }
 
             // Tính toán thời lượng và giờ kết thúc
             $movie = $this->model('Movie')->getMovieById($movieId);
@@ -204,11 +217,39 @@ class AdminShowtimeController extends Controller {
         }
     }
     public function delete($id = null) {
-        // Kiểm tra nếu có ID được truyền lên
         if ($id) {
-            $this->model('Showtime')->deleteShowtime($id);
+            $showtimeModel = $this->model('Showtime');
+            
+            if ($showtimeModel->hasBookings($id)) {
+                // Trường hợp có vé: Chuyển sang 'cancelled'
+                $showtimeModel->updateStatus($id, 'cancelled');
+                $_SESSION['success'] = "Suất chiếu đã có khách đặt vé. Hệ thống đã chuyển trạng thái sang 'Đã hủy' để giữ lịch sử giao dịch.";
+            } else {
+                // Trường hợp chưa có vé: Xóa hoàn toàn
+                $showtimeModel->deleteShowtime($id);
+                $_SESSION['success'] = "Đã xóa suất chiếu thành công.";
+            }
         }
-        // Xóa xong thì tự động quay về trang danh sách suất chiếu
         $this->redirect('admin/showtime/index');
     }
+        /**
+     * Xóa hàng loạt suất chiếu
+     */
+    public function deleteMultiple() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ids'])) {
+            $ids = explode(',', $_POST['ids']);
+            $showtimeModel = $this->model('Showtime');
+            
+            foreach ($ids as $id) {
+                if ($showtimeModel->hasBookings($id)) {
+                    $showtimeModel->updateStatus($id, 'cancelled');
+                } else {
+                    $showtimeModel->deleteShowtime($id);
+                }
+            }
+            $_SESSION['success'] = "Đã xử lý xóa/hủy hàng loạt các mục đã chọn.";
+        }
+        $this->redirect('admin/showtime/index');
+    }
+
 }

@@ -65,7 +65,9 @@ class Combo extends Model {
         return $stmt->fetchColumn();
     }
 
-    // 2. Cập nhật hàm search có phân trang
+        /**
+     * Cập nhật hàm search: Sắp xếp theo ID làm phụ để tránh lỗi trùng Timestamp khi Seed
+     */
     public function searchAdminCombos($keyword = '', $status = 'all', $sort = 'newest', $limit = 10, $offset = 0) {
         $sql = "SELECT * FROM combos WHERE 1=1";
         $params = [];
@@ -78,15 +80,15 @@ class Combo extends Model {
             $params[':status'] = ($status === 'active' ? 1 : 0);
         }
 
+        // Sắp xếp có thêm ID để phân biệt khi created_at bằng nhau
         switch ($sort) {
-            case 'oldest': $sql .= " ORDER BY created_at ASC"; break;
-            case 'price_asc': $sql .= " ORDER BY price ASC"; break;
-            case 'price_desc': $sql .= " ORDER BY price DESC"; break;
-            default: $sql .= " ORDER BY created_at DESC"; break;
+            case 'oldest': $sql .= " ORDER BY created_at ASC, id ASC"; break;
+            case 'price_asc': $sql .= " ORDER BY price ASC, id ASC"; break;
+            case 'price_desc': $sql .= " ORDER BY price DESC, id DESC"; break;
+            default: $sql .= " ORDER BY created_at DESC, id DESC"; break;
         }
 
         $sql .= " LIMIT :limit OFFSET :offset";
-
         $stmt = $this->db->prepare($sql);
         foreach ($params as $k => $v) $stmt->bindValue($k, $v);
         $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
@@ -106,5 +108,19 @@ class Combo extends Model {
         // Cần xóa ảnh trong thư mục trước khi xóa db (nếu cần thiết, có thể bổ sung sau)
         $stmt = $db->prepare("DELETE FROM combos WHERE id IN ($placeholders)");
         return $stmt->execute($ids);
+    }
+        /**
+     * Kiểm tra tên Combo đã tồn tại chưa (để tránh trùng lặp slug/tên)
+     */
+    public function isNameExists($name, $excludeId = null) {
+        $sql = "SELECT COUNT(*) FROM combos WHERE name = :name";
+        $params = [':name' => $name];
+        if ($excludeId) {
+            $sql .= " AND id != :id";
+            $params[':id'] = $excludeId;
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchColumn() > 0;
     }
 }

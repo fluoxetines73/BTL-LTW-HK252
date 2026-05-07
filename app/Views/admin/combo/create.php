@@ -22,7 +22,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Giá tiền (VNĐ) <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" name="price" required placeholder="vd: 130000">
+                            <input type="number" class="form-control" name="price" required min="0" placeholder="vd: 130000" value="...">
                         </div>
 
                         <div class="col-md-6">

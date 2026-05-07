@@ -38,47 +38,43 @@ class AdminComboController extends Controller {
     public function create() {
         $this->adminView('admin/combo/create', 'combo', ['title' => 'Thêm Combo Mới']);
     }
+        /**
+     * Lưu Combo mới (Đã Audit bảo mật + Logic)
+     */
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            
-            // 1. Khởi tạo tên ảnh mặc định nếu user không chọn ảnh
-            $imageName = 'default-combo.png'; 
+            $comboModel = $this->model('Combo');
+            $name = trim($_POST['name']);
+            $price = (float)$_POST['price'];
 
-            // 2. Xử lý Upload file (Kiểm tra xem có file gửi lên và không bị lỗi)
-            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-                
-                // Khai báo thư mục lưu ảnh
-                $uploadDir = ROOT . '/public/uploads/combos/';
-                
-                // Nếu thư mục chưa tồn tại thì tự động tạo mới
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0777, true);
-                }
-
-                // Lấy đuôi file (jpg, png, jpeg...)
-                $fileExtension = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-                
-                // Đổi tên file bằng hàm time() và uniqid() để đảm bảo 100% không bị trùng lặp đè file cũ
-                $imageName = time() . '_' . uniqid() . '.' . $fileExtension;
-                
-                // Di chuyển file từ thư mục tạm của server vào thư mục dự án
-                move_uploaded_file($_FILES['image']['tmp_name'], $uploadDir . $imageName);
+            // 1. Chặn trùng tên
+            if ($comboModel->isNameExists($name)) {
+                $_SESSION['error'] = "Tên Combo này đã tồn tại!";
+                $this->redirect('admin/combo/create');
+                return;
             }
 
-            // 3. Gom dữ liệu lưu vào DB
+            // 2. Chặn giá âm
+            if ($price < 0) {
+                $_SESSION['error'] = "Giá tiền không được nhỏ hơn 0!";
+                $this->redirect('admin/combo/create');
+                return;
+            }
+
+            // 3. Upload ảnh an toàn
+            $imageName = $this->handleFileUpload('image') ?: 'default-combo.png';
+
             $data = [
-                'name' => trim($_POST['name']),
+                'name' => $name,
                 'description' => trim($_POST['description'] ?? ''),
-                'price' => (float)$_POST['price'],
-                'image' => $imageName, // Lưu tên ảnh vừa upload
+                'price' => $price,
+                'image' => $imageName,
                 'is_active' => $_POST['is_active'] ?? 1
             ];
 
-            $comboModel = $this->model('Combo');
             if ($comboModel->createCombo($data)) {
+                $_SESSION['success'] = "Thêm Combo thành công!";
                 $this->redirect('admin/combo/index');
-            } else {
-                echo "Lỗi khi lưu Combo!";
             }
         }
     }
@@ -117,33 +113,36 @@ class AdminComboController extends Controller {
         $this->adminView('admin/combo/edit', 'combo', ['combo' => $combo, 'title' => 'Sửa Combo']);
     }
 
-    /**
-     * Xử lý cập nhật dữ liệu
+        /**
+     * Cập nhật Combo (Dọn dẹp ảnh cũ khi đổi ảnh mới)
      */
     public function update($id = null) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id) {
             $comboModel = $this->model('Combo');
             $oldCombo = $comboModel->getComboById($id);
-            
-            $imageName = $oldCombo['image']; // Mặc định giữ ảnh cũ
+            if (!$oldCombo) { $this->redirect('admin/combo/index'); return; }
 
-            // Nếu user chọn ảnh mới
-            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-                $uploadDir = ROOT . '/public/uploads/combos/';
-                
+            $name = trim($_POST['name']);
+            if ($comboModel->isNameExists($name, $id)) {
+                $_SESSION['error'] = "Tên Combo đã bị trùng!";
+                $this->redirect('admin/combo/edit/' . $id);
+                return;
+            }
+
+            $imageName = $oldCombo['image'];
+            $newImage = $this->handleFileUpload('image');
+            
+            if ($newImage) {
                 // Xóa ảnh cũ nếu không phải ảnh mặc định
                 if ($oldCombo['image'] !== 'default-combo.png') {
-                    $oldPath = $uploadDir . $oldCombo['image'];
+                    $oldPath = ROOT . '/public/uploads/combos/' . $oldCombo['image'];
                     if (file_exists($oldPath)) unlink($oldPath);
                 }
-
-                $fileExt = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-                $imageName = time() . '_' . uniqid() . '.' . $fileExt;
-                move_uploaded_file($_FILES['image']['tmp_name'], $uploadDir . $imageName);
+                $imageName = $newImage;
             }
 
             $data = [
-                'name' => trim($_POST['name']),
+                'name' => $name,
                 'description' => trim($_POST['description'] ?? ''),
                 'price' => (float)$_POST['price'],
                 'image' => $imageName,
@@ -151,10 +150,29 @@ class AdminComboController extends Controller {
             ];
 
             if ($comboModel->updateCombo($id, $data)) {
+                $_SESSION['success'] = "Cập nhật thành công!";
                 $this->redirect('admin/combo/index');
-            } else {
-                echo "Lỗi cập nhật!";
             }
         }
+    }
+        /**
+     * Helper: Xử lý upload an toàn (Chặn file lạ, giới hạn 2MB)
+     */
+    private function handleFileUpload($fieldName) {
+        if (isset($_FILES[$fieldName]) && $_FILES[$fieldName]['error'] === UPLOAD_ERR_OK) {
+            $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+            $ext = strtolower(pathinfo($_FILES[$fieldName]['name'], PATHINFO_EXTENSION));
+            
+            if (in_array($ext, $allowed) && $_FILES[$fieldName]['size'] <= 2 * 1024 * 1024) {
+                $uploadDir = ROOT . '/public/uploads/combos/';
+                if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+                $newName = time() . '_' . uniqid() . '.' . $ext;
+                if (move_uploaded_file($_FILES[$fieldName]['tmp_name'], $uploadDir . $newName)) {
+                    return $newName;
+                }
+            }
+        }
+        return null;
     }
 }

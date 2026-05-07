@@ -105,7 +105,9 @@ class Order extends Model {
         return $stmt->fetchColumn();
     }
 
-    // 2. Cập nhật hàm search có phân trang (Fix lỗi tham số trùng tên)
+        /**
+     * Cập nhật hàm search: Sắp xếp theo ID làm phụ để đảm bảo thứ tự chính xác
+     */
     public function searchAdminOrders($keyword = '', $status = 'all', $paymentStatus = 'all', $sort = 'newest', $limit = 10, $offset = 0) {
         $sql = "SELECT b.*, u.full_name, u.email 
                 FROM bookings b 
@@ -126,11 +128,12 @@ class Order extends Model {
             $params[':p_status'] = $paymentStatus;
         }
 
+        // Sắp xếp: Luôn có ID làm tiêu chí phụ để tránh trùng lặp thứ tự
         $orderBy = match($sort) {
-            'oldest' => 'b.created_at ASC',
-            'price_desc' => 'b.final_amount DESC',
-            'price_asc' => 'b.final_amount ASC',
-            default => 'b.created_at DESC'
+            'oldest' => 'b.created_at ASC, b.id ASC',
+            'price_desc' => 'b.final_amount DESC, b.id DESC',
+            'price_asc' => 'b.final_amount ASC, b.id ASC',
+            default => 'b.created_at DESC, b.id DESC'
         };
         $sql .= " ORDER BY $orderBy LIMIT :limit OFFSET :offset";
 
@@ -166,5 +169,14 @@ class Order extends Model {
             $db->rollBack();
             return false;
         }
+    }
+    public function cancelMultipleOrders(array $ids) {
+        if (empty($ids)) return false;
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        
+        // Chỉ cập nhật trạng thái đơn thành 'cancelled', giữ nguyên dữ liệu vé và combo
+        $sql = "UPDATE bookings SET status = 'cancelled' WHERE id IN ($placeholders)";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($ids);
     }
 }
