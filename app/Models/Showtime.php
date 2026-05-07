@@ -28,49 +28,56 @@ class Showtime extends Model {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Cho Admin: Tìm kiếm và lọc suất chiếu
-    public function searchShowtimes($keyword = '', $date = '', $sort = 'newest') {
-        $sql = "SELECT s.*, m.title as movie_title, r.name as room_name 
-                FROM {$this->table} s
-                JOIN movies m ON s.movie_id = m.id
-                JOIN rooms r ON s.room_id = r.id";
-        
-        $where = [];
+    // Thêm hàm đếm tổng suất chiếu
+    public function countShowtimes($keyword = '', $date = '') {
+        $sql = "SELECT COUNT(*) FROM showtimes s 
+                JOIN movies m ON s.movie_id = m.id 
+                WHERE 1=1";
         $params = [];
-
         if (!empty($keyword)) {
-            $where[] = "m.title LIKE :keyword";
-            $params[':keyword'] = "%$keyword%";
+            $sql .= " AND (m.title LIKE :kw1 OR s.id LIKE :kw2)";
+            $params[':kw1'] = $params[':kw2'] = "%$keyword%";
         }
-
         if (!empty($date)) {
-            $where[] = "DATE(s.start_time) = :date";
+            $sql .= " AND DATE(s.start_time) = :date";
+            $params[':date'] = $date;
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchColumn();
+    }
+
+    // Cập nhật hàm search có phân trang
+    public function searchShowtimes($keyword = '', $date = '', $sort = 'newest', $limit = 10, $offset = 0) {
+        $sql = "SELECT s.*, m.title as movie_title, r.name as room_name 
+                FROM showtimes s
+                JOIN movies m ON s.movie_id = m.id
+                JOIN rooms r ON s.room_id = r.id
+                WHERE 1=1";
+        $params = [];
+        if (!empty($keyword)) {
+            $sql .= " AND (m.title LIKE :kw1 OR s.id LIKE :kw2)";
+            $params[':kw1'] = $params[':kw2'] = "%$keyword%";
+        }
+        if (!empty($date)) {
+            $sql .= " AND DATE(s.start_time) = :date";
             $params[':date'] = $date;
         }
 
-        if (!empty($where)) {
-            $sql .= " WHERE " . implode(' AND ', $where);
+        switch ($sort) {
+            case 'price_asc': $sql .= " ORDER BY s.base_price ASC"; break;
+            case 'price_desc': $sql .= " ORDER BY s.base_price DESC"; break;
+            case 'oldest': $sql .= " ORDER BY s.start_time ASC"; break;
+            default: $sql .= " ORDER BY s.start_time DESC"; break;
         }
 
-        // Sort order
-        switch ($sort) {
-            case 'oldest':
-                $sql .= " ORDER BY s.start_time ASC";
-                break;
-            case 'price_asc':
-                $sql .= " ORDER BY s.base_price ASC";
-                break;
-            case 'price_desc':
-                $sql .= " ORDER BY s.base_price DESC";
-                break;
-            case 'newest':
-            default:
-                $sql .= " ORDER BY s.start_time DESC";
-                break;
-        }
+        $sql .= " LIMIT :limit OFFSET :offset";
 
         $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
+        foreach ($params as $k => $v) $stmt->bindValue($k, $v);
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

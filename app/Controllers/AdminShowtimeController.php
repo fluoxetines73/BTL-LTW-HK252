@@ -10,85 +10,30 @@ class AdminShowtimeController extends Controller {
      * Trang danh sách Suất chiếu (Có Search, Filter và Bulk Delete)
      */
     public function index() {
-        // 1. Khởi tạo các Model cần thiết
         $showtimeModel = $this->model('Showtime');
-        $roomModel     = $this->model('Room'); // Để lấy danh sách phòng kèm rạp cho dropdown lọc
-
-        // 2. Lấy và làm sạch các tham số tìm kiếm/lọc từ URL
-        $keyword    = trim($_GET['q'] ?? '');
+        $keyword = trim($_GET['q'] ?? '');
         $dateFilter = trim($_GET['date'] ?? '');
-        $sort       = $_GET['sort'] ?? 'newest';
+        $sort = $_GET['sort'] ?? 'newest';
 
-        // 3. Kiểm tra tính hợp lệ của giá trị sắp xếp
-        $allowedSorts = ['newest', 'oldest', 'price_asc', 'price_desc'];
-        if (!in_array($sort, $allowedSorts)) {
-            $sort = 'newest'; // Mặc định là mới nhất nếu giá trị không hợp lệ
-        }
+        // Logic Phân trang
+        $limit = 10;
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        if ($page < 1) $page = 1;
+        $offset = ($page - 1) * $limit;
 
-        // 4. Logic lấy dữ liệu suất chiếu dựa trên bộ lọc[cite: 5]
-        if (!empty($keyword) || !empty($dateFilter) || $sort !== 'newest') {
-            // Sử dụng hàm search nếu người dùng có nhập từ khóa, chọn ngày hoặc đổi kiểu sắp xếp
-            $showtimes = $showtimeModel->searchShowtimes($keyword, $dateFilter, $sort);
-        } else {
-            // Ngược lại, lấy toàn bộ suất chiếu mặc định
-            $showtimes = $showtimeModel->getAllShowtimes();
-        }
+        $totalRows = $showtimeModel->countShowtimes($keyword, $dateFilter);
+        $totalPages = ceil($totalRows / $limit);
 
-        // 1. Nhận tham số Tìm kiếm & Lọc từ URL
-        $keyword = trim((string)($_GET['q'] ?? ''));
-        $roomId  = trim((string)($_GET['room_id'] ?? 'all'));
-        $sort    = trim((string)($_GET['sort'] ?? 'newest'));
+        $showtimes = $showtimeModel->searchShowtimes($keyword, $dateFilter, $sort, $limit, $offset);
 
-        // 2. Xử lý Xóa hàng loạt (Bulk Delete)
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' 
-            && !empty($_POST['action']) 
-            && $_POST['action'] === 'delete_selected') {
-            
-            $rawSelectedIds = $_POST['selected_ids'] ?? '';
-            
-            if (is_array($rawSelectedIds)) {
-                $selectedIds = array_map('intval', array_map('trim', $rawSelectedIds));
-            } elseif (is_string($rawSelectedIds) && $rawSelectedIds !== '') {
-                $selectedIds = array_map('intval', array_map('trim', explode(',', $rawSelectedIds)));
-            } else {
-                $selectedIds = [];
-            }
-            
-            $selectedIds = array_values(array_filter($selectedIds, static fn($id) => $id > 0));
-
-            if (!empty($selectedIds)) {
-                if ($showtimeModel->deleteMultipleShowtimes($selectedIds)) {
-                    $_SESSION['success'] = 'Đã xóa thành công ' . count($selectedIds) . ' Suất chiếu.';
-                } else {
-                    $_SESSION['error'] = 'Không thể xóa các Suất chiếu đã chọn.';
-                }
-                $this->redirect('admin/showtime/index');
-                return;
-            }
-        }
-
-        // 3. Lấy dữ liệu đã lọc và danh sách phòng chiếu
-        $showtimes = $showtimeModel->searchAdminShowtimes($keyword, $roomId, $sort);
-        $db = Database::getInstance()->getPdo();
-        $rooms = $db->query("
-                SELECT r.id, r.name as room_name, c.name as cinema_name 
-                FROM rooms r 
-                JOIN cinemas c ON r.cinema_id = c.id
-                ORDER BY c.name, r.name
-            ")->fetchAll(PDO::FETCH_ASSOC);
-
-        // 4. Gọi View và truyền dữ liệu (Đã xóa getStats() để tránh lỗi 500)
-        
-            // 4. Gọi View và truyền đầy đủ dữ liệu từ cả hai bên[cite: 4]
-            $this->adminView('admin/showtimes/index', 'showtime', [
-                'title'      => 'Quản lý Suất chiếu',
-                'showtimes'  => $showtimes,  // Danh sách suất chiếu đã được lọc
-                'rooms'      => $rooms,      // Danh sách phòng kèm rạp (Code của Duy Nhất)
-                'keyword'    => $keyword,    // Từ khóa tìm kiếm (Code của bạn mình)
-                'roomId'     => $roomId,     // Lọc theo phòng (Code của Duy Nhất)
-                'dateFilter' => $dateFilter, // Lọc theo ngày (Code của bạn mình)[cite: 5]
-                'sort'       => $sort        // Sắp xếp dữ liệu
-            ]);
+        $this->adminView('admin/showtimes/index', 'showtime', [
+            'showtimes' => $showtimes,
+            'keyword' => $keyword,
+            'dateFilter' => $dateFilter,
+            'sort' => $sort,
+            'currentPage' => $page,
+            'totalPages' => $totalPages
+        ]);
     }
 
     public function create() {

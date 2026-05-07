@@ -318,69 +318,83 @@ class Movie extends Model {
      * Tìm kiếm và lọc phim dành cho trang Admin
      * Đã sửa lỗi Invalid parameter number bằng cách tách biệt tham số placeholder
      */
-    public function searchAdminMovies($keyword = null, $status = 'all', $sort = 'newest') {
-        $sql = "SELECT * FROM movies WHERE 1=1";
+    // 2. Hàm lấy danh sách phim có LIMIT và OFFSET
+    public function searchAdminMovies($keyword = '', $status = 'all', $sort = 'newest', $limit = 10, $offset = 0) {
+        $sql = "SELECT m.*, GROUP_CONCAT(g.name SEPARATOR ', ') as genre_names 
+                FROM movies m
+                LEFT JOIN movie_genres mg ON m.id = mg.movie_id
+                LEFT JOIN genres g ON mg.genre_id = g.id
+                WHERE 1=1";
         $params = [];
-
-        // 1. Lọc theo từ khóa (Tên phim hoặc đạo diễn)
         if (!empty($keyword)) {
-            // Sử dụng :kw1 và :kw2 riêng biệt để tránh lỗi lệch tham số
-            $sql .= " AND (title LIKE :kw1 OR director LIKE :kw2)";
-            $searchTerm = '%' . $keyword . '%';
-            $params[':kw1'] = $searchTerm;
-            $params[':kw2'] = $searchTerm;
+            $sql .= " AND (m.title LIKE :q1 OR m.director LIKE :q2)";
+            $params[':q1'] = $params[':q2'] = "%$keyword%";
         }
-
-        // 2. Lọc theo trạng thái (now_showing, coming_soon, ended)
-        if ($status !== 'all' && !empty($status)) {
-            $sql .= " AND status = :status";
+        if ($status !== 'all') {
+            $sql .= " AND m.status = :status";
             $params[':status'] = $status;
         }
-
-        // 3. Sắp xếp dữ liệu
-        if ($sort === 'oldest') {
-            $sql .= " ORDER BY created_at ASC";
-        } else {
-            $sql .= " ORDER BY created_at DESC";
-        }
-
-        // Thực thi câu lệnh với mảng params đã chuẩn hóa
+        $sql .= " GROUP BY m.id";
+        $sql .= ($sort === 'oldest') ? " ORDER BY m.created_at ASC" : " ORDER BY m.created_at DESC";
+        
+        // Thêm Phân trang
+        $sql .= " LIMIT :limit OFFSET :offset";
+        
         $stmt = $this->db->prepare($sql);
-        $stmt->execute($params); 
+        foreach ($params as $key => $val) $stmt->bindValue($key, $val);
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     /**
      * Xóa hàng loạt Phim
      */
     public function deleteMultipleMovies(array $ids) {
-    if (empty($ids)) return false;
-    
-    $db = Database::getInstance()->getPdo();
-    try {
-        // Bắt đầu giao dịch để đảm bảo an toàn dữ liệu
-        $db->beginTransaction();
+        if (empty($ids)) return false;
+        
+        $db = Database::getInstance()->getPdo();
+        try {
+            // Bắt đầu giao dịch để đảm bảo an toàn dữ liệu
+            $db->beginTransaction();
 
-        // Tạo chuỗi placeholders (?,?,?) dựa trên số lượng ID
-        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            // Tạo chuỗi placeholders (?,?,?) dựa trên số lượng ID
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
-        // Bước 1: Xóa tất cả suất chiếu của các phim này trước
-        $sqlShowtimes = "DELETE FROM showtimes WHERE movie_id IN ($placeholders)";
-        $stmt1 = $db->prepare($sqlShowtimes);
-        $stmt1->execute($ids);
+            // Bước 1: Xóa tất cả suất chiếu của các phim này trước
+            $sqlShowtimes = "DELETE FROM showtimes WHERE movie_id IN ($placeholders)";
+            $stmt1 = $db->prepare($sqlShowtimes);
+            $stmt1->execute($ids);
 
-        // Bước 2: Xóa các phim khỏi bảng movies
-        $sqlMovies = "DELETE FROM movies WHERE id IN ($placeholders)";
-        $stmt2 = $db->prepare($sqlMovies);
-        $stmt2->execute($ids);
+            // Bước 2: Xóa các phim khỏi bảng movies
+            $sqlMovies = "DELETE FROM movies WHERE id IN ($placeholders)";
+            $stmt2 = $db->prepare($sqlMovies);
+            $stmt2->execute($ids);
 
-        // Hoàn tất giao dịch
-        $db->commit();
-        return true;
-    } catch (Exception $e) {
-        // Nếu có lỗi, quay lại trạng thái cũ
-        $db->rollBack();
-        error_log("Bulk Delete Error: " . $e->getMessage());
-        return false;
+            // Hoàn tất giao dịch
+            $db->commit();
+            return true;
+        } catch (Exception $e) {
+            // Nếu có lỗi, quay lại trạng thái cũ
+            $db->rollBack();
+            error_log("Bulk Delete Error: " . $e->getMessage());
+            return false;
+        }
     }
-}
+    // 1. Hàm đếm tổng số phim để tính số trang
+    public function countAdminMovies($keyword = '', $status = 'all') {
+        $sql = "SELECT COUNT(*) FROM movies WHERE 1=1";
+        $params = [];
+        if (!empty($keyword)) {
+            $sql .= " AND (title LIKE :q1 OR director LIKE :q2)";
+            $params[':q1'] = $params[':q2'] = "%$keyword%";
+        }
+        if ($status !== 'all') {
+            $sql .= " AND status = :status";
+            $params[':status'] = $status;
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchColumn();
+    }
 }

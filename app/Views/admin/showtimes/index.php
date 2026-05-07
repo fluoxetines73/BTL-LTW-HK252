@@ -1,183 +1,124 @@
 <div class="container-fluid py-4">
-    <!-- 1. Breadcrumb (Theme mới) -->
-    <div class="admin-breadcrumb">
-        <ol class="breadcrumb">
+    <nav class="admin-breadcrumb mb-3" aria-label="breadcrumb">
+        <ol class="breadcrumb m-0">
             <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/admin_dashboard">Dashboard</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Quản lý Suất chiếu</li>
+            <li class="breadcrumb-item active">Quản lý Suất chiếu</li>
         </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h4 mb-0 fw-bold">Danh Sách Suất Chiếu</h2>
+        <a href="<?= BASE_URL ?>admin/showtime/create" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus-circle me-1"></i> <span class="d-none d-sm-inline">Thêm Suất Chiếu</span>
+        </a>
     </div>
 
-    <!-- 2. Page Header -->
-    <div class="page-header d-flex justify-content-between align-items-center mb-4">
-        <h5 class="page-title mb-0"><i class="fas fa-calendar-alt me-2"></i> Danh Sách Suất Chiếu</h5>
-        <div class="page-actions">
-            <a href="<?= BASE_URL ?>admin/showtime/create" class="btn-add">
-                <i class="fas fa-plus-circle me-1"></i> Thêm Suất Chiếu Mới
-            </a>
-        </div>
-    </div>
-
-    <!-- 3. Bộ lọc tổng hợp (Kết hợp cả 2 bên) -->
-    <form method="GET" action="<?= BASE_URL ?>admin/showtime/index" class="admin-search-filter-card shadow-sm mb-4">
-        <div class="row g-3 p-3 align-items-end">
-            <!-- Tìm kiếm từ khóa -->
-            <div class="col-md-3">
+    <div class="admin-filter-section mb-4 shadow-sm p-3 bg-white rounded border-start border-danger border-4">
+        <form method="GET" action="<?= BASE_URL ?>admin/showtime/index" class="row g-2 align-items-end">
+            <div class="col-lg-3 col-md-6">
                 <label class="form-label small fw-bold">Tìm kiếm:</label>
-                <div class="search-input-wrap">
-                    <i class="fas fa-search"></i>
-                    <input type="text" name="q" class="search-input" placeholder="Tên phim, rạp..." value="<?= htmlspecialchars($keyword ?? '') ?>">
-                </div>
+                <input type="text" name="q" class="form-control" placeholder="Tên phim, ID..." value="<?= htmlspecialchars($keyword ?? '') ?>">
             </div>
-            <!-- Lọc theo phòng (Duy Nhất) -->
-            <div class="col-md-3">
-                <label class="form-label small fw-bold">Phòng chiếu:</label>
-                <select name="room_id" class="filter-select form-select">
-                    <option value="all">Tất cả phòng chiếu</option>
-                    <?php foreach($rooms as $room): ?>
-                        <option value="<?= $room['id'] ?>" <?= (isset($_GET['room_id']) && $_GET['room_id'] == $room['id']) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($room['cinema_name'] . ' - ' . $room['room_name']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <!-- Lọc theo ngày (Bạn mình) -->
-            <div class="col-md-2">
+            <div class="col-lg-3 col-md-6">
                 <label class="form-label small fw-bold">Ngày chiếu:</label>
-                <input type="date" name="date" class="filter-select form-control" value="<?= htmlspecialchars($dateFilter ?? '') ?>">
+                <input type="date" name="date" class="form-control" value="<?= $dateFilter ?? '' ?>">
             </div>
-            <!-- Sắp xếp -->
-            <div class="col-md-2">
+            <div class="col-lg-3 col-md-6">
                 <label class="form-label small fw-bold">Sắp xếp:</label>
-                <select name="sort" class="filter-select form-select">
-                    <option value="newest" <?= ($sort ?? 'newest') === 'newest' ? 'selected' : '' ?>>Mới nhất</option>
-                    <option value="oldest" <?= ($sort ?? '') === 'oldest' ? 'selected' : '' ?>>Cũ nhất</option>
-                    <option value="price_asc" <?= ($sort ?? '') === 'price_asc' ? 'selected' : '' ?>>Giá tăng dần</option>
-                    <option value="price_desc" <?= ($sort ?? '') === 'price_desc' ? 'selected' : '' ?>>Giá giảm dần</option>
+                <select name="sort" class="form-select">
+                    <option value="newest" <?= ($sort ?? '') == 'newest' ? 'selected' : '' ?>>Mới nhất</option>
+                    <option value="oldest" <?= ($sort ?? '') == 'oldest' ? 'selected' : '' ?>>Cũ nhất</option>
+                    <option value="price_asc" <?= ($sort ?? '') == 'price_asc' ? 'selected' : '' ?>>Giá tăng dần</option>
                 </select>
             </div>
-            <!-- Nút bấm -->
-            <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn-search flex-grow-1"><i class="fas fa-filter"></i> Lọc</button>
-                <a href="<?= BASE_URL ?>admin/showtime/index" class="btn-reset"><i class="fas fa-times"></i></a>
+            <div class="col-lg-3 col-md-6 d-flex gap-2">
+                <button type="submit" class="btn btn-danger flex-grow-1">Lọc</button>
+                <a href="<?= BASE_URL ?>admin/showtime/index" class="btn btn-outline-secondary"><i class="fas fa-undo"></i></a>
             </div>
-        </div>
-    </form>
+        </form>
+    </div>
 
-    <!-- 4. Form Xóa hàng loạt & Bảng dữ liệu -->
-    <form method="POST" action="<?= BASE_URL ?>admin/showtime/index" id="bulk-action-form">
-        <input type="hidden" name="action" value="delete_selected">
-        <input type="hidden" name="selected_ids" id="selected-ids" value="">
-
-        <!-- Thanh công cụ Bulk Actions (Mặc định ẩn) -->
-        <div class="admin-bulk-bar mb-3 p-3 shadow-sm" id="bulk-bar" style="display: none; background: #fff5f5; border-left: 4px solid #e71a0f;">
+    <form id="bulk-action-form" action="<?= BASE_URL ?>admin/showtime/delete-multiple" method="POST">
+        <input type="hidden" name="ids" id="selected-ids">
+        <div id="bulk-bar" class="alert alert-dark mb-3 py-2" style="display: none;">
             <div class="d-flex justify-content-between align-items-center">
-                <span class="bulk-count-text text-cgv-red fw-bold">
-                    <i class="fas fa-check-square me-2"></i> Đã chọn <span id="selected-count">0</span> suất chiếu
-                </span>
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmBulkDelete()">
-                        <i class="fas fa-trash-alt me-1"></i> Xóa các mục đã chọn
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearSelection()">Hủy</button>
-                </div>
+                <span>Đã chọn <strong id="selected-count">0</strong> mục</span>
+                <button type="button" class="btn btn-sm btn-danger" onclick="confirmBulkDelete()">Xóa tất cả</button>
             </div>
         </div>
 
         <div class="card shadow-sm border-0">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="admin-table-header bg-cgv-red text-white">
-                            <tr>
-                                <th class="text-center" style="width: 50px;">
-                                    <input type="checkbox" id="check-all" class="form-check-input" onclick="toggleAll(this)">
-                                </th>
-                                <th class="text-center">ID</th>
-                                <th>Phim</th>
-                                <th>Phòng & Rạp</th>
-                                <th class="text-center">Thời gian chiếu</th>
-                                <th class="text-center">Giá vé</th>
-                                <th class="text-center">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($showtimes)): ?>
-                                <tr>
-                                    <td colspan="7" class="text-center py-5 text-muted">
-                                        <i class="fas fa-folder-open fa-3x mb-3 opacity-25"></i><br>
-                                        Không tìm thấy suất chiếu nào phù hợp!
-                                    </td>
-                                </tr>
-                            <?php else: ?>
-                                <?php foreach ($showtimes as $st): ?>
-                                    <tr>
-                                        <td class="text-center">
-                                            <input type="checkbox" class="cb-item form-check-input" value="<?= $st['id'] ?>" onclick="updateBulkBar()">
-                                        </td>
-                                        <td class="text-center text-muted"><?= $st['id'] ?></td>
-                                        <td>
-                                            <div class="fw-bold text-dark"><?= htmlspecialchars($st['movie_title'] ?? 'N/A') ?></div>
-                                        </td>
-                                        <td>
-                                            <span class="badge rounded-pill bg-light text-dark border">
-                                                <i class="fas fa-film me-1 text-cgv-red"></i> <?= htmlspecialchars($st['room_name'] ?? 'N/A') ?>
-                                            </span>
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="fw-bold text-primary"><?= date('H:i', strtotime($st['start_time'])) ?> - <?= date('H:i', strtotime($st['end_time'])) ?></div>
-                                            <small class="text-muted"><i class="far fa-calendar-alt me-1"></i><?= date('d/m/Y', strtotime($st['start_time'])) ?></small>
-                                        </td>
-                                        <td class="text-center fw-bold text-cgv-red">
-                                            <?= number_format($st['base_price'], 0, ',', '.') ?>đ
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="btn-group">
-                                                <a href="<?= BASE_URL ?>admin/showtime/edit/<?= $st['id'] ?>" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
-                                                <a href="<?= BASE_URL ?>admin/showtime/delete/<?= $st['id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Xóa suất chiếu này?');"><i class="fas fa-trash"></i></a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="40" class="text-center"><input type="checkbox" class="form-check-input" onclick="toggleAll(this)"></th>
+                            <th class="d-none d-md-table-cell">ID</th>
+                            <th>Phim / Phòng</th>
+                            <th>Thời Gian</th>
+                            <th class="d-none d-sm-table-cell">Giá Vé</th>
+                            <th class="text-end">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($showtimes as $s): ?>
+                        <tr>
+                            <td class="text-center"><input type="checkbox" class="form-check-input cb-item" value="<?= $s['id'] ?>" onclick="updateBulkBar()"></td>
+                            <td class="d-none d-md-table-cell text-muted">#<?= $s['id'] ?></td>
+                            <td>
+                                <div class="fw-bold text-dark"><?= htmlspecialchars($s['movie_title']) ?></div>
+                                <div class="small text-muted"><i class="fas fa-door-open me-1"></i><?= htmlspecialchars($s['room_name']) ?></div>
+                            </td>
+                            <td>
+                                <div class="small fw-bold text-primary"><?= date('d/m/Y', strtotime($s['start_time'])) ?></div>
+                                <div class="small"><?= date('H:i', strtotime($s['start_time'])) ?> - <?= date('H:i', strtotime($s['end_time'])) ?></div>
+                            </td>
+                            <td class="d-none d-sm-table-cell text-danger fw-bold"><?= number_format($s['base_price'], 0, ',', '.') ?>đ</td>
+                            <td class="text-end">
+                                <div class="btn-group shadow-sm">
+                                    <a href="<?= BASE_URL ?>admin/showtime/edit/<?= $s['id'] ?>" class="btn btn-sm btn-white border"><i class="fas fa-edit text-primary"></i></a>
+                                    <a href="<?= BASE_URL ?>admin/showtime/delete/<?= $s['id'] ?>" class="btn btn-sm btn-white border text-danger" onclick="return confirm('Xóa?')"><i class="fas fa-trash"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
+
+            <?php if ($totalPages > 1): ?>
+            <div class="card-footer bg-white border-top py-3">
+                <nav>
+                    <ul class="pagination pagination-sm justify-content-center mb-0 gap-1">
+                        <li class="page-item <?= ($currentPage <= 1) ? 'disabled' : '' ?>">
+                            <a class="page-link rounded-circle border-0 shadow-sm" href="?page=<?= $currentPage - 1 ?>&q=<?= $keyword ?>&date=<?= $dateFilter ?>&sort=<?= $sort ?>" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-chevron-left"></i></a>
+                        </li>
+                        <?php for($i=1; $i<=$totalPages; $i++): ?>
+                            <li class="page-item <?= ($i==$currentPage) ? 'active' : '' ?>">
+                                <a class="page-link rounded-circle border-0 shadow-sm mx-1" href="?page=<?= $i ?>&q=<?= $keyword ?>&date=<?= $dateFilter ?>&sort=<?= $sort ?>" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;"><?= $i ?></a>
+                            </li>
+                        <?php endfor; ?>
+                        <li class="page-item <?= ($currentPage >= $totalPages) ? 'disabled' : '' ?>">
+                            <a class="page-link rounded-circle border-0 shadow-sm" href="?page=<?= $currentPage + 1 ?>&q=<?= $keyword ?>&date=<?= $dateFilter ?>&sort=<?= $sort ?>" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <?php endif; ?>
         </div>
     </form>
 </div>
 
-<!-- JavaScript giữ nguyên từ bản HEAD của Duy Nhất -->
 <script>
-function toggleAll(source) {
-    let checkboxes = document.querySelectorAll('.cb-item');
-    checkboxes.forEach(cb => cb.checked = source.checked);
-    updateBulkBar();
-}
-
+function toggleAll(source) { document.querySelectorAll('.cb-item').forEach(cb => cb.checked = source.checked); updateBulkBar(); }
 function updateBulkBar() {
-    let selected = document.querySelectorAll('.cb-item:checked');
-    let count = selected.length;
-    let bulkBar = document.getElementById('bulk-bar');
-    
+    let count = document.querySelectorAll('.cb-item:checked').length;
     document.getElementById('selected-count').innerText = count;
-    bulkBar.style.display = count > 0 ? 'block' : 'none';
-    
-    if (count === 0) document.getElementById('check-all').checked = false;
+    document.getElementById('bulk-bar').style.display = count > 0 ? 'block' : 'none';
 }
-
-function clearSelection() {
-    document.querySelectorAll('.cb-item').forEach(cb => cb.checked = false);
-    document.getElementById('check-all').checked = false;
-    updateBulkBar();
-}
-
 function confirmBulkDelete() {
-    let selected = document.querySelectorAll('.cb-item:checked');
-    if (selected.length === 0) return;
-
-    if (confirm('CẢNH BÁO: Bạn có chắc muốn xóa ' + selected.length + ' suất chiếu đã chọn?')) {
-        let ids = Array.from(selected).map(cb => cb.value);
+    if (confirm('Xác nhận xóa hàng loạt?')) {
+        let ids = Array.from(document.querySelectorAll('.cb-item:checked')).map(cb => cb.value);
         document.getElementById('selected-ids').value = ids.join(',');
         document.getElementById('bulk-action-form').submit();
     }

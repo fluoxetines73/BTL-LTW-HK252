@@ -16,60 +16,28 @@ class AdminMovieController extends Controller {
      */
     public function index() {
         $movieModel = $this->model('Movie');
-
-        // 1. Nhận và Làm sạch tham số Tìm kiếm & Lọc từ URL
         $keyword = trim((string)($_GET['q'] ?? ''));
         $status  = trim((string)($_GET['status'] ?? 'all'));
         $sort    = trim((string)($_GET['sort'] ?? 'newest'));
+        
+        // Logic Phân trang
+        $limit = 10;
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        if ($page < 1) $page = 1;
+        $offset = ($page - 1) * $limit;
 
-        // --- BẮT ĐẦU PHẦN VALIDATE (Từ bản cập nhật của bạn mình) ---
-        // Kiểm tra tính hợp lệ của kiểu sắp xếp
-        $sort = in_array($sort, ['newest', 'oldest'], true) ? $sort : 'newest';
+        $totalRows = $movieModel->countAdminMovies($keyword, $status);
+        $totalPages = ceil($totalRows / $limit);
 
-        // Kiểm tra tính hợp lệ của trạng thái phim
-        $validStatuses = ['now_showing', 'coming_soon', 'ended'];
-        $statusFilter = in_array($status, $validStatuses, true) ? $status : 'all';
-        // --- KẾT THÚC PHẦN VALIDATE ---
+        $movies = $movieModel->searchAdminMovies($keyword, $status, $sort, $limit, $offset);
 
-        // 2. Xử lý Xóa hàng loạt (Bulk Delete - Giữ nguyên logic của Duy Nhất)
-        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' 
-            && !empty($_POST['action']) 
-            && $_POST['action'] === 'delete_selected') {
-            
-            $rawSelectedIds = $_POST['selected_ids'] ?? '';
-            
-            if (is_array($rawSelectedIds)) {
-                $selectedIds = array_map('intval', array_map('trim', $rawSelectedIds));
-            } elseif (is_string($rawSelectedIds) && $rawSelectedIds !== '') {
-                $selectedIds = array_map('intval', array_map('trim', explode(',', $rawSelectedIds)));
-            } else {
-                $selectedIds = [];
-            }
-            
-            $selectedIds = array_values(array_filter($selectedIds, static fn($id) => $id > 0));
-
-            if (!empty($selectedIds)) {
-                if ($movieModel->deleteMultipleMovies($selectedIds)) {
-                    $_SESSION['success'] = 'Đã xóa thành công ' . count($selectedIds) . ' Phim.';
-                } else {
-                    $_SESSION['error'] = 'Không thể xóa các Phim đã chọn.';
-                }
-                $this->redirect('admin/movie/index');
-                return;
-            }
-        }
-
-        // 3. Lấy dữ liệu Phim dựa trên các tham số đã được lọc và validate[cite: 5]
-        // Sử dụng giá trị 'all' hoặc null tùy theo thiết kế của Model searchAdminMovies
-        $movies = $movieModel->searchAdminMovies($keyword, $statusFilter, $sort);
-
-        // 4. Gọi View và truyền đầy đủ dữ liệu ra giao diện
         $this->adminView('admin/movies/index', 'movie', [
-            'movies'  => $movies,
-            'title'   => 'Quản lý Phim',
+            'movies' => $movies,
             'keyword' => $keyword,
-            'status'  => $status, // Truyền status gốc để giữ trạng thái trên Dropdown lọc
-            'sort'    => $sort
+            'status' => $status,
+            'sort' => $sort,
+            'currentPage' => $page,
+            'totalPages' => $totalPages
         ]);
     }
 

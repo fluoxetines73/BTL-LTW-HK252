@@ -82,51 +82,63 @@ class Order extends Model {
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
-/**
-     * Tìm kiếm, lọc và sắp xếp Đơn hàng dành cho Admin
-     * Kết hợp: Tìm kiếm từ khóa, Lọc trạng thái đơn, Lọc trạng thái thanh toán và Sắp xếp
-     */
-    public function searchAdminOrders($keyword = '', $status = 'all', $paymentStatus = 'all', $sort = 'newest') {
-        $sql = "SELECT b.*, u.full_name, u.email 
-                FROM bookings b 
-                LEFT JOIN users u ON b.user_id = u.id";
-        
+    // 1. Hàm đếm tổng số đơn hàng để tính số trang
+    public function countAdminOrders($keyword = '', $status = 'all', $paymentStatus = 'all') {
+        $sql = "SELECT COUNT(*) FROM bookings b 
+                JOIN users u ON b.user_id = u.id 
+                WHERE 1=1";
         $params = [];
-        $conditions = [];
-
-        // 1. Lọc theo từ khóa (Mã đơn, Tên khách, Email)
-        if ($keyword !== '') {
-            $conditions[] = "(b.booking_code LIKE :kw OR u.full_name LIKE :kw OR u.email LIKE :kw)";
-            $params[':kw'] = "%$keyword%";
+        if (!empty($keyword)) {
+            $sql .= " AND (b.booking_code LIKE :kw1 OR u.full_name LIKE :kw2 OR u.email LIKE :kw3)";
+            $params[':kw1'] = $params[':kw2'] = $params[':kw3'] = "%$keyword%";
         }
-
-        // 2. Lọc theo trạng thái Đơn hàng (pending, confirmed, etc.)
         if ($status !== 'all') {
-            $conditions[] = "b.status = :status";
+            $sql .= " AND b.status = :status";
             $params[':status'] = $status;
         }
-
-        // 3. Lọc theo trạng thái Thanh toán (pending, paid, failed, etc.)
         if ($paymentStatus !== 'all') {
-            $conditions[] = "b.payment_status = :payment_status";
-            $params[':payment_status'] = $paymentStatus;
+            $sql .= " AND b.payment_status = :p_status";
+            $params[':p_status'] = $paymentStatus;
         }
-
-        if (!empty($conditions)) {
-            $sql .= " WHERE " . implode(' AND ', $conditions);
-        }
-
-        // 4. Sắp xếp dữ liệu (Kết hợp các tiêu chí từ cả hai bên)[cite: 5]
-        $orderBy = match($sort) {
-            'oldest'     => 'b.created_at ASC',
-            'total_desc' => 'b.final_amount DESC',
-            'price_asc'  => 'b.final_amount ASC',
-            default      => 'b.created_at DESC'
-        };
-        $sql .= " ORDER BY $orderBy";
-
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
+        return $stmt->fetchColumn();
+    }
+
+    // 2. Cập nhật hàm search có phân trang (Fix lỗi tham số trùng tên)
+    public function searchAdminOrders($keyword = '', $status = 'all', $paymentStatus = 'all', $sort = 'newest', $limit = 10, $offset = 0) {
+        $sql = "SELECT b.*, u.full_name, u.email 
+                FROM bookings b 
+                JOIN users u ON b.user_id = u.id 
+                WHERE 1=1";
+        $params = [];
+        
+        if (!empty($keyword)) {
+            $sql .= " AND (b.booking_code LIKE :kw1 OR u.full_name LIKE :kw2 OR u.email LIKE :kw3)";
+            $params[':kw1'] = $params[':kw2'] = $params[':kw3'] = "%$keyword%";
+        }
+        if ($status !== 'all') {
+            $sql .= " AND b.status = :status";
+            $params[':status'] = $status;
+        }
+        if ($paymentStatus !== 'all') {
+            $sql .= " AND b.payment_status = :p_status";
+            $params[':p_status'] = $paymentStatus;
+        }
+
+        $orderBy = match($sort) {
+            'oldest' => 'b.created_at ASC',
+            'price_desc' => 'b.final_amount DESC',
+            'price_asc' => 'b.final_amount ASC',
+            default => 'b.created_at DESC'
+        };
+        $sql .= " ORDER BY $orderBy LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) $stmt->bindValue($k, $v);
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -136,11 +148,23 @@ class Order extends Model {
      */
     public function deleteMultipleOrders(array $ids) {
         if (empty($ids)) return false;
-        
-        $placeholders = implode(',', array_fill(0, count($ids), '?'));
-        $sql = "DELETE FROM bookings WHERE id IN ($placeholders)";
-        
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute($ids);
+        $db = Database::getInstance()->getPdo();
+        try {
+            $db->beginTransaction();
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            
+            // 1. Xóa vé và combo bắp nước đi kèm đơn hàng
+            $db->prepare("DELETE FROM tickets WHERE booking_id IN ($placeholders)")->execute($ids);
+            $db->prepare("DELETE FROM booking_combos WHERE booking_id IN ($placeholders)")->execute($ids);
+            
+            // 2. Xóa đơn hàng chính
+            $db->prepare("DELETE FROM bookings WHERE id IN ($placeholders)")->execute($ids);
+            
+            $db->commit();
+            return true;
+        } catch (Exception $e) {
+            $db->rollBack();
+            return false;
+        }
     }
 }

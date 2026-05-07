@@ -48,46 +48,50 @@ class Combo extends Model {
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
-    /**
-     * Tìm kiếm, lọc và sắp xếp Combo cho Admin
-     */
-    public function searchAdminCombos($keyword = '', $status = 'all', $sort = 'newest') {
-        $db = Database::getInstance()->getPdo();
-        
-        $sql = "SELECT * FROM combos WHERE 1=1 ";
+    // 1. Hàm đếm tổng số combo để tính số trang
+    public function countAdminCombos($keyword = '', $status = 'all') {
+        $sql = "SELECT COUNT(*) FROM combos WHERE 1=1";
         $params = [];
-
-        // Lọc theo từ khóa
         if (!empty($keyword)) {
-            $sql .= " AND (name LIKE :keyword OR description LIKE :keyword) ";
-            $params[':keyword'] = '%' . $keyword . '%';
+            $sql .= " AND (name LIKE :kw1 OR description LIKE :kw2)";
+            $params[':kw1'] = $params[':kw2'] = "%$keyword%";
         }
-
-        // Lọc theo trạng thái
         if ($status !== 'all') {
-            $sql .= " AND is_active = :status ";
-            $params[':status'] = ($status === 'active') ? 1 : 0;
+            $sql .= " AND is_active = :status";
+            $params[':status'] = ($status === 'active' ? 1 : 0);
         }
-
-        // Sắp xếp
-        switch ($sort) {
-            case 'price_asc':
-                $sql .= " ORDER BY price ASC ";
-                break;
-            case 'price_desc':
-                $sql .= " ORDER BY price DESC ";
-                break;
-            case 'oldest':
-                $sql .= " ORDER BY id ASC ";
-                break;
-            case 'newest':
-            default:
-                $sql .= " ORDER BY id DESC ";
-                break;
-        }
-
-        $stmt = $db->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
+        return $stmt->fetchColumn();
+    }
+
+    // 2. Cập nhật hàm search có phân trang
+    public function searchAdminCombos($keyword = '', $status = 'all', $sort = 'newest', $limit = 10, $offset = 0) {
+        $sql = "SELECT * FROM combos WHERE 1=1";
+        $params = [];
+        if (!empty($keyword)) {
+            $sql .= " AND (name LIKE :kw1 OR description LIKE :kw2)";
+            $params[':kw1'] = $params[':kw2'] = "%$keyword%";
+        }
+        if ($status !== 'all') {
+            $sql .= " AND is_active = :status";
+            $params[':status'] = ($status === 'active' ? 1 : 0);
+        }
+
+        switch ($sort) {
+            case 'oldest': $sql .= " ORDER BY created_at ASC"; break;
+            case 'price_asc': $sql .= " ORDER BY price ASC"; break;
+            case 'price_desc': $sql .= " ORDER BY price DESC"; break;
+            default: $sql .= " ORDER BY created_at DESC"; break;
+        }
+
+        $sql .= " LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) $stmt->bindValue($k, $v);
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
