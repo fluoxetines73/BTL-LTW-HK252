@@ -18,7 +18,6 @@ class Combo extends Model {
     }
 
     public function createCombo($data) {
-        // Đã sửa lại thành cột `image` cho khớp với CSDL
         $sql = "INSERT INTO {$this->table} (name, description, price, image, is_active) 
                 VALUES (:name, :description, :price, :image, :is_active)";
         
@@ -39,7 +38,7 @@ class Combo extends Model {
                 WHERE id = :id";
                 
         $stmt = $this->db->prepare($sql);
-        $data['id'] = $id; // Gắn thêm ID vào mảng data để bind
+        $data['id'] = $id;
         return $stmt->execute($data);
     }
 
@@ -48,7 +47,7 @@ class Combo extends Model {
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
-    // 1. Hàm đếm tổng số combo để tính số trang
+    // Hàm đếm tổng số combo để tính số trang
     public function countAdminCombos($keyword = '', $status = 'all') {
         $sql = "SELECT COUNT(*) FROM combos WHERE 1=1";
         $params = [];
@@ -65,9 +64,6 @@ class Combo extends Model {
         return $stmt->fetchColumn();
     }
 
-        /**
-     * Cập nhật hàm search: Sắp xếp theo ID làm phụ để tránh lỗi trùng Timestamp khi Seed
-     */
     public function searchAdminCombos($keyword = '', $status = 'all', $sort = 'newest', $limit = 10, $offset = 0) {
         $sql = "SELECT * FROM combos WHERE 1=1";
         $params = [];
@@ -80,7 +76,6 @@ class Combo extends Model {
             $params[':status'] = ($status === 'active' ? 1 : 0);
         }
 
-        // Sắp xếp có thêm ID để phân biệt khi created_at bằng nhau
         switch ($sort) {
             case 'oldest': $sql .= " ORDER BY created_at ASC, id ASC"; break;
             case 'price_asc': $sql .= " ORDER BY price ASC, id ASC"; break;
@@ -105,13 +100,10 @@ class Combo extends Model {
         $db = Database::getInstance()->getPdo();
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
         
-        // Cần xóa ảnh trong thư mục trước khi xóa db (nếu cần thiết, có thể bổ sung sau)
         $stmt = $db->prepare("DELETE FROM combos WHERE id IN ($placeholders)");
         return $stmt->execute($ids);
     }
-        /**
-     * Kiểm tra tên Combo đã tồn tại chưa (để tránh trùng lặp slug/tên)
-     */
+
     public function isNameExists($name, $excludeId = null) {
         $sql = "SELECT COUNT(*) FROM combos WHERE name = :name";
         $params = [':name' => $name];

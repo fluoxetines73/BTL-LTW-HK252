@@ -14,7 +14,7 @@ permissions:
 jobs:
   setup-demo:
     runs-on: ubuntu-latest
-    name: 🚀 Live Demo Environment
+    name: Live Demo
     
     services:
       mysql:
@@ -33,17 +33,17 @@ jobs:
           - 3306:3306
 
     steps:
-      - name: 📥 Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 🔍 Setup PHP
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
           extensions: mysql, mysqli, pdo_mysql
           tools: composer
 
-      - name: 📋 Create Configuration
+      - name: Create DB config
         run: |
           cat > configs/database.php << 'EOF'
           <?php
@@ -55,84 +55,50 @@ jobs:
               'port' => 3306,
           ];
           EOF
-          echo "✅ Database configuration created"
 
-      - name: ⏳ Wait for MySQL
+      - name: Wait for MySQL
         run: |
-          echo "⏳ Waiting for MySQL to be ready..."
           for i in {1..30}; do
             if mysqladmin ping -h 127.0.0.1 -u mvc_user -pmvc_pass 2>/dev/null; then
-              echo "✅ MySQL is ready!"
-              break
+              exit 0
             fi
-            echo "Attempt $i/30..."
             sleep 1
           done
+          exit 1
 
-      - name: 🗄️ Setup Database
+      - name: Setup Database
         run: |
-          echo "🗄️ Importing database schema..."
           mysql -h 127.0.0.1 -u mvc_user -pmvc_pass mvc_demo < database/schema.sql
-          echo "✅ Database schema imported"
-          
-          echo "🌱 Importing seed data..."
-          mysql -h 127.0.0.1 -u mvc_user -pmvc_pass mvc_demo < database/seed.sql || echo "⚠️ Seed import optional"
-          echo "✅ Database ready"
+          mysql -h 127.0.0.1 -u mvc_user -pmvc_pass mvc_demo < database/seed.sql || true
 
-      - name: 🏗️ Build & Structure Check
+      - name: Verify Project
         run: |
-          echo "🏗️ Verifying project structure..."
           php -v
-          echo ""
-          echo "📁 Project structure:"
-          ls -la
-          echo ""
-          echo "🔍 Key files check:"
-          test -f index.php && echo "  ✅ index.php"
-          test -d app/Controllers && echo "  ✅ Controllers/"
-          test -d app/Models && echo "  ✅ Models/"
-          test -d app/Views && echo "  ✅ Views/"
-          test -d core && echo "  ✅ core/"
-          echo "✅ Structure verified"
+          test -f index.php
+          test -d app/Controllers
+          test -d app/Models
+          test -d app/Views
+          test -d core
 
-      - name: 📊 Database Verification
+      - name: Verify Database
         run: |
-          echo "📊 Database tables:"
           mysql -h 127.0.0.1 -u mvc_user -pmvc_pass mvc_demo -e "SHOW TABLES;"
-          echo ""
-          echo "📝 Sample data:"
-          mysql -h 127.0.0.1 -u mvc_user -pmvc_pass mvc_demo -e "SELECT COUNT(*) as 'Total Users' FROM users;" || echo "⚠️ Users table check"
-          echo "✅ Database verified"
 
-      - name: 🌐 PHP Built-in Server Check
+      - name: Test PHP Server
         run: |
-          echo "🌐 Testing PHP built-in server..."
           timeout 5 php -S 127.0.0.1:8000 index.php &
           sleep 2
-          curl -s http://127.0.0.1:8000/ | head -50 || echo "⚠️ Server test (expected in live environment)"
-          echo "✅ Server configuration verified"
+          curl -s http://127.0.0.1:8000/ | head -50 || true
 
-      - name: 📈 Deployment Status
-        run: |
-          echo "✅ Demo environment setup complete!"
-          echo ""
-          echo "📊 Summary:"
-          echo "  - PHP Version: $(php -v | head -1)"
-          echo "  - Database: MySQL ready"
-          echo "  - Tables: Created and seeded"
-          echo "  - API Route: /{controller}/{method}/{id}"
-
-      - name: "Comment on PR"
+      - name: Comment on PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
             const body = `## Live Demo Status
-            ✅ Demo Environment Ready!
             - PHP: 8.1
             - Database: MySQL 8.0 (mvc_demo)
-            - Status: All checks passed
-            View full logs in Actions tab`;
+            View logs in Actions tab`;
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -140,17 +106,9 @@ jobs:
               body: body
             })
 
-      - name: "Generate Action Summary"
+      - name: Generate Summary
         if: always()
         run: |
-          echo "## Live Demo Deploy Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Environment Setup" >> $GITHUB_STEP_SUMMARY
+          echo "## Live Demo Deploy" >> $GITHUB_STEP_SUMMARY
           echo "- PHP 8.1" >> $GITHUB_STEP_SUMMARY
-          echo "- MySQL 8.0 Database" >> $GITHUB_STEP_SUMMARY
-          echo "- Schema Imported" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Project Status" >> $GITHUB_STEP_SUMMARY
-          echo "- MVC Structure Valid" >> $GITHUB_STEP_SUMMARY
-          echo "- Database Ready" >> $GITHUB_STEP_SUMMARY
-          echo "- Routes Configured" >> $GITHUB_STEP_SUMMARY
+          echo "- MySQL 8.0" >> $GITHUB_STEP_SUMMARY

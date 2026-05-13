@@ -266,7 +266,7 @@ class News extends Model {
     }
 
     private function hasColumn(string $columnName): bool {
-        if (array_key_exists($columnName, $this->columnExistsCache)) {
+        if (isset($this->columnExistsCache[$columnName])) {
             return $this->columnExistsCache[$columnName];
         }
 
@@ -278,7 +278,7 @@ class News extends Model {
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$this->table, $columnName]);
 
-        $this->columnExistsCache[$columnName] = ((int)$stmt->fetchColumn()) > 0;
+        $this->columnExistsCache[$columnName] = $stmt->fetchColumn() > 0;
         return $this->columnExistsCache[$columnName];
     }
 }

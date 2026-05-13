@@ -6,7 +6,6 @@ class AdminOrderController extends Controller {
         $this->middlewareAdmin();
     }
 
-    // Hiển thị danh sách toàn bộ đơn hàng
     // Hiển thị danh sách toàn bộ đơn hàng (Có Search, Filter và Bulk Delete)
     public function index() {
         $orderModel = $this->model('Order');
@@ -15,7 +14,6 @@ class AdminOrderController extends Controller {
         $paymentStatus = trim((string)($_GET['payment_status'] ?? 'all'));
         $sort = trim((string)($_GET['sort'] ?? 'newest'));
 
-        // Logic Phân trang
         $limit = 10;
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         if ($page < 1) $page = 1;
@@ -46,7 +44,6 @@ class AdminOrderController extends Controller {
 
         if (!$order) { $this->redirect('admin/order/index'); return; }
 
-        // Lấy thêm danh sách Vé và Combo của đơn hàng đó
         $tickets = $orderModel->getOrderTickets($id);
         $combos = $orderModel->getOrderCombos($id);
 
@@ -62,8 +59,6 @@ class AdminOrderController extends Controller {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id) {
             $status = $_POST['status'];
             $orderModel = $this->model('Order');
-            
-            // Audit: Có thể thêm logic chặn khách hàng đã hoàn thành quay về chờ xác nhận tại đây
             
             if ($orderModel->updateStatus($id, $status)) {
                 $_SESSION['success'] = "Cập nhật trạng thái đơn hàng #$id thành công!";

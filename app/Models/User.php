@@ -78,9 +78,6 @@ class User extends Model {
 		]);
 	}
 
-	/**
-	 * Cập nhật toàn bộ thông tin người dùng (dùng cho Admin)
-	 */
 	public function updateUserFull(int $id, array $data): bool {
 		$stmt = $this->db->prepare("UPDATE {$this->table} SET 
 			full_name = ?, 
@@ -107,32 +104,19 @@ class User extends Model {
 		return $stmt->execute([$passwordHash, $id]);
 	}
 
-	// ===== ADMIN MANAGEMENT METHODS =====
-
-	/**
-	 * Lấy danh sách tất cả người dùng (không phân trang)
-	 */
 	public function getAllUsers(): array {
 		$stmt = $this->db->query("SELECT * FROM {$this->table} ORDER BY created_at DESC");
 		return $stmt->fetchAll();
 	}
 
-	/**
-	 * Lấy danh sách người dùng với phân trang
-	 * @param int $page Trang hiện tại (bắt đầu từ 1)
-	 * @param int $perPage Số lượng bản ghi trên mỗi trang
-	 * @return array ['users' => array, 'total' => int, 'pages' => int, 'current_page' => int]
-	 */
 	public function getUsersPaginated(int $page = 1, int $perPage = 10): array {
 		$page = max(1, $page);
 		$offset = ($page - 1) * $perPage;
 
-		// Lấy tổng số bản ghi
 		$stmtCount = $this->db->query("SELECT COUNT(*) FROM {$this->table}");
 		$total = (int)$stmtCount->fetchColumn();
 		$pages = ceil($total / $perPage);
 
-		// Lấy dữ liệu cho trang hiện tại
 		$stmt = $this->db->prepare("SELECT * FROM {$this->table} ORDER BY CASE WHEN role = 'admin' THEN 0 ELSE 1 END ASC, id ASC LIMIT ? OFFSET ?");
 		$stmt->execute([$perPage, $offset]);
 		$users = $stmt->fetchAll();
@@ -145,14 +129,6 @@ class User extends Model {
 		];
 	}
 
-	/**
-	 * Lấy danh sách người dùng với phân trang, sắp xếp và lọc trạng thái
-	 * @param int $page Trang hiện tại
-	 * @param int $perPage Số bản ghi mỗi trang
-	 * @param string $sort Cột sắp xếp (name_asc, name_desc, email_asc, email_desc, newest, oldest)
-	 * @param string $status Lọc trạng thái (all, active, inactive)
-	 * @return array
-	 */
 	public function getUsersFiltered(int $page = 1, int $perPage = 10, string $sort = 'newest', string $status = 'all'): array {
 		$page = max(1, $page);
 		$offset = ($page - 1) * $perPage;
@@ -191,9 +167,6 @@ class User extends Model {
 		];
 	}
 
-	/**
-	 * Tìm kiếm người dùng theo email hoặc tên, có sắp xếp và lọc trạng thái
-	 */
 	public function search(string $keyword, int $page = 1, int $perPage = 10, string $sort = 'newest', string $status = 'all'): array {
 		$page = max(1, $page);
 		$offset = ($page - 1) * $perPage;
@@ -236,9 +209,6 @@ class User extends Model {
 		];
 	}
 
-	/**
-	 * Khóa hoặc mở khóa người dùng
-	 */
 	public function updateStatus(int $id, string $status): bool {
 		if (!in_array($status, ['active', 'inactive'], true)) {
 			return false;
@@ -247,30 +217,21 @@ class User extends Model {
 		return $stmt->execute([$status, $id]);
 	}
 
-	/**
-	 * Xóa người dùng
-	 */
 	public function deleteUser(int $id): bool {
-		// Kiểm tra xem không phải là admin duy nhất
 		$adminCount = $this->db->query("SELECT COUNT(*) FROM {$this->table} WHERE role = 'admin'");
 		if ((int)$adminCount->fetchColumn() === 1) {
 			$user = $this->findById($id);
 			if ($user && $user['role'] === 'admin') {
-				// Không cho phép xóa admin duy nhất
 				return false;
 			}
 		}
 
-		// Xóa người dùng
 		$stmt = $this->db->prepare("DELETE FROM {$this->table} WHERE id = ?");
 		return $stmt->execute([$id]);
 	}
 
-	/**
-	 * Đặt lại mật khẩu ngẫu nhiên cho người dùng
-	 */
 	public function resetPasswordToRandom(int $id): ?string {
-		$tempPassword = bin2hex(random_bytes(4)); // Mật khẩu tạm 8 ký tự
+		$tempPassword = bin2hex(random_bytes(4));
 		$passwordHash = password_hash($tempPassword, PASSWORD_BCRYPT);
 
 		$stmt = $this->db->prepare("UPDATE {$this->table} SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
@@ -280,9 +241,6 @@ class User extends Model {
 		return null;
 	}
 
-	/**
-	 * Cập nhật avatar người dùng
-	 */
 	public function updateAvatar(int $id, string $avatarPath): bool {
 		$stmt = $this->db->prepare("UPDATE {$this->table} SET avatar = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
 		return $stmt->execute([$avatarPath, $id]);

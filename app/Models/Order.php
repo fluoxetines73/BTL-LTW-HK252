@@ -3,9 +3,6 @@ require_once ROOT . '/app/Models/Model.php';
 
 class Order extends Model {
     
-    /**
-     * 1. Lấy danh sách tất cả đơn hàng (Gộp bảng bookings và users)
-     */
     public function getAllOrders() {
         $sql = "SELECT b.*, u.full_name, u.email 
                 FROM bookings b 
@@ -16,9 +13,6 @@ class Order extends Model {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * 2. Lấy thông tin chung của 1 đơn hàng cụ thể
-     */
     public function getOrderById($id) {
         $sql = "SELECT b.*, u.full_name, u.email, u.phone, 
                        st.start_time, m.title as movie_title, r.name as room_name
@@ -34,33 +28,17 @@ class Order extends Model {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * 3. Lấy danh sách các vé (ghế) mà khách đã đặt trong đơn này
-     */
-    /**
- * Lấy danh sách vé (ghế) của một đơn hàng
- * Giải pháp: JOIN với bảng seats để lấy row_label và col_number
- */
-/**
- * Lấy danh sách vé chi tiết của một đơn hàng
- * Giải pháp: JOIN bảng tickets với bảng seats để lấy nhãn hàng và số cột
- */
     public function getOrderTickets($bookingId) {
-        $db = Database::getInstance()->getPdo();
-        // JOIN bảng tickets với bảng seats để lấy nhãn hàng và số cột[cite: 9]
         $sql = "SELECT t.*, s.row_label, s.col_number 
                 FROM tickets t
                 JOIN seats s ON t.seat_id = s.id
                 WHERE t.booking_id = :booking_id";
         
-        $stmt = $db->prepare($sql);
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([':booking_id' => $bookingId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * 4. Lấy danh sách các Combo bắp nước mà khách đã mua kèm
-     */
     public function getOrderCombos($booking_id) {
         $sql = "SELECT bc.*, c.name, c.image
                 FROM booking_combos bc
@@ -72,9 +50,6 @@ class Order extends Model {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * 5. Cập nhật trạng thái đơn hàng
-     */
     public function updateStatus($id, $status) {
         $sql = "UPDATE bookings SET status = :status WHERE id = :id";
         $stmt = $this->db->prepare($sql);
@@ -82,7 +57,7 @@ class Order extends Model {
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
-    // 1. Hàm đếm tổng số đơn hàng để tính số trang
+
     public function countAdminOrders($keyword = '', $status = 'all', $paymentStatus = 'all') {
         $sql = "SELECT COUNT(*) FROM bookings b 
                 JOIN users u ON b.user_id = u.id 
@@ -105,9 +80,6 @@ class Order extends Model {
         return $stmt->fetchColumn();
     }
 
-        /**
-     * Cập nhật hàm search: Sắp xếp theo ID làm phụ để đảm bảo thứ tự chính xác
-     */
     public function searchAdminOrders($keyword = '', $status = 'all', $paymentStatus = 'all', $sort = 'newest', $limit = 10, $offset = 0) {
         $sql = "SELECT b.*, u.full_name, u.email 
                 FROM bookings b 
@@ -128,7 +100,7 @@ class Order extends Model {
             $params[':p_status'] = $paymentStatus;
         }
 
-        // Sắp xếp: Luôn có ID làm tiêu chí phụ để tránh trùng lặp thứ tự
+        // Sắp xếp theo ID làm phụ để tránh trùng lặp thứ tự
         $orderBy = match($sort) {
             'oldest' => 'b.created_at ASC, b.id ASC',
             'price_desc' => 'b.final_amount DESC, b.id DESC',
@@ -145,10 +117,6 @@ class Order extends Model {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Xóa hàng loạt Đơn hàng[cite: 5]
-     * Lưu ý: CSDL cần thiết lập ON DELETE CASCADE cho tickets và booking_combos
-     */
     public function deleteMultipleOrders(array $ids) {
         if (empty($ids)) return false;
         $db = Database::getInstance()->getPdo();
@@ -156,11 +124,8 @@ class Order extends Model {
             $db->beginTransaction();
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
             
-            // 1. Xóa vé và combo bắp nước đi kèm đơn hàng
             $db->prepare("DELETE FROM tickets WHERE booking_id IN ($placeholders)")->execute($ids);
             $db->prepare("DELETE FROM booking_combos WHERE booking_id IN ($placeholders)")->execute($ids);
-            
-            // 2. Xóa đơn hàng chính
             $db->prepare("DELETE FROM bookings WHERE id IN ($placeholders)")->execute($ids);
             
             $db->commit();
@@ -170,11 +135,11 @@ class Order extends Model {
             return false;
         }
     }
+
     public function cancelMultipleOrders(array $ids) {
         if (empty($ids)) return false;
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
         
-        // Chỉ cập nhật trạng thái đơn thành 'cancelled', giữ nguyên dữ liệu vé và combo
         $sql = "UPDATE bookings SET status = 'cancelled' WHERE id IN ($placeholders)";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute($ids);
