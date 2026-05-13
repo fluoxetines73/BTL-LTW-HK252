@@ -5,14 +5,9 @@ require_once ROOT . '/core/Controller.php';
 
 class AdminController extends Controller {
 
-    /**
-     * Trang chủ quản trị (Dashboard)
-     * Nhiệm vụ của Thành viên C: Đảm bảo phân quyền admin ở đây
-     */
     public function admin_dashboard() {
         $this->middlewareAdmin();
 
-        // Fetch counts for dashboard stat cards
         $userModel = $this->model('User');
         $movieModel = $this->model('Movie');
         $showtimeModel = $this->model('Showtime');
@@ -33,20 +28,10 @@ class AdminController extends Controller {
         ]);
     }
 
-    /**
-     * Helper method to get count from any model
-     */
     private function getTableCount($model): int {
         return $model->count();
     }
 
-    // ===== USER MANAGEMENT =====
-
-    /**
-     * Danh sách người dùng với phân trang, sắp xếp và lọc trạng thái
-     * Route: /admin/users hoặc /admin/users/1 (page 1)
-     * Query params: ?sort=name_asc&status=active
-     */
     public function users($page = 1) {
         $this->middlewareAdmin();
 
@@ -59,7 +44,6 @@ class AdminController extends Controller {
         $perPage = 10;
         $data = $userModel->getUsersFiltered((int)$page, $perPage, $sort, $status);
 
-        // Tính url phân trang (preserve sort/status params)
         $baseUrl = BASE_URL . 'admin/users';
 
         $this->adminView('admin/users/index', 'users', [
@@ -74,10 +58,6 @@ class AdminController extends Controller {
         ]);
     }
 
-    /**
-     * Tìm kiếm người dùng với sắp xếp và lọc trạng thái
-     * Route: /admin/search?q=keyword&sort=name_asc&status=active&page=1
-     */
     public function search() {
         $this->middlewareAdmin();
 
@@ -112,26 +92,14 @@ class AdminController extends Controller {
         ]);
     }
 
-    /**
-     * Quản lý tin tức
-     * Route: /admin/news
-     */
     public function news() {
         $this->renderNewsManagement(null, 'Quản lý Tin tức');
     }
 
-    /**
-     * Quản lý ưu đãi
-     * Route: /admin/news_promotions
-     */
     public function news_promotions() {
         $this->renderNewsManagement('khuyen-mai', 'Quản lý Ưu đãi');
     }
 
-    /**
-     * Quản lý phim hay tháng
-     * Route: /admin/news_monthly_movies
-     */
     public function news_monthly_movies() {
         $this->renderNewsManagement('phim-hay-thang', 'Quản lý Phim Hay Tháng');
     }
@@ -140,15 +108,12 @@ class AdminController extends Controller {
         $this->middlewareAdmin();
 
         $newsModel = $this->model('News');
-        
-        // Get search/sort parameters
+
         $keyword = trim((string)($_GET['q'] ?? ''));
         $sort = trim((string)($_GET['sort'] ?? 'newest'));
         $sort = in_array($sort, ['newest', 'oldest'], true) ? $sort : 'newest';
 
-        // Handle bulk delete
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && !empty($_POST['action']) && $_POST['action'] === 'delete_selected') {
-            // Parse selected_ids from either comma-separated string or array
             $rawSelectedIds = $_POST['selected_ids'] ?? '';
             if (is_array($rawSelectedIds)) {
                 $selectedIds = array_map('intval', array_map('trim', $rawSelectedIds));
@@ -158,21 +123,19 @@ class AdminController extends Controller {
                 $selectedIds = [];
             }
             $selectedIds = array_values(array_filter($selectedIds, static function ($id) { return $id > 0; }));
-            
+
             if (!empty($selectedIds)) {
                 if ($newsModel->deleteMultipleNews($selectedIds)) {
                     $_SESSION['success'] = 'Đã xóa ' . count($selectedIds) . ' bài viết.';
                 } else {
                     $_SESSION['error'] = 'Không thể xóa các bài viết đã chọn.';
                 }
-                // Preserve current context (category + search/sort params) on redirect
                 $redirectTarget = $_SERVER['REQUEST_URI'] ?? 'admin/news';
                 header('Location: ' . $redirectTarget);
                 exit();
             }
         }
 
-        // Get articles based on search/sort
         $articles = $newsModel->searchAdminNews($category, $keyword !== '' ? $keyword : null, $sort);
 
         $this->adminView('admin/news/index', 'news', [
@@ -185,10 +148,6 @@ class AdminController extends Controller {
         ]);
     }
 
-    /**
-     * Tạo tin tức mới (chỉ admin)
-     * Route: /admin/create_news
-     */
     public function create_news() {
         $this->middlewareAdmin();
 
@@ -258,10 +217,6 @@ class AdminController extends Controller {
         ]);
     }
 
-    /**
-     * Sửa tin tức
-     * Route: /admin/edit_news/5
-     */
     public function edit_news($newsId) {
         $this->middlewareAdmin();
 
@@ -351,10 +306,6 @@ class AdminController extends Controller {
         ]);
     }
 
-    /**
-     * Xóa tin tức
-     * Route: /admin/delete_news/5
-     */
     public function delete_news($newsId) {
         $this->middlewareAdmin();
 
@@ -368,10 +319,6 @@ class AdminController extends Controller {
         $this->redirect('admin/news');
     }
 
-    /**
-     * Chi tiết người dùng và form chỉnh sửa
-     * Route: /admin/edit_user/5
-     */
     public function edit_user($userId) {
         $this->middlewareAdmin();
 
@@ -386,7 +333,6 @@ class AdminController extends Controller {
             return;
         }
 
-        // Xử lý POST update thông tin
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->updateUserHandler($userModel, $user);
             return;
@@ -398,10 +344,6 @@ class AdminController extends Controller {
         ]);
     }
 
-    /**
-     * Reset mật khẩu người dùng
-     * Route: /admin/reset_password/5
-     */
     public function reset_password($userId) {
         $this->middlewareAdmin();
 
@@ -414,7 +356,6 @@ class AdminController extends Controller {
             return;
         }
 
-        // Reset mật khẩu
         $tempPassword = $userModel->resetPasswordToRandom((int)$userId);
 
         if ($tempPassword) {
@@ -426,10 +367,6 @@ class AdminController extends Controller {
         $this->redirect('admin/users');
     }
 
-    /**
-     * Khóa người dùng
-     * Route: /admin/lock_user/5
-     */
     public function lock_user($userId) {
         $this->middlewareAdmin();
 
@@ -451,10 +388,6 @@ class AdminController extends Controller {
         $this->redirect('admin/users');
     }
 
-    /**
-     * Mở khóa người dùng
-     * Route: /admin/unlock_user/5
-     */
     public function unlock_user($userId) {
         $this->middlewareAdmin();
 
@@ -476,10 +409,6 @@ class AdminController extends Controller {
         $this->redirect('admin/users');
     }
 
-    /**
-     * Xóa người dùng
-     * Route: /admin/delete_user/5
-     */
     public function delete_user($userId) {
         $this->middlewareAdmin();
 
@@ -492,7 +421,6 @@ class AdminController extends Controller {
             return;
         }
 
-        // Không cho phép xóa chính mình
         if ((int)$userId === $_SESSION['auth_user']['id']) {
             $_SESSION['error'] = 'Không thể xóa tài khoản của chính bạn.';
             $this->redirect('admin/users');
@@ -515,11 +443,7 @@ class AdminController extends Controller {
         return trim($text, '-');
     }
 
-    /**
-     * Xử lý update thông tin người dùng (form POST handler)
-     */
     private function updateUserHandler($userModel, $user) {
-        // Validate dữ liệu
         $errors = [];
 
         $name = trim($_POST['name'] ?? '');
@@ -528,7 +452,6 @@ class AdminController extends Controller {
         $role = $_POST['role'] ?? 'member';
         $status = $_POST['status'] ?? 'active';
 
-        // Validation
         if (empty($name) || strlen($name) < 2) {
             $errors[] = 'Tên phải có ít nhất 2 ký tự.';
         }
@@ -536,7 +459,6 @@ class AdminController extends Controller {
         if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Email không hợp lệ.';
         } elseif ($email !== $user['email']) {
-            // Kiểm tra email có trùng không
             $existingUser = $userModel->findByEmail($email);
             if ($existingUser) {
                 $errors[] = 'Email đã được sử dụng.';
@@ -561,7 +483,6 @@ class AdminController extends Controller {
             return;
         }
 
-        // Xử lý upload avatar
         $avatarPath = null;
         if (!empty($_FILES['avatar'])) {
             require_once APPROOT . '/Helpers/Upload.php';
@@ -575,7 +496,6 @@ class AdminController extends Controller {
             }
         }
 
-        // Cập nhật thông tin người dùng
         $updateData = [
             'name' => $name,
             'email' => $email,
@@ -591,7 +511,6 @@ class AdminController extends Controller {
         if ($userModel->updateUserFull((int)$user['id'], $updateData)) {
             $_SESSION['success'] = 'Thông tin người dùng đã được cập nhật.';
 
-            // Refresh session if admin updates themselves
             if ((int)$user['id'] === (int)($_SESSION['auth_user']['id'] ?? 0)) {
                 $_SESSION['auth_user']['avatar'] = $avatarPath ?? $user['avatar'] ?? '';
                 $_SESSION['auth_user']['name'] = $name;

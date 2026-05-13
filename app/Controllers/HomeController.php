@@ -5,127 +5,102 @@ require_once ROOT . '/app/Models/Settings.php';
 
 class HomeController extends Controller {
 	public function index(): void {
-    $db = Database::getInstance()->getPdo();
-    $settings = new Settings();
-    $data = [];
+    	$db = Database::getInstance()->getPdo();
+    	$settings = new Settings();
+    	$data = [];
 
-    // --- PHẦN 1: ASSETS (CSS/JS) ---
-    $extraHead = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    	$extraHead = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
                   <link rel="stylesheet" href="' . BASE_URL . 'public/css/home.css">';
-    $extraScripts = '<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    	$extraScripts = '<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
                      <script src="' . BASE_URL . 'public/js/home.js"></script>';
 
-    // --- PHẦN 2: KHÔI PHỤC DỮ LIỆU BẠN CỦA BẠN ĐÃ LÀM ---
+    	$featured_movie_id = $settings->getFeaturedMovieId();
+    	if ($featured_movie_id) {
+        	$stmt = $db->prepare("SELECT id, title, slug, description, poster, banner, release_date, duration_min, age_rating, director FROM movies WHERE id = ?");
+        	$stmt->execute([$featured_movie_id]);
+        	$data['featured_movie'] = $stmt->fetch() ?: null;
+    	}
 
-    // 1. Lấy phim nổi bật (Featured Movie)
-    $featured_movie_id = $settings->getFeaturedMovieId();
-    if ($featured_movie_id) {
-        $stmt = $db->prepare("SELECT id, title, slug, description, poster, banner, release_date, duration_min, age_rating, director FROM movies WHERE id = ?");
-        $stmt->execute([$featured_movie_id]);
-        $data['featured_movie'] = $stmt->fetch() ?: null;
-    }
+    	$stmt = $db->query("SELECT id, title, slug, poster, release_date, status FROM movies WHERE status = 'now_showing' ORDER BY release_date DESC LIMIT 8");
+    	$data['recommendations'] = $stmt->fetchAll();
 
-    // 2. Lấy 8 Phim được đề xuất (Recommendations)
-    $stmt = $db->query("SELECT id, title, slug, poster, release_date, status FROM movies WHERE status = 'now_showing' ORDER BY release_date DESC LIMIT 8");
-    $data['recommendations'] = $stmt->fetchAll();
+    	$stmt = $db->query("SELECT id, title, slug, poster, release_date, status FROM movies WHERE status = 'coming_soon' AND release_date >= CURDATE() ORDER BY release_date ASC LIMIT 6");
+    	$data['coming_soon'] = $stmt->fetchAll();
 
-    // 2b. Lấy 6 Phim sắp chiếu (Coming Soon)
-    $stmt = $db->query("SELECT id, title, slug, poster, release_date, status FROM movies WHERE status = 'coming_soon' AND release_date >= CURDATE() ORDER BY release_date ASC LIMIT 6");
-    $data['coming_soon'] = $stmt->fetchAll();
+    	$stmt = $db->query("SELECT g.id, g.name, g.slug, COUNT(m.id) as movie_count FROM genres g LEFT JOIN movie_genres mg ON g.id = mg.genre_id LEFT JOIN movies m ON mg.movie_id = m.id GROUP BY g.id ORDER BY movie_count DESC LIMIT 7");
+    	$data['genres'] = $stmt->fetchAll();
 
-    // 3. Lấy danh sách Thể loại (Genres)
-    $stmt = $db->query("SELECT g.id, g.name, g.slug, COUNT(m.id) as movie_count FROM genres g LEFT JOIN movie_genres mg ON g.id = mg.genre_id LEFT JOIN movies m ON mg.movie_id = m.id GROUP BY g.id ORDER BY movie_count DESC LIMIT 7");
-    $data['genres'] = $stmt->fetchAll();
+    	$newsModel = $this->model('News');
+    	$rawNews = $newsModel ? $newsModel->getLatestPublished(4) : [];
 
-// 4. Lấy 4 Tin tức mới nhất (News) — use News model for consistency
-    try {
-        $newsModel = $this->model('News');
-        $rawNews = $newsModel->getLatestPublished(4);
-    } catch (Throwable $e) {
-        $rawNews = [];
-    }
+    	$resolveImage = function(string $path) {
+    		$path = trim($path);
+    		if ($path === '') {
+    			return BASE_URL . 'public/images/about/about-6.png';
+    		}
+    		if (preg_match('#^https?://#i', $path) === 1) {
+    			return $path;
+    		}
+    		if (str_starts_with($path, 'public/')) {
+    			return BASE_URL . $path;
+    		}
+    		if (str_starts_with($path, 'uploads/')) {
+    			return BASE_URL . 'public/' . ltrim($path, '/');
+    		}
+    		return BASE_URL . 'public/' . ltrim($path, '/');
+    	};
 
-	// Helper to resolve image paths the same way as NewsController::resolveNewsImageUrl
-	$resolveImage = function(string $path) {
-		$path = trim($path);
-		if ($path === '') {
-			return BASE_URL . 'public/images/about/about-6.png';
-		}
-		if (preg_match('#^https?://#i', $path) === 1) {
-			return $path;
-		}
-		if (str_starts_with($path, 'public/')) {
-			return BASE_URL . $path;
-		}
-		if (str_starts_with($path, 'uploads/')) {
-			return BASE_URL . 'public/' . ltrim($path, '/');
-		}
-		return BASE_URL . 'public/' . ltrim($path, '/');
-	};
+    	$data['news'] = [];
+    	foreach ($rawNews as $n) {
+    		$n['image'] = $resolveImage((string)($n['image'] ?? ''));
+    		$data['news'][] = $n;
+    	}
 
-	// Resolve image URLs for news
-	$data['news'] = [];
-	foreach ($rawNews as $n) {
-		$n['image'] = $resolveImage((string)($n['image'] ?? ''));
-		$data['news'][] = $n;
+    	$promotionsRaw = $newsModel ? $newsModel->getPublishedByCategory('khuyen-mai') : [];
+
+    	$data['ads'] = [];
+    	foreach ($promotionsRaw as $promo) {
+    		$img = !empty($promo['image']) ? $resolveImage((string)$promo['image']) : null;
+    		$data['ads'][] = [
+            	'id' => $promo['id'],
+            	'title' => $promo['title'],
+            	'image' => $img,
+            	'link' => BASE_URL . 'news/' . ($promo['slug'] ?? ''),
+            	'description' => $promo['content'] ?? ''
+    		];
+    	}
+
+    	$this->view('layouts/main', [
+        	'title'           => 'Trang Chủ - CGV Cinema',
+        	'content'         => 'home/index',
+        	'featured_movie'  => $data['featured_movie'] ?? null,
+        	'recommendations' => $data['recommendations'],
+        	'coming_soon'     => $data['coming_soon'] ?? [],
+        	'genres'          => $data['genres'],
+        	'news'            => $data['news'],
+        	'ads'             => $data['ads'],
+        	'extraHead'       => $extraHead,
+        	'extraScripts'    => $extraScripts
+    	]);
 	}
 
-    // 5. Dữ liệu quảng cáo/Khuyến mãi từ bảng news (category = 'khuyen-mai')
-try {
-        $promotionsRaw = $newsModel->getPublishedByCategory('khuyen-mai');
-    } catch (Throwable $e) {
-        $promotionsRaw = [];
-    }
+	public function about(): void {
+		$settingsModel = $this->model('AboutPageSettings');
+		$timelineModel = $this->model('AboutTimelineItems');
+		$statsModel = $this->model('AboutStatistics');
+		$valuesModel = $this->model('AboutCoreValues');
+		$leadershipModel = $this->model('AboutLeadership');
 
-    // Format promotions data for the view
-    $data['ads'] = [];
-    foreach ($promotionsRaw as $promo) {
-        $img = !empty($promo['image']) ? $resolveImage((string)$promo['image']) : null;
-        $data['ads'][] = [
-            'id' => $promo['id'],
-            'title' => $promo['title'],
-            'image' => $img,
-            'link' => BASE_URL . 'news/' . ($promo['slug'] ?? ''),
-            'description' => $promo['content'] ?? ''
-		];
-	}
+		$settings = $settingsModel->getSettings();
+		$timelineItems = $timelineModel->getAllItems();
+		$statistics = $statsModel->getAllItems();
+		$coreValues = $valuesModel->getAllItems();
+		$leadership = $leadershipModel->getAllItems();
 
-    // --- PHẦN 3: GỌI VIEW VÀ TRUYỀN TOÀN BỘ DỮ LIỆU ---
-    $this->view('layouts/main', [
-        'title'           => 'Trang Chủ - CGV Cinema',
-        'content'         => 'home/index',
-        'featured_movie'  => $data['featured_movie'] ?? null,
-        'recommendations' => $data['recommendations'], // Đã khôi phục
-        'coming_soon'     => $data['coming_soon'] ?? [],
-        'genres'          => $data['genres'],          // Đã khôi phục
-        'news'            => $data['news'],            // Đã khôi phục
-        'ads'             => $data['ads'],             // Đã khôi phục
-        'extraHead'       => $extraHead,
-        'extraScripts'    => $extraScripts
-        // Tuyệt đối không xóa gì thêm của nhóm ở đây nữa
-    ]);
-	}
-    public function about(): void {
-        // Load structured About page data from new tables
-        $settingsModel = $this->model('AboutPageSettings');
-        $timelineModel = $this->model('AboutTimelineItems');
-        $statsModel = $this->model('AboutStatistics');
-        $valuesModel = $this->model('AboutCoreValues');
-        $leadershipModel = $this->model('AboutLeadership');
+		$hasStructuredData = !empty($settings);
 
-        // Get all data
-        $settings = $settingsModel->getSettings();
-        $timelineItems = $timelineModel->getAllItems();
-        $statistics = $statsModel->getAllItems();
-        $coreValues = $valuesModel->getAllItems();
-        $leadership = $leadershipModel->getAllItems();
-
-        // Check if we have structured data
-        $hasStructuredData = !empty($settings);
-
-        // Keep backward compatibility with old pages table
-        $pageModel = $this->model('Page');
-        $page = $pageModel->findBySlug('gioi-thieu');
+		$pageModel = $this->model('Page');
+		$page = $pageModel->findBySlug('gioi-thieu');
 
 		$extraHead = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
@@ -137,13 +112,12 @@ try {
 			'title' => 'Giới thiệu',
 			'content' => 'pages/about',
 			'page' => $page,
-            // New structured data
-            'settings' => $settings,
-            'timelineItems' => $timelineItems,
-            'statistics' => $statistics,
-            'coreValues' => $coreValues,
-            'leadership' => $leadership,
-            'hasStructuredData' => $hasStructuredData,
+			'settings' => $settings,
+			'timelineItems' => $timelineItems,
+			'statistics' => $statistics,
+			'coreValues' => $coreValues,
+			'leadership' => $leadership,
+			'hasStructuredData' => $hasStructuredData,
 			'extraHead' => $extraHead,
 			'extraScripts' => $extraScripts,
 		]);
@@ -171,8 +145,6 @@ try {
 			'flash' => $flash,
 		]);
 	}
-
-
 
 	public function faq(): void {
 		$faqModel = $this->model('Faq');

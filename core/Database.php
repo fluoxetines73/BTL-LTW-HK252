@@ -13,7 +13,7 @@ class Database {
             PDO::ATTR_EMULATE_PREPARES   => false,
         ];
 
-        // Sửa lỗi: Sử dụng PDO::MYSQL_ATTR_INIT_COMMAND thay vì PDO\MySQL
+        // Workaround for PDO init command
         if (defined('PDO::MYSQL_ATTR_INIT_COMMAND')) {
             $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci";
         }

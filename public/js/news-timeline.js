@@ -6,9 +6,9 @@
 
         chipButtons.forEach((button) => {
             button.addEventListener('click', function () {
-                const section = this.getAttribute('data-section') || '';
+                const section = this.getAttribute('data-section');
                 if (sectionInput) {
-                    sectionInput.value = section;
+                    sectionInput.value = section ?? '';
                 }
 
                 chipButtons.forEach((chip) => chip.classList.remove('is-active'));

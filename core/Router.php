@@ -9,33 +9,21 @@ class Router {
     public function dispatch(): void {
         $url = $this->parseUrl();
 
-        // --- BẮT ĐẦU PHẦN THÊM MỚI CHO ADMIN ---
-        // 1. Xử lý route cho Admin (Ví dụ: /admin/movie/create -> AdminMovieController::create)
+        // Admin routes: /admin/movie/create -> AdminMovieController::create
         if (!empty($url[0]) && strtolower($url[0]) === 'admin' && !empty($url[1])) {
-            // Ghép chuỗi tạo tên Controller, vd: 'movie' -> 'AdminMovieController'
             $adminControllerName = 'Admin' . ucfirst(strtolower($url[1])) . 'Controller';
             $adminFile = APPROOT . '/Controllers/' . $adminControllerName . '.php';
 
             if (file_exists($adminFile)) {
                 $this->controller = $adminControllerName;
                 $this->controllerFoundFromUrl = true;
-                unset($url[0]); // Xóa chữ 'admin' khỏi URL
-                unset($url[1]); // Xóa chữ 'movie' khỏi URL
-
-                // Re-index lại mảng sao cho Method (vd: 'create') nằm đúng ở vị trí $url[1]
-                // để tương thích hoàn toàn với logic cũ của nhóm ở bên dưới
-                $newUrl = [];
-                $i = 1;
-                foreach ($url as $val) {
-                    $newUrl[$i] = $val;
-                    $i++;
-                }
-                $url = $newUrl;
+                unset($url[0], $url[1]);
+                $url = array_values($url);
+                $url = array_combine(range(1, count($url)), $url);
             }
         }
-        // --- KẾT THÚC PHẦN THÊM MỚI ---
 
-        // 2. Xác định controller (Logic mặc định)
+        // Determine controller from URL
         if (!empty($url[0])) {
             $controllerName = ucfirst(strtolower($url[0])) . 'Controller';
             $file = APPROOT . '/Controllers/' . $controllerName . '.php';
@@ -55,7 +43,6 @@ class Router {
             return;
         }
 
-        // If controller was specified in URL but not found, return 404
         if (!$this->controllerFoundFromUrl && !empty($url[0])) {
             http_response_code(404);
             require_once APPROOT . '/Controllers/HomeController.php';
@@ -67,7 +54,7 @@ class Router {
         require_once $controllerFile;
         $controller = new $this->controller();
 
-        // 3. Xác định method
+        // Determine method from URL
         if (!empty($url[1])) {
             if (method_exists($controller, $url[1])) {
                 $this->method = $url[1];
@@ -76,31 +63,14 @@ class Router {
             }
         }
 
-        // 4. Phần còn lại là params (tham số)
         $this->params = array_values($url ?? []);
 
-        // If method was specified in URL but doesn't exist, return 404
         if (!$this->methodFoundFromUrl && !empty($url[1])) {
             http_response_code(404);
             if (method_exists($controller, 'notFound')) {
                 $controller->notFound();
                 return;
             }
-            // Fallback to HomeController::notFound()
-            require_once APPROOT . '/Controllers/HomeController.php';
-            $fallbackController = new HomeController();
-            $fallbackController->notFound();
-            return;
-        }
-
-        if (!method_exists($controller, $this->method)) {
-            http_response_code(404);
-            if (method_exists($controller, 'notFound')) {
-                $controller->notFound();
-                return;
-            }
-
-            // Fallback to HomeController::notFound()
             require_once APPROOT . '/Controllers/HomeController.php';
             $fallbackController = new HomeController();
             $fallbackController->notFound();
@@ -135,7 +105,5 @@ class Router {
         $raw = filter_var($path, FILTER_SANITIZE_URL);
         $parts = explode('/', $raw);
         return array_values(array_filter($parts, static fn($part) => $part !== ''));
-
-        return [];
     }
 }

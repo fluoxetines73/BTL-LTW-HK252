@@ -45,7 +45,6 @@ class AdminPageController extends Controller {
             $content = trim($_POST['content'] ?? '');
             $status = $_POST['status'] ?? 'draft';
 
-            // Validation
             if ($title === '' || $slug === '' || $content === '') {
                 $_SESSION['error'] = 'Vui lòng điền đầy đủ thông tin bắt buộc.';
                 $this->redirect('admin/page/create');
@@ -99,7 +98,6 @@ class AdminPageController extends Controller {
             $content = trim($_POST['content'] ?? '');
             $status = $_POST['status'] ?? 'draft';
 
-            // Validation
             if ($title === '' || $slug === '' || $content === '') {
                 $_SESSION['error'] = 'Vui lòng điền đầy đủ thông tin bắt buộc.';
                 $this->redirect('admin/page/edit/' . $id);
