@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
     var sidebar = document.getElementById('sidebar');
     var toggleBtn = document.getElementById('sidebar-toggle');
+    var mainContent = document.querySelector('.main-content');
+    var container = document.querySelector('.admin-container');
 
     if (!sidebar || !toggleBtn) {
         console.warn('Admin Sidebar: Required elements not found');
@@ -19,8 +21,10 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             if (savedState === 'true') {
                 sidebar.classList.add('collapsed');
+                if (container) container.classList.add('sidebar-collapsed');
             } else {
                 sidebar.classList.remove('collapsed');
+                if (container) container.classList.remove('sidebar-collapsed');
             }
         }
     }
@@ -38,6 +42,13 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             sidebar.classList.toggle('collapsed');
             var isCollapsed = sidebar.classList.contains('collapsed');
+            if (container) {
+                if (isCollapsed) {
+                    container.classList.add('sidebar-collapsed');
+                } else {
+                    container.classList.remove('sidebar-collapsed');
+                }
+            }
             localStorage.setItem(STORAGE_KEY, isCollapsed ? 'true' : 'false');
         }
     });
