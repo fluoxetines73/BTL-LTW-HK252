@@ -2,44 +2,62 @@
 require_once ROOT . '/core/Controller.php';
 
 class AdminFaqController extends Controller {
+    private const DEFAULT_CATEGORIES = [
+        'Vé & Đặt chỗ',
+        'Thành viên & Rewards',
+        'Thông tin Rạp',
+        'Chính sách & Quy định',
+        'Bắp & Đồ ăn',
+        'Công nghệ & Định dạng',
+        'Sự kiện & Chương trình đặc biệt',
+        'Chung'
+    ];
+
     public function __construct() {
         $this->middlewareAdmin();
     }
 
+    private function getAllCategories(array $dbCategories): array {
+        return array_unique(array_merge(self::DEFAULT_CATEGORIES, $dbCategories));
+    }
+
+    private function parseIds($raw): array {
+        if (is_array($raw)) {
+            $ids = array_map('intval', array_map('trim', $raw));
+        } elseif (is_string($raw) && $raw !== '') {
+            $ids = array_map('intval', array_map('trim', explode(',', $raw)));
+        } else {
+            $ids = [];
+        }
+        return array_values(array_filter($ids, static fn($id) => $id > 0));
+    }
+
     public function index($sortBy = null, $sortOrder = 'asc') {
         $faqModel = $this->model('Faq');
-        
-        // Get sort parameters from URL if not provided as method arguments
+
         $sortBy = $sortBy ?? ($_GET['sort'] ?? 'id');
-        $sortOrder = $sortOrder ?? ($_GET['order'] ?? 'asc');
-        
-        // Validate sort order
         $sortOrder = in_array(strtolower($sortOrder), ['asc', 'desc']) ? strtolower($sortOrder) : 'asc';
-        
-        // Get filter parameters
+
         $keyword = trim((string)($_GET['q'] ?? ''));
         $categoryFilter = trim((string)($_GET['category'] ?? ''));
         $statusFilter = trim((string)($_GET['status'] ?? ''));
-        
-        // Validate status filter
-        $validStatuses = ['active', 'inactive'];
-        if (!in_array($statusFilter, $validStatuses, true)) {
+
+        if (!in_array($statusFilter, ['active', 'inactive'], true)) {
             $statusFilter = '';
         }
-        
-        // Get filtered FAQs
+
         $faqs = $faqModel->searchFaqs(
-            $keyword !== '' ? $keyword : null,
-            $categoryFilter !== '' ? $categoryFilter : null,
-            $statusFilter !== '' ? $statusFilter : null,
+            $keyword ?: null,
+            $categoryFilter ?: null,
+            $statusFilter ?: null,
             $sortBy,
             $sortOrder
         );
         $categories = $faqModel->findAllCategories();
-        
+
         $this->adminView('admin/faq/index', 'faq', [
             'title' => 'Quản lý FAQ',
-            'faqs' => $faqs, 
+            'faqs' => $faqs,
             'categories' => $categories,
             'sortBy' => $sortBy,
             'sortOrder' => $sortOrder,
@@ -52,25 +70,10 @@ class AdminFaqController extends Controller {
     public function create() {
         $faqModel = $this->model('Faq');
         $categories = $faqModel->findAllCategories();
-        
-        // Predefined categories matching current hardcoded data
-        $defaultCategories = [
-            'Vé & Đặt chỗ',
-            'Thành viên & Rewards',
-            'Thông tin Rạp',
-            'Chính sách & Quy định',
-            'Bắp & Đồ ăn',
-            'Công nghệ & Định dạng',
-            'Sự kiện & Chương trình đặc biệt',
-            'Chung'
-        ];
-        
-        // Merge existing categories with defaults
-        $allCategories = array_unique(array_merge($defaultCategories, $categories));
-        
+
         $this->adminView('admin/faq/create', 'faq', [
             'title' => 'Thêm FAQ Mới',
-            'categories' => $allCategories
+            'categories' => $this->getAllCategories($categories)
         ]);
     }
 
@@ -82,23 +85,20 @@ class AdminFaqController extends Controller {
             $sortOrder = (int)($_POST['sort_order'] ?? 0);
             $status = $_POST['status'] ?? 'active';
 
-            // Validation
             if ($question === '' || $answer === '') {
-                $_SESSION['error'] = 'Vui lòng điền đầy đủ câu hỏi và câu trả lờii.';
+                $_SESSION['error'] = 'Vui lòng điền đầy đủ câu hỏi và câu trả lời.';
                 $this->redirect('admin/faq/create');
                 return;
             }
 
-            $data = [
+            $faqModel = $this->model('Faq');
+            if ($faqModel->createFaq([
                 'question' => $question,
                 'answer' => $answer,
                 'category' => $category,
                 'sort_order' => $sortOrder,
                 'status' => $status
-            ];
-
-            $faqModel = $this->model('Faq');
-            if ($faqModel->createFaq($data)) {
+            ])) {
                 $_SESSION['success'] = 'Tạo câu hỏi thành công.';
                 $this->redirect('admin/faq/index');
             } else {
@@ -124,25 +124,11 @@ class AdminFaqController extends Controller {
         }
 
         $categories = $faqModel->findAllCategories();
-        
-        // Predefined categories
-        $defaultCategories = [
-            'Vé & Đặt chỗ',
-            'Thành viên & Rewards',
-            'Thông tin Rạp',
-            'Chính sách & Quy định',
-            'Bắp & Đồ ăn',
-            'Công nghệ & Định dạng',
-            'Sự kiện & Chương trình đặc biệt',
-            'Chung'
-        ];
-        
-        $allCategories = array_unique(array_merge($defaultCategories, $categories));
 
         $this->adminView('admin/faq/edit', 'faq', [
             'title' => 'Sửa FAQ',
             'faq' => $faq,
-            'categories' => $allCategories
+            'categories' => $this->getAllCategories($categories)
         ]);
     }
 
@@ -154,23 +140,20 @@ class AdminFaqController extends Controller {
             $sortOrder = (int)($_POST['sort_order'] ?? 0);
             $status = $_POST['status'] ?? 'active';
 
-            // Validation
             if ($question === '' || $answer === '') {
-                $_SESSION['error'] = 'Vui lòng điền đầy đủ câu hỏi và câu trả lờii.';
+                $_SESSION['error'] = 'Vui lòng điền đầy đủ câu hỏi và câu trả lời.';
                 $this->redirect('admin/faq/edit/' . $id);
                 return;
             }
 
-            $data = [
+            $faqModel = $this->model('Faq');
+            if ($faqModel->updateFaq($id, [
                 'question' => $question,
                 'answer' => $answer,
                 'category' => $category,
                 'sort_order' => $sortOrder,
                 'status' => $status
-            ];
-
-            $faqModel = $this->model('Faq');
-            if ($faqModel->updateFaq($id, $data)) {
+            ])) {
                 $_SESSION['success'] = 'Cập nhật câu hỏi thành công.';
                 $this->redirect('admin/faq/index');
             } else {
@@ -198,15 +181,7 @@ class AdminFaqController extends Controller {
             return;
         }
 
-        $rawIds = $_POST['selected_ids'] ?? '';
-        if (is_array($rawIds)) {
-            $ids = array_map('intval', array_map('trim', $rawIds));
-        } elseif (is_string($rawIds) && $rawIds !== '') {
-            $ids = array_map('intval', array_map('trim', explode(',', $rawIds)));
-        } else {
-            $ids = [];
-        }
-        $ids = array_values(array_filter($ids, static function ($id) { return $id > 0; }));
+        $ids = $this->parseIds($_POST['selected_ids'] ?? '');
 
         if (empty($ids)) {
             $_SESSION['error'] = 'Vui lòng chọn ít nhất một câu hỏi để xóa.';
@@ -229,19 +204,10 @@ class AdminFaqController extends Controller {
             return;
         }
 
-        $rawIds = $_POST['selected_ids'] ?? '';
-        if (is_array($rawIds)) {
-            $ids = array_map('intval', array_map('trim', $rawIds));
-        } elseif (is_string($rawIds) && $rawIds !== '') {
-            $ids = array_map('intval', array_map('trim', explode(',', $rawIds)));
-        } else {
-            $ids = [];
-        }
-        $ids = array_values(array_filter($ids, static function ($id) { return $id > 0; }));
-
+        $ids = $this->parseIds($_POST['selected_ids'] ?? '');
         $status = $_POST['status'] ?? '';
-        $allowedStatuses = ['active', 'inactive'];
-        if (!in_array($status, $allowedStatuses, true)) {
+
+        if (!in_array($status, ['active', 'inactive'], true)) {
             $_SESSION['error'] = 'Trạng thái không hợp lệ.';
             $this->redirect('admin/faq/index');
             return;

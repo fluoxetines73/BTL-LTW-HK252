@@ -7,7 +7,7 @@ class AdminComboController extends Controller {
     }
 
     /**
-     * Trang danh sách Combo (Có Search, Filter và Bulk Delete)
+     * Trang danh sách Combo
      */
     public function index() {
         $comboModel = $this->model('Combo');
@@ -39,7 +39,7 @@ class AdminComboController extends Controller {
         $this->adminView('admin/combo/create', 'combo', ['title' => 'Thêm Combo Mới']);
     }
         /**
-     * Lưu Combo mới (Đã Audit bảo mật + Logic)
+     * Lưu Combo mới
      */
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -47,21 +47,18 @@ class AdminComboController extends Controller {
             $name = trim($_POST['name']);
             $price = (float)$_POST['price'];
 
-            // 1. Chặn trùng tên
             if ($comboModel->isNameExists($name)) {
                 $_SESSION['error'] = "Tên Combo này đã tồn tại!";
                 $this->redirect('admin/combo/create');
                 return;
             }
 
-            // 2. Chặn giá âm
             if ($price < 0) {
                 $_SESSION['error'] = "Giá tiền không được nhỏ hơn 0!";
                 $this->redirect('admin/combo/create');
                 return;
             }
 
-            // 3. Upload ảnh an toàn
             $imageName = $this->handleFileUpload('image') ?: 'default-combo.png';
 
             $data = [
@@ -84,16 +81,15 @@ class AdminComboController extends Controller {
     public function delete($id = null) {
         if ($id) {
             $comboModel = $this->model('Combo');
-            
-            // Lấy thông tin để xóa file ảnh trong thư mục (nếu không phải ảnh mặc định)
+
             $combo = $comboModel->getComboById($id);
             if ($combo && $combo['image'] !== 'default-combo.png') {
                 $filePath = ROOT . '/public/uploads/combos/' . $combo['image'];
                 if (file_exists($filePath)) {
-                    unlink($filePath); // Xóa file vật lý để tiết kiệm bộ nhớ
+                    unlink($filePath);
                 }
             }
-            
+
             $comboModel->deleteCombo($id);
         }
         $this->redirect('admin/combo/index');
@@ -114,7 +110,7 @@ class AdminComboController extends Controller {
     }
 
         /**
-     * Cập nhật Combo (Dọn dẹp ảnh cũ khi đổi ảnh mới)
+     * Cập nhật Combo
      */
     public function update($id = null) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id) {
@@ -133,7 +129,6 @@ class AdminComboController extends Controller {
             $newImage = $this->handleFileUpload('image');
             
             if ($newImage) {
-                // Xóa ảnh cũ nếu không phải ảnh mặc định
                 if ($oldCombo['image'] !== 'default-combo.png') {
                     $oldPath = ROOT . '/public/uploads/combos/' . $oldCombo['image'];
                     if (file_exists($oldPath)) unlink($oldPath);
@@ -156,7 +151,7 @@ class AdminComboController extends Controller {
         }
     }
         /**
-     * Helper: Xử lý upload an toàn (Chặn file lạ, giới hạn 2MB)
+     * Xử lý upload file
      */
     private function handleFileUpload($fieldName) {
         if (isset($_FILES[$fieldName]) && $_FILES[$fieldName]['error'] === UPLOAD_ERR_OK) {

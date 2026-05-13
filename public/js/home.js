@@ -1,16 +1,7 @@
-/**
- * Homepage Swiper Carousel Initialization
- * Initializes 3 carousels: recommendations, ads, coming-soon
- * Features: Auto-play, pause-on-hover, infinite loop, responsive breakpoints
- */
-
-// Verify Swiper is loaded
 if (typeof Swiper === 'undefined') {
     console.warn('Swiper CDN not loaded, carousels disabled');
 } else {
-    // Initialize carousels after DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
-        // Homepage quick search modal chips
         const homeSearchForm = document.querySelector('.homepage-search-form--modal');
         if (homeSearchForm) {
             const sectionInput = homeSearchForm.querySelector('#home-search-section');
@@ -29,7 +20,6 @@ if (typeof Swiper === 'undefined') {
             });
         }
 
-        // Unified homepage carousel (combined slides)
         const homepageContainer = document.querySelector('.homepage-carousel');
         if (homepageContainer) {
             const homepageSwiper = new Swiper('.homepage-carousel', {
@@ -57,12 +47,8 @@ if (typeof Swiper === 'undefined') {
             });
         }
 
-        // =====================================================
-        // NEWSLETTER FORM VALIDATION
-        // =====================================================
         const newsletterForm = document.querySelector('#newsletter-form');
         if (newsletterForm) {
-            // Create error message div if it doesn't exist
             let errorDiv = newsletterForm.querySelector('.error-message');
             if (!errorDiv) {
                 errorDiv = document.createElement('div');
@@ -72,7 +58,6 @@ if (typeof Swiper === 'undefined') {
                 newsletterForm.insertBefore(errorDiv, newsletterForm.firstChild);
             }
 
-            // Create success message div if it doesn't exist
             let successDiv = newsletterForm.querySelector('.success-message');
             if (!successDiv) {
                 successDiv = document.createElement('div');
@@ -82,7 +67,6 @@ if (typeof Swiper === 'undefined') {
                 newsletterForm.insertBefore(successDiv, newsletterForm.firstChild.nextSibling);
             }
 
-            // Handle form submission
             newsletterForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
@@ -90,18 +74,15 @@ if (typeof Swiper === 'undefined') {
                 const errorDiv = this.querySelector('.error-message');
                 const successDiv = this.querySelector('.success-message');
                 
-                // Reset messages
                 errorDiv.style.display = 'none';
                 successDiv.style.display = 'none';
                 
-                // Validation: Check if email is empty
                 if (!email) {
                     errorDiv.textContent = 'Email required';
                     errorDiv.style.display = 'block';
                     return;
                 }
                 
-                // Validation: Check email format with regex
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(email)) {
                     errorDiv.textContent = 'Please enter a valid email';
@@ -109,14 +90,11 @@ if (typeof Swiper === 'undefined') {
                     return;
                 }
                 
-                // Valid email - show success message
                 successDiv.textContent = 'Thanks for subscribing!';
                 successDiv.style.display = 'block';
                 
-                // Clear email input
                 this.querySelector('input[name="email"]').value = '';
                 
-                // Hide success message after 3 seconds
                 setTimeout(() => {
                     successDiv.style.display = 'none';
                 }, 3000);

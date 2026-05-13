@@ -2,7 +2,6 @@
 class Showtime extends Model {
     protected string $table = 'showtimes';
 
-    // Cho Frontend: Lấy suất chiếu theo phim và ngày
     public function getShowtimesByMovieAndDate($movieId, $date) {
         $sql = "SELECT s.*, r.name as room_name 
                 FROM {$this->table} s
@@ -16,7 +15,6 @@ class Showtime extends Model {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Cho Admin: Lấy tất cả suất chiếu
     public function getAllShowtimes() {
         $sql = "SELECT s.*, m.title as movie_title, r.name as room_name 
                 FROM {$this->table} s
@@ -28,7 +26,6 @@ class Showtime extends Model {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Thêm hàm đếm tổng suất chiếu
     public function countShowtimes($keyword = '', $date = '') {
         $sql = "SELECT COUNT(*) FROM showtimes s 
                 JOIN movies m ON s.movie_id = m.id 
@@ -63,7 +60,6 @@ class Showtime extends Model {
             $params[':date'] = $date;
         }
 
-        // Sắp xếp: Bổ sung s.id để phân định khi start_time trùng nhau
         switch ($sort) {
             case 'price_asc': $sql .= " ORDER BY s.base_price ASC, s.id ASC"; break;
             case 'price_desc': $sql .= " ORDER BY s.base_price DESC, s.id DESC"; break;
@@ -81,7 +77,6 @@ class Showtime extends Model {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Cho Admin: Thêm suất chiếu mới
     public function createShowtime($data) {
         $sql = "INSERT INTO {$this->table} (movie_id, room_id, start_time, end_time, base_price, status) 
                 VALUES (:movie_id, :room_id, :start_time, :end_time, :base_price, 'scheduled')";
@@ -95,7 +90,6 @@ class Showtime extends Model {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // Cập nhật dữ liệu suất chiếu
     public function updateShowtime($id, $data) {
         $sql = "UPDATE {$this->table} 
                 SET movie_id = :movie_id, 
@@ -105,7 +99,6 @@ class Showtime extends Model {
                     base_price = :base_price 
                 WHERE id = :id";
                 
-        // Thêm ID vào mảng data để thực thi
         $data[':id'] = $id;
         
         $stmt = $this->db->prepare($sql);
@@ -123,18 +116,11 @@ class Showtime extends Model {
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result ? $result['id'] : null;
     }
-    /**
-     * Kiểm tra xem phòng chiếu có trống trong khoảng thời gian chỉ định không
-     * Đã bao gồm 10 phút dọn dẹp sau khi phim kết thúc.
-     */
-    /**
- * Cập nhật lại logic kiểm tra phòng trống: Bỏ qua các suất chiếu đã bị hủy
- */
     public function isRoomAvailable($roomId, $startTime, $endTime, $excludeShowtimeId = null): bool {
         $db = Database::getInstance()->getPdo();
         $sql = "SELECT COUNT(*) FROM showtimes 
                 WHERE room_id = :room_id 
-                AND status != 'cancelled' "; // SUY NHẤT: Chỉ kiểm tra các suất chưa bị hủy
+                AND status != 'cancelled' ";
         
         if ($excludeShowtimeId) {
             $sql .= " AND id != :exclude_id ";
@@ -152,15 +138,11 @@ class Showtime extends Model {
         $stmt->execute();
         return $stmt->fetchColumn() == 0;
     }
-    /**
-     * Kiểm tra xem bộ phim này có đang được chiếu ở phòng khác trong cùng khung giờ hay không
-     * Đã bao gồm 10 phút an toàn.
-     */
     public function isMovieAvailable($movieId, $startTime, $endTime, $excludeShowtimeId = null): bool {
         $db = Database::getInstance()->getPdo();
         $sql = "SELECT COUNT(*) FROM showtimes 
                 WHERE movie_id = :movie_id 
-                AND status != 'cancelled' "; // SUY NHẤT: Bỏ qua suất đã hủy
+                AND status != 'cancelled' ";
         
         if ($excludeShowtimeId) $sql .= " AND id != :exclude_id ";
 
@@ -176,13 +158,9 @@ class Showtime extends Model {
         $stmt->execute();
         return $stmt->fetchColumn() == 0;
     }
-    /**
-     * Tìm kiếm, lọc và sắp xếp Suất chiếu cho Admin
-     */
     public function searchAdminShowtimes($keyword = '', $roomId = 'all', $sort = 'newest') {
         $db = Database::getInstance()->getPdo();
         
-        // Dùng JOIN để lấy tên phim và tên phòng chiếu
         $sql = "SELECT showtimes.*, movies.title as movie_title, rooms.name as room_name 
                 FROM showtimes 
                 JOIN movies ON showtimes.movie_id = movies.id 
@@ -190,20 +168,17 @@ class Showtime extends Model {
                 WHERE 1=1 ";
         $params = [];
 
-        // Lọc theo từ khóa (Tìm theo tên phim hoặc tên phòng)
         if (!empty($keyword)) {
             $sql .= " AND (movies.title LIKE :kw1 OR rooms.name LIKE :kw2) ";
             $params[':kw1'] = '%' . $keyword . '%';
             $params[':kw2'] = '%' . $keyword . '%';
         }
 
-        // Lọc theo Phòng chiếu cụ thể
         if ($roomId !== 'all') {
             $sql .= " AND showtimes.room_id = :room_id ";
             $params[':room_id'] = $roomId;
         }
 
-        // Sắp xếp
         switch ($sort) {
             case 'time_asc':
                 $sql .= " ORDER BY showtimes.start_time ASC ";
@@ -225,9 +200,6 @@ class Showtime extends Model {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Xóa hàng loạt Suất chiếu
-     */
     public function deleteMultipleShowtimes(array $ids) {
         if (empty($ids)) return false;
         $db = Database::getInstance()->getPdo();
@@ -237,13 +209,9 @@ class Showtime extends Model {
         $stmt = $db->prepare("DELETE FROM showtimes WHERE id IN ($placeholders)");
         return $stmt->execute($ids);
     }
-    /**
-     * Lấy tất cả suất chiếu sắp tới của một bộ phim cụ thể
-     */
     public function getUpcomingShowtimesByMovieId($movieId) {
         $db = Database::getInstance()->getPdo();
         
-        // Lấy các suất chiếu trong tương lai và kết nối với bảng rooms để lấy tên phòng
         $sql = "SELECT s.*, r.name as room_name 
                 FROM showtimes s
                 JOIN rooms r ON s.room_id = r.id
@@ -256,20 +224,13 @@ class Showtime extends Model {
         
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    /**
- * Kiểm tra xem suất chiếu này đã có khách đặt vé (booking) chưa
- */
     public function hasBookings($id) {
-        // Chúng ta kiểm tra trong bảng bookings (hoặc tickets tùy cấu trúc DB của bạn)
-        // Nếu có ít nhất 1 dòng bản ghi trùng showtime_id thì nghĩa là đã có vé bán ra
         $sql = "SELECT COUNT(*) FROM bookings WHERE showtime_id = :id";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':id' => $id]);
         return $stmt->fetchColumn() > 0;
     }
-        /**
-     * Cập nhật trạng thái suất chiếu (scheduled, cancelled, ended)
-     */
+
     public function updateStatus($id, $status) {
         $sql = "UPDATE {$this->table} SET status = :status WHERE id = :id";
         $stmt = $this->db->prepare($sql);

@@ -5,7 +5,6 @@ class Faq extends Model {
     protected string $table = 'faqs';
 
     public function getAllFaqs($sortBy = null, $sortOrder = 'asc') {
-        // Whitelist allowed sort columns to prevent SQL injection
         $allowedSortColumns = ['id', 'question', 'category', 'sort_order', 'status'];
         
         if ($sortBy && in_array($sortBy, $allowedSortColumns)) {
@@ -61,11 +60,7 @@ class Faq extends Model {
         
         $grouped = [];
         foreach ($faqs as $faq) {
-            $category = $faq['category'];
-            if (!isset($grouped[$category])) {
-                $grouped[$category] = [];
-            }
-            $grouped[$category][] = $faq;
+            $grouped[$faq['category']][] = $faq;
         }
         return $grouped;
     }

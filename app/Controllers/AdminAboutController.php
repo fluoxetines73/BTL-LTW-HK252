@@ -11,14 +11,12 @@ class AdminAboutController extends Controller {
      * Main edit page - shows all sections in one form
      */
     public function index() {
-        // Load all models
         $settingsModel = $this->model('AboutPageSettings');
         $timelineModel = $this->model('AboutTimelineItems');
         $statsModel = $this->model('AboutStatistics');
         $valuesModel = $this->model('AboutCoreValues');
         $leadershipModel = $this->model('AboutLeadership');
 
-        // Get all data
         $settings = $settingsModel->getSettings();
         $timelineItems = $timelineModel->getAllItemsAdmin();
         $statistics = $statsModel->getAllItemsAdmin();
@@ -47,7 +45,6 @@ class AdminAboutController extends Controller {
 
         $userId = $_SESSION['auth_user']['id'] ?? null;
         
-        // Safety check - middlewareAdmin should ensure this, but just in case
         if ($userId === null) {
             $_SESSION['error'] = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
             $this->redirect('auth/login');
@@ -57,30 +54,24 @@ class AdminAboutController extends Controller {
         $hasError = false;
 
         try {
-            // 1. Update Settings
             $this->updateSettings($_POST, (int)$userId);
 
-            // 2. Update Timeline Items
             if (isset($_POST['timeline'])) {
                 $this->updateTimelineItems($_POST['timeline']);
             }
 
-            // 3. Update Statistics
             if (isset($_POST['stats'])) {
                 $this->updateStatistics($_POST['stats']);
             }
 
-            // 4. Update Core Values
             if (isset($_POST['values'])) {
                 $this->updateCoreValues($_POST['values']);
             }
 
-            // 5. Update Leadership
             if (isset($_POST['leadership'])) {
                 $this->updateLeadership($_POST['leadership']);
             }
 
-            // 6. Handle file uploads
             $this->handleFileUploads();
 
             $_SESSION['success'] = 'Cập nhật trang Giới thiệu thành công.';
@@ -123,7 +114,6 @@ class AdminAboutController extends Controller {
     private function updateTimelineItems(array $items): void {
         $timelineModel = $this->model('AboutTimelineItems');
         
-        // Get existing IDs
         $existingIds = array_column($timelineModel->getAllItemsAdmin(), 'id');
         $processedIds = [];
 
@@ -136,18 +126,15 @@ class AdminAboutController extends Controller {
             ];
 
             if (!empty($item['id']) && in_array($item['id'], $existingIds)) {
-                // Update existing
                 $timelineModel->updateItem((int)$item['id'], $data);
                 $processedIds[] = $item['id'];
             } else {
-                // Create new
                 if (!empty($data['year_label']) && !empty($data['content'])) {
                     $timelineModel->createItem($data);
                 }
             }
         }
 
-        // Delete removed items
         foreach ($existingIds as $existingId) {
             if (!in_array($existingId, $processedIds)) {
                 $timelineModel->deleteItem($existingId);
@@ -189,9 +176,6 @@ class AdminAboutController extends Controller {
         }
     }
 
-    /**
-     * Update core values
-     */
     private function updateCoreValues(array $items): void {
         $valuesModel = $this->model('AboutCoreValues');
         
@@ -224,9 +208,6 @@ class AdminAboutController extends Controller {
         }
     }
 
-    /**
-     * Update leadership team
-     */
     private function updateLeadership(array $items): void {
         $leadershipModel = $this->model('AboutLeadership');
         
@@ -274,7 +255,6 @@ class AdminAboutController extends Controller {
             mkdir($uploadDir, 0755, true);
         }
 
-        // Handle intro image
         if (isset($_FILES['intro_image']) && $_FILES['intro_image']['error'] === UPLOAD_ERR_OK) {
             $file = $_FILES['intro_image'];
             $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -292,7 +272,6 @@ class AdminAboutController extends Controller {
             }
         }
 
-        // Handle leadership avatars
         if (isset($_FILES['leadership_avatars'])) {
             $leadershipModel = $this->model('AboutLeadership');
             
@@ -302,7 +281,7 @@ class AdminAboutController extends Controller {
                     $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
                     
                     if (!in_array($fileType, $allowedTypes)) {
-                        continue; // Skip invalid files
+                        continue;
                     }
 
                     $filename = 'avatar_' . $id . '_' . time() . '.jpg';
@@ -316,21 +295,14 @@ class AdminAboutController extends Controller {
         }
     }
 
-    /**
-     * Sanitize HTML content - allow only safe tags
-     */
     private function sanitizeHtml(string $content): string {
         $allowedTags = '<br><p><strong><em><b><i><ul><ol><li><span>';
         return strip_tags($content, $allowedTags);
     }
 
-    /**
-     * Get JavaScript for dynamic form handling
-     */
     private function getDynamicFormScripts(): string {
         return <<<'SCRIPT'
 <script>
-// Timeline Items
 function addTimelineItem() {
     const container = document.getElementById('timeline-container');
     const index = container.children.length;
@@ -362,7 +334,6 @@ function removeTimelineItem(btn) {
     reindexItems('timeline-item-form', 'Cột mốc');
 }
 
-// Statistics
 function addStatItem() {
     const container = document.getElementById('stats-container');
     const index = container.children.length;
@@ -396,7 +367,6 @@ function removeStatItem(btn) {
     reindexItems('stat-item', 'Thống kê');
 }
 
-// Core Values
 function addValueItem() {
     const container = document.getElementById('values-container');
     const index = container.children.length;
@@ -435,7 +405,6 @@ function removeValueItem(btn) {
     reindexItems('value-item', 'Giá trị');
 }
 
-// Leadership
 function addLeaderItem() {
     const container = document.getElementById('leadership-container');
     const index = container.children.length;
@@ -502,7 +471,6 @@ function toggleAvatarInput(select, index) {
     }
 }
 
-// Utility function to reindex items after removal
 function reindexItems(selectorClass, labelPrefix) {
     document.querySelectorAll('.' + selectorClass).forEach((el, i) => {
         const label = el.querySelector('.fw-bold, h6');
@@ -512,7 +480,6 @@ function reindexItems(selectorClass, labelPrefix) {
     });
 }
 
-// Image preview functionality
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('input[type="file"]').forEach(input => {
         input.addEventListener('change', function(e) {

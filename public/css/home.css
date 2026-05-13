@@ -1,13 +1,5 @@
-/* ============================================================================
-   HOME PAGE RESPONSIVE STYLES
-   Mobile-First Approach: Base (375px) -> Tablet (768px) -> Desktop (1024px)
-   ============================================================================ */
+/* HOME PAGE RESPONSIVE STYLES */
 
-/* ----------------------------------------------------------------------------
-    1. HERO SECTION (.hero-section)
-   ---------------------------------------------------------------------------- */
-
-/* Mobile (Base) */
 .hero-section {
     background-color: var(--cgv-white);
     border-radius: var(--radius-md);
@@ -22,7 +14,7 @@
 
 .hero-image {
     width: 100%;
-    height: 250px !important; /* Override inline style for mobile */
+    height: 250px !important;
     object-fit: contain;
     transition: transform var(--transition-smooth);
 }
@@ -30,7 +22,7 @@
 .hero-content-wrapper {
     background-color: #f8fafc;
     color: var(--cgv-dark);
-    padding: var(--spacing-md) !important; /* Mobile padding */
+    padding: var(--spacing-md) !important;
     border-left: 1px solid #e2e8f0;
 }
 
@@ -52,7 +44,7 @@
 
 .hero-date, .hero-detail-item {
     font-size: 0.85rem;
-    color: #475569; /* Darker gray for light background */
+    color: #475569;
 }
 
 .hero-description {
@@ -85,49 +77,44 @@
     transform: translateY(-2px);
 }
 
-/* Tablet (768px+) */
 @media (min-width: 768px) {
     .hero-wrapper {
         flex-direction: row;
     }
-    
+
     .hero-image {
         height: 350px !important;
     }
-    
+
     .hero-content-wrapper {
         padding: var(--spacing-lg) !important;
     }
-    
+
     .hero-title {
         font-size: 2rem;
     }
-    
+
     .hero-description {
         font-size: 1rem;
         -webkit-line-clamp: 4;
     }
 }
 
-/* Desktop (1024px+) */
 @media (min-width: 1024px) {
     .hero-image {
         height: 400px !important;
     }
-    
+
     .hero-content-wrapper {
-        padding: 3rem !important; /* Larger padding for desktop */
+        padding: 3rem !important;
     }
-    
+
     .hero-title {
         font-size: 2.5rem;
     }
 }
 
-/* ----------------------------------------------------------------------------
-   1B. HOMEPAGE SEARCH BAND (.homepage-search-band)
-   ---------------------------------------------------------------------------- */
-
+/* HOMEPAGE SEARCH BAND */
 .homepage-search-band {
     margin-top: -6px;
 }
@@ -324,13 +311,9 @@
     }
 }
 
-/* ----------------------------------------------------------------------------
-   SHARED CAROUSEL STYLES (Recommendations, Ads, Coming Soon)
-   ---------------------------------------------------------------------------- */
-
-/* Mobile */
+/* CAROUSEL STYLES */
 .swiper {
-    padding-bottom: 40px !important; /* Space for pagination */
+    padding-bottom: 40px !important;
 }
 
 .swiper-pagination-bullet {
@@ -351,7 +334,7 @@
     height: 40px !important;
     border-radius: 50%;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    display: none !important; /* Hide on mobile by default */
+    display: none !important;
 }
 
 .swiper-button-next::after, .swiper-button-prev::after {
@@ -359,18 +342,13 @@
     font-weight: bold;
 }
 
-/* Desktop */
 @media (min-width: 1024px) {
     .swiper-button-next, .swiper-button-prev {
-        display: flex !important; /* Show on desktop */
+        display: flex !important;
     }
 }
 
-/* ----------------------------------------------------------------------------
-   2. MOVIE RECOMMENDATIONS & 5. COMING SOON CAROUSELS
-   ---------------------------------------------------------------------------- */
-
-/* Mobile */
+/* MOVIE RECOMMENDATIONS & COMING SOON */
 .recommendations-title, .coming-soon-title {
     font-size: 1.5rem;
     font-weight: 700;
@@ -445,25 +423,19 @@
     color: var(--cgv-white);
 }
 
-/* Tablet (768px+) */
 @media (min-width: 768px) {
     .recommendations-title, .coming-soon-title {
         font-size: 1.75rem;
     }
 }
 
-/* Desktop (1024px+) */
 @media (min-width: 1024px) {
     .recommendations-title, .coming-soon-title {
         font-size: 2rem;
     }
 }
 
-/* ----------------------------------------------------------------------------
-   3. ADS BANNER CAROUSEL (.ads-section)
-   ---------------------------------------------------------------------------- */
-
-/* Mobile */
+/* ADS BANNER */
 .ads-title {
     font-size: 1.5rem;
     font-weight: 700;
@@ -522,25 +494,19 @@
     background-color: #c41408;
 }
 
-/* Tablet (768px+) */
 @media (min-width: 768px) {
     .ads-title {
         font-size: 1.75rem;
     }
 }
 
-/* Desktop (1024px+) */
 @media (min-width: 1024px) {
     .ads-title {
         font-size: 2rem;
     }
 }
 
-/* ----------------------------------------------------------------------------
-   4. GENRE FILTER BAR (.genre-filter-section)
-   ---------------------------------------------------------------------------- */
-
-/* Mobile */
+/* GENRE FILTER */
 .genre-title {
     font-size: 1.5rem;
     font-weight: 700;
@@ -579,23 +545,18 @@
     font-size: 0.8rem;
 }
 
-/* Tablet (768px+) */
 @media (min-width: 768px) {
     .genre-chips-wrapper {
-        justify-content: center; /* Center on larger screens */
+        justify-content: center;
     }
-    
+
     .genre-chip {
         padding: 8px 20px;
         font-size: 1rem;
     }
 }
 
-/* ----------------------------------------------------------------------------
-   6. NEWSLETTER SIGNUP BANNER (.newsletter-section)
-   ---------------------------------------------------------------------------- */
-
-/* Mobile */
+/* NEWSLETTER */
 .newsletter-container {
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     color: var(--cgv-dark);
@@ -652,33 +613,27 @@
     color: #64748b !important;
 }
 
-/* Tablet (768px+) */
 @media (min-width: 768px) {
     .newsletter-title {
         font-size: 2rem;
     }
-    
+
     .newsletter-description {
         font-size: 1rem;
     }
 }
 
-/* Desktop (1024px+) */
 @media (min-width: 1024px) {
     .newsletter-container {
         padding: 4rem 5rem !important;
     }
-    
+
     .newsletter-title {
         font-size: 2.5rem;
     }
 }
 
-/* ----------------------------------------------------------------------------
-   7. NEWS PREVIEW GRID (.news-section)
-   ---------------------------------------------------------------------------- */
-
-/* Mobile */
+/* NEWS PREVIEW */
 .news-title {
     font-size: 1.5rem;
     font-weight: 700;
@@ -770,14 +725,12 @@
     transform: translateY(-2px);
 }
 
-/* Tablet (768px+) */
 @media (min-width: 768px) {
     .news-title {
         font-size: 1.75rem;
     }
 }
 
-/* Desktop (1024px+) */
 @media (min-width: 1024px) {
     .news-title {
         font-size: 2rem;

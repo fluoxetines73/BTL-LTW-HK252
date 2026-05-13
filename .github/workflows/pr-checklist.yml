@@ -32,13 +32,11 @@ jobs:
 
       - name: Syntax Validation
         run: |
-          echo "Validating PHP syntax on changed files..."
           for file in ${{ steps.changed-files.outputs.changed_php }}; do
             if [ ! -z "$file" ]; then
               php -l "$file" || exit 1
             fi
           done
-          echo "All PHP files have valid syntax"
 
       - name: Create PR Comment
         uses: actions/github-script@v7
@@ -54,6 +52,4 @@ jobs:
 
       - name: Summary
         if: always()
-        run: |
-          echo "## PR Review Complete" >> $GITHUB_STEP_SUMMARY
-          echo "All automated checks passed" >> $GITHUB_STEP_SUMMARY
+        run: echo "## PR Review Complete" >> $GITHUB_STEP_SUMMARY

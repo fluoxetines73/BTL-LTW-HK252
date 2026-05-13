@@ -5,14 +5,7 @@ class NewsController extends Controller {
     private ?News $newsModel = null;
 
     public function __construct() {
-        require_once APPROOT . '/Models/Model.php';
-        require_once APPROOT . '/Models/News.php';
-
-        try {
-            $this->newsModel = new News();
-        } catch (Throwable $e) {
-            $this->newsModel = null;
-        }
+        $this->newsModel = $this->model('News');
     }
 
     public function index(): void {
@@ -51,27 +44,9 @@ class NewsController extends Controller {
     }
 
     private function renderNewsTimelinePage(array $articles, string $timelineTitle, ?string $category = null, string $keyword = ''): void {
-        // Prefer featured items for the top slider. If none found, fall back to latest published.
-        $latest = [];
-        if ($this->newsModel) {
-            try {
-                $featured = $this->newsModel->getFeaturedNews(5);
-                if ($category !== null) {
-                    $featured = array_values(array_filter($featured, function($a) use ($category) {
-                        return (($a['category'] ?? '') === $category);
-                    }));
-                }
-                if (!empty($featured)) {
-                    $latest = $featured;
-                } else {
-                    $latest = array_slice($articles, 0, 5);
-                }
-            } catch (Throwable $e) {
-                $latest = array_slice($articles, 0, 5);
-            }
-        } else {
-            $latest = array_slice($articles, 0, 5);
-        }
+        $latest = $this->newsModel
+            ? array_slice($this->newsModel->getFeaturedNews(5), 0, 5)
+            : array_slice($articles, 0, 5);
 
         $timelineItems = [];
         foreach ($articles as $article) {
