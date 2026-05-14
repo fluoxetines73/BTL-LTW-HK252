@@ -66,6 +66,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    function normalizePath(path) {
+        if (!path) return '/';
+        var clean = path.split('?')[0].split('#')[0].replace(/\/$/, '') || '/';
+
+        // Treat `/foo/index` as `/foo` for active menu matching.
+        clean = clean.replace(/\/index$/i, '') || '/';
+        return clean;
+    }
+
     function initializeActiveLinks() {
         var sidebarLinks = document.querySelectorAll('.sidebar-menu a');
 
@@ -73,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        var currentPath = window.location.pathname.replace(/\/$/, '') || '/';
+        var currentPath = normalizePath(window.location.pathname);
 
         sidebarLinks.forEach(function (link) {
             if (link.getAttribute('href') === '#' || !link.getAttribute('href')) {
@@ -81,12 +90,20 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             var href = link.getAttribute('href');
-            var normalizedHref = href.replace(window.location.origin, '').replace(/\/$/, '') || '/';
+            var url;
+
+            try {
+                url = new URL(href, window.location.origin);
+            } catch (err) {
+                return;
+            }
+
+            var normalizedHref = normalizePath(url.pathname);
 
             var isMatch = false;
             if (normalizedHref === '/' && currentPath === '/') {
                 isMatch = true;
-            } else if (normalizedHref !== '/' && currentPath.endsWith(normalizedHref)) {
+            } else if (normalizedHref !== '/' && (currentPath === normalizedHref || currentPath.startsWith(normalizedHref + '/'))) {
                 isMatch = true;
             }
 
