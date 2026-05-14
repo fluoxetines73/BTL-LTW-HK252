@@ -68,11 +68,13 @@ class AdminAboutController extends Controller {
                 $this->updateCoreValues($_POST['values']);
             }
 
+            // Store mapping of temp IDs to actual database IDs
+            $tempIdToDbId = [];
             if (isset($_POST['leadership'])) {
-                $this->updateLeadership($_POST['leadership']);
+                $tempIdToDbId = $this->updateLeadership($_POST['leadership']);
             }
 
-            $this->handleFileUploads();
+            $this->handleFileUploads($tempIdToDbId);
 
             $_SESSION['success'] = 'Cập nhật trang Giới thiệu thành công.';
         } catch (Exception $e) {
@@ -208,11 +210,12 @@ class AdminAboutController extends Controller {
         }
     }
 
-    private function updateLeadership(array $items): void {
+    private function updateLeadership(array $items): array {
         $leadershipModel = $this->model('AboutLeadership');
         
         $existingIds = array_column($leadershipModel->getAllItemsAdmin(), 'id');
         $processedIds = [];
+        $tempIdToDbId = [];
 
         foreach ($items as $index => $item) {
             $data = [
@@ -228,12 +231,14 @@ class AdminAboutController extends Controller {
                 'is_active' => 1
             ];
 
-            if (!empty($item['id']) && in_array($item['id'], $existingIds)) {
+            if (!empty($item['id']) && in_array((int)$item['id'], $existingIds)) {
                 $leadershipModel->updateItem((int)$item['id'], $data);
-                $processedIds[] = $item['id'];
+                $processedIds[] = (int)$item['id'];
             } else {
                 if (!empty($data['name']) && !empty($data['role'])) {
-                    $leadershipModel->createItem($data);
+                    $newId = $leadershipModel->createItem($data);
+                    // Map the form index to the new database ID for file uploads
+                    $tempIdToDbId[$index] = $newId;
                 }
             }
         }
@@ -243,12 +248,15 @@ class AdminAboutController extends Controller {
                 $leadershipModel->deleteItem($existingId);
             }
         }
+
+        return $tempIdToDbId;
     }
 
     /**
      * Handle file uploads for intro image and leadership avatars
+     * @param array $tempIdToDbId Mapping of form indices to database IDs for newly created members
      */
-    private function handleFileUploads(): void {
+    private function handleFileUploads(array $tempIdToDbId = []): void {
         $uploadDir = ROOT . '/public/uploads/about/';
         
         if (!is_dir($uploadDir)) {
@@ -284,11 +292,26 @@ class AdminAboutController extends Controller {
                         continue;
                     }
 
-                    $filename = 'avatar_' . $id . '_' . time() . '.jpg';
+                    // Map the ID: if it's a numeric string, use it directly
+                    // If it's a temp ID (starts with 'new_'), look up the actual DB ID
+                    $dbId = $id;
+                    if (is_string($id) && strpos($id, 'new_') === 0) {
+                        // Extract the index from temp ID format: new_timestamp_index
+                        $parts = explode('_', $id);
+                        $index = end($parts);
+                        if (isset($tempIdToDbId[$index])) {
+                            $dbId = $tempIdToDbId[$index];
+                        } else {
+                            // Skip if we can't map this temp ID
+                            continue;
+                        }
+                    }
+
+                    $filename = 'avatar_' . $dbId . '_' . time() . '.jpg';
                     $filepath = $uploadDir . $filename;
                     
                     if (move_uploaded_file($tmpName, $filepath)) {
-                        $leadershipModel->updateAvatarImage($id, 'public/uploads/about/' . $filename);
+                        $leadershipModel->updateAvatarImage((int)$dbId, 'public/uploads/about/' . $filename);
                     }
                 }
             }
@@ -408,8 +431,9 @@ function removeValueItem(btn) {
 function addLeaderItem() {
     const container = document.getElementById('leadership-container');
     const index = container.children.length;
+    const tempId = 'new_' + Date.now() + '_' + index;
     const html = `
-        <div class="col-md-6 mb-3 leader-item" data-index="${index}">
+        <div class="col-md-6 mb-3 leader-item" data-index="${index}" data-temp-id="${tempId}">
             <div class="border rounded p-3">
                 <div class="d-flex justify-content-between mb-2">
                     <span class="fw-bold">Thành viên #${index + 1}</span>
@@ -429,12 +453,12 @@ function addLeaderItem() {
                 </div>
                 <div class="mb-2">
                     <label class="form-label small">Loại avatar</label>
-                    <select class="form-select" name="leadership[${index}][avatar_type]" onchange="toggleAvatarInput(this, ${index})">
+                    <select class="form-select" name="leadership[${index}][avatar_type]" onchange="toggleAvatarInput(this, '${tempId}')">
                         <option value="icon">Icon FontAwesome</option>
                         <option value="image">Hình ảnh</option>
                     </select>
                 </div>
-                <div class="mb-2 avatar-input-${index}">
+                <div class="mb-2 avatar-input-${tempId}">
                     <label class="form-label small">Icon class</label>
                     <input type="text" class="form-control" name="leadership[${index}][avatar_value]" placeholder="VD: fa-solid fa-user-tie">
                 </div>
@@ -456,17 +480,17 @@ function removeLeaderItem(btn) {
     reindexItems('leader-item', 'Thành viên');
 }
 
-function toggleAvatarInput(select, index) {
-    const container = select.closest('.leader-item').querySelector(`.avatar-input-${index}`);
+function toggleAvatarInput(select, idOrTempId) {
+    const container = select.closest('.leader-item').querySelector(`.avatar-input-${idOrTempId}`);
     if (select.value === 'image') {
         container.innerHTML = `
             <label class="form-label small">Hình ảnh</label>
-            <input type="file" class="form-control" name="leadership_avatars[${index}]" accept="image/*">
+            <input type="file" class="form-control" name="leadership_avatars[${idOrTempId}]" accept="image/*">
         `;
     } else {
         container.innerHTML = `
             <label class="form-label small">Icon class</label>
-            <input type="text" class="form-control" name="leadership[${index}][avatar_value]" placeholder="VD: fa-solid fa-user-tie">
+            <input type="text" class="form-control" name="leadership[${select.closest('.leader-item').dataset.index}][avatar_value]" placeholder="VD: fa-solid fa-user-tie">
         `;
     }
 }
