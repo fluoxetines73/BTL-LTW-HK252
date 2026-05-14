@@ -38,18 +38,39 @@ class AdminCommentController extends Controller {
                 }
             }
 
+            $allCount = count($this->commentModel->getAll());
+            $reportedCount = count($this->commentModel->getReported());
+            $pendingCount = count($this->commentModel->getPending());
+
             $stats = [
-                'total' => count($this->commentModel->getAll()),
-                'reported' => count($this->commentModel->getReported()),
-                'pending' => count($this->commentModel->getPending())
+                'total' => $allCount,
+                'reported' => $reportedCount,
+                'pending' => $pendingCount
             ];
+
+            // Pagination
+            $perPage = 15;
+            $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+
+            $commentsFull = $comments; // full result set for the chosen tab/filter
+            $totalComments = count($commentsFull);
+            $totalPages = max(1, (int)ceil($totalComments / $perPage));
+            if ($page > $totalPages) {
+                $page = $totalPages;
+            }
+            $offset = ($page - 1) * $perPage;
+            $commentsPaged = array_slice($commentsFull, $offset, $perPage);
 
             $this->adminView('admin/comments/index', 'comments', [
                 'title' => 'Quản lý bình luận',
-                'comments' => $comments,
+                'comments' => $commentsPaged,
                 'activeTab' => $tab,
                 'selectedNewsId' => $newsId,
-                'stats' => $stats
+                'stats' => $stats,
+                'page' => $page,
+                'totalPages' => $totalPages,
+                'perPage' => $perPage,
+                'totalComments' => $totalComments
             ]);
         } catch (Exception $e) {
             http_response_code(500);

@@ -5,10 +5,11 @@ $activeTab = $activeTab ?? 'all';
 $selectedNewsId = $selectedNewsId ?? null;
 $stats = $stats ?? ['total' => 0, 'reported' => 0, 'pending' => 0];
 
-// Filter comments by tab
-$allComments = $comments;
-$pendingComments = array_filter($comments, fn($c) => !$c['is_approved']);
-$reportedComments = array_filter($comments, fn($c) => $c['is_reported']);
+// Pagination vars (passed from controller)
+$page = $page ?? 1;
+$totalPages = $totalPages ?? 1;
+$perPage = $perPage ?? 15;
+$totalComments = $totalComments ?? $stats['total'];
 ?>
 
 <div class="admin-section admin-comments">
@@ -29,28 +30,25 @@ $reportedComments = array_filter($comments, fn($c) => $c['is_reported']);
             <span class="stat-value"><?= $stats['reported'] ?></span>
             <span class="stat-label">Báo cáo</span>
         </div>
-        <div class="stat-badge stat-badge-pending">
-            <span class="stat-value"><?= $stats['pending'] ?></span>
-            <span class="stat-label">Chờ duyệt</span>
-        </div>
+        <!-- Removed separate 'pending' stat per request to simplify dashboard -->
     </div>
 
     <!-- Tabs Navigation -->
     <ul class="nav nav-tabs admin-comment-tabs mb-3" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link <?= $activeTab === 'all' ? 'active' : '' ?>" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-comments" type="button" role="tab" aria-controls="all-comments" aria-selected="<?= $activeTab === 'all' ? 'true' : 'false' ?>">
-                <i class="fas fa-comments me-2"></i>Tất cả (<span class="tab-count"><?= count($allComments) ?></span>)
-            </button>
+            <a class="nav-link <?= $activeTab === 'all' ? 'active' : '' ?>" id="all-tab" href="<?= BASE_URL ?>admin/comments/index/all<?= !empty($selectedNewsId) ? '?news_id=' . (int)$selectedNewsId : '' ?>">
+                <i class="fas fa-comments me-2"></i>Tất cả (<span class="tab-count"><?= $stats['total'] ?></span>)
+            </a>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link <?= $activeTab === 'pending' ? 'active' : '' ?>" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending-comments" type="button" role="tab" aria-controls="pending-comments" aria-selected="<?= $activeTab === 'pending' ? 'true' : 'false' ?>">
-                <i class="fas fa-hourglass-half me-2"></i>Chờ duyệt (<span class="tab-count"><?= count($pendingComments) ?></span>)
-            </button>
+            <a class="nav-link <?= $activeTab === 'pending' ? 'active' : '' ?>" id="pending-tab" href="<?= BASE_URL ?>admin/comments/index/pending<?= !empty($selectedNewsId) ? '?news_id=' . (int)$selectedNewsId : '' ?>">
+                <i class="fas fa-hourglass-half me-2"></i>Chờ duyệt (<span class="tab-count"><?= $stats['pending'] ?></span>)
+            </a>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link <?= $activeTab === 'reported' ? 'active' : '' ?>" id="reported-tab" data-bs-toggle="tab" data-bs-target="#reported-comments" type="button" role="tab" aria-controls="reported-comments" aria-selected="<?= $activeTab === 'reported' ? 'true' : 'false' ?>">
-                <i class="fas fa-flag me-2"></i>Báo cáo (<span class="tab-count"><?= count($reportedComments) ?></span>)
-            </button>
+            <a class="nav-link <?= $activeTab === 'reported' ? 'active' : '' ?>" id="reported-tab" href="<?= BASE_URL ?>admin/comments/index/reported<?= !empty($selectedNewsId) ? '?news_id=' . (int)$selectedNewsId : '' ?>">
+                <i class="fas fa-flag me-2"></i>Báo cáo (<span class="tab-count"><?= $stats['reported'] ?></span>)
+            </a>
         </li>
     </ul>
 
@@ -58,7 +56,7 @@ $reportedComments = array_filter($comments, fn($c) => $c['is_reported']);
     <div class="tab-content">
         <!-- All Comments Tab -->
         <div class="tab-pane fade <?= $activeTab === 'all' ? 'show active' : '' ?>" id="all-comments" role="tabpanel" aria-labelledby="all-tab">
-            <?php if (empty($allComments)): ?>
+            <?php if (($totalComments ?? 0) === 0): ?>
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle me-2"></i>Chưa có bình luận nào
                 </div>
@@ -80,13 +78,12 @@ $reportedComments = array_filter($comments, fn($c) => $c['is_reported']);
                                 <th>Người bình luận</th>
                                 <th>Bài đăng</th>
                                 <th>Nội dung</th>
-                                <th>Trạng thái</th>
                                 <th>Ngày bình luận</th>
                                 <th>Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($allComments as $comment): ?>
+                            <?php foreach ($comments as $comment): ?>
                                 <tr class="admin-comment-row <?= $comment['is_reported'] ? 'reported' : '' ?>" data-comment-id="<?= $comment['id'] ?>">
                                     <td>
                                         <input type="checkbox" class="form-check-input comment-checkbox" value="<?= $comment['id'] ?>" onchange="updateDeleteButton()">
@@ -114,13 +111,6 @@ $reportedComments = array_filter($comments, fn($c) => $c['is_reported']);
                                             Xem đầy đủ
                                         </button>
                                     </td>
-                                    <td>
-                                        <?php if ($comment['is_approved']): ?>
-                                            <span class="badge bg-success"><i class="fas fa-check me-1"></i>Đã duyệt</span>
-                                        <?php else: ?>
-                                            <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>Chờ</span>
-                                        <?php endif; ?>
-                                    </td>
                                     <td class="text-muted small">
                                         <?= date('d/m/Y H:i', strtotime($comment['created_at'])) ?>
                                     </td>
@@ -144,7 +134,7 @@ $reportedComments = array_filter($comments, fn($c) => $c['is_reported']);
 
         <!-- Pending Comments Tab -->
         <div class="tab-pane fade <?= $activeTab === 'pending' ? 'show active' : '' ?>" id="pending-comments" role="tabpanel" aria-labelledby="pending-tab">
-            <?php if (empty($pendingComments)): ?>
+            <?php if (($totalComments ?? 0) === 0): ?>
                 <div class="alert alert-success">
                     <i class="fas fa-check-circle me-2"></i>Không có bình luận chờ duyệt
                 </div>
@@ -171,7 +161,7 @@ $reportedComments = array_filter($comments, fn($c) => $c['is_reported']);
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($pendingComments as $comment): ?>
+                            <?php foreach ($comments as $comment): ?>
                                 <tr class="admin-comment-row" data-comment-id="<?= $comment['id'] ?>">
                                     <td>
                                         <input type="checkbox" class="form-check-input comment-checkbox" value="<?= $comment['id'] ?>" onchange="updateDeleteButton()">
@@ -208,7 +198,7 @@ $reportedComments = array_filter($comments, fn($c) => $c['is_reported']);
 
         <!-- Reported Comments Tab -->
         <div class="tab-pane fade <?= $activeTab === 'reported' ? 'show active' : '' ?>" id="reported-comments" role="tabpanel" aria-labelledby="reported-tab">
-            <?php if (empty($reportedComments)): ?>
+            <?php if (($totalComments ?? 0) === 0): ?>
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle me-2"></i>Không có bình luận bị báo cáo
                 </div>
@@ -236,7 +226,7 @@ $reportedComments = array_filter($comments, fn($c) => $c['is_reported']);
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($reportedComments as $comment): ?>
+                            <?php foreach ($comments as $comment): ?>
                                 <tr class="admin-comment-row reported" data-comment-id="<?= $comment['id'] ?>">
                                     <td>
                                         <input type="checkbox" class="form-check-input comment-checkbox" value="<?= $comment['id'] ?>" onchange="updateDeleteButton()">
@@ -277,7 +267,26 @@ $reportedComments = array_filter($comments, fn($c) => $c['is_reported']);
     </div>
 </div>
 
-<!-- Comment Detail Modal -->
+    <!-- Pagination -->
+    <?php if (($totalPages ?? 1) > 1): ?>
+        <nav aria-label="Comments pagination" class="mt-3">
+            <ul class="pagination justify-content-center">
+                <?php
+                $base = BASE_URL . 'admin/comments/index/' . urlencode($activeTab) . '?';
+                $qs = '';
+                if (!empty($selectedNewsId)) {
+                    $qs .= 'news_id=' . (int)$selectedNewsId . '&';
+                }
+                for ($p = 1; $p <= $totalPages; $p++):
+                    $activeClass = $p == $page ? 'active' : '';
+                ?>
+                    <li class="page-item <?= $activeClass ?>"><a class="page-link" href="<?= $base ?><?= $qs ?>page=<?= $p ?>"><?= $p ?></a></li>
+                <?php endfor; ?>
+            </ul>
+        </nav>
+    <?php endif; ?>
+
+    <!-- Comment Detail Modal -->
 <div class="modal fade" id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
