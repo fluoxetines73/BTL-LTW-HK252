@@ -39,25 +39,25 @@ class ProductController extends Controller {
     }
 
     public function checkout() {
-        // Chỉ cho phép truy cập qua phương thức POST (khi nhấn nút Đặt vé từ trang chi tiết)
+        
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('home/index');
             return;
         }
 
-        // 1. Hứng các ID cơ bản từ Form
+        
         $movieId = $_POST['movie_id'] ?? 0;
         $showtimeId = $_POST['showtime_id'] ?? 0;
-        $selectedSeats = $_POST['selected_seats'] ?? ''; // Chuỗi ghế dạng "A1,A2"
+        $selectedSeats = $_POST['selected_seats'] ?? ''; 
         $ticketQty = (int)($_POST['ticket_qty'] ?? 0);
-        $combosPost = $_POST['combos'] ?? []; // Mảng ID combo và số lượng
+        $combosPost = $_POST['combos'] ?? []; 
 
         // Khởi tạo các Model cần thiết
         $movieModel = $this->model('Movie');
         $showtimeModel = $this->model('Showtime');
         $comboModel = $this->model('Combo');
 
-        // 2. TRUY VẤN DATABASE - Đây là bước quan trọng nhất để bảo mật
+        
         $movie = $movieModel->getMovieById($movieId);
         $showtime = $showtimeModel->getShowtimeById($showtimeId);
         
@@ -67,19 +67,19 @@ class ProductController extends Controller {
             return;
         }
 
-        // Lấy giá vé TỪ DATABASE để tính toán, không lấy từ $_POST
+        
         $ticketPrice = (int)$showtime['base_price'];
 
-        // 3. Xử lý logic tính tiền Combo Bắp nước
+        
         $selectedCombos = [];
         $comboTotal = 0;
-        $allCombos = $comboModel->getAllCombos(); // Lấy giá gốc từ DB
+        $allCombos = $comboModel->getAllCombos(); 
         
         foreach ($combosPost as $comboId => $qty) {
             if ($qty > 0) {
                 foreach ($allCombos as $c) {
                     if ($c['id'] == $comboId) {
-                        $subtotal = $qty * $c['price']; // Nhân số lượng với giá gốc trong DB
+                        $subtotal = $qty * $c['price']; 
                         $comboTotal += $subtotal;
                         $selectedCombos[] = [
                             'id' => $c['id'],
@@ -94,11 +94,11 @@ class ProductController extends Controller {
             }
         }
 
-        // 4. Tổng kết số tiền cuối cùng (Grand Total)
+        
         $ticketTotal = $ticketQty * $ticketPrice;
         $grandTotal = $ticketTotal + $comboTotal;
 
-        // 5. Đẩy toàn bộ dữ liệu sạch đã qua tính toán sang View xác nhận
+        
         $this->view('layouts/main', [
             'content' => 'product/checkout',
             'title' => 'Xác nhận Đặt vé',
@@ -156,7 +156,7 @@ class ProductController extends Controller {
             if ($qty > 0) {
                 foreach ($allCombosFromDB as $dbCombo) {
                     if ($dbCombo['id'] == $comboId) {
-                        $subtotal = $qty * (float)$dbCombo['price']; // Nhân với GIÁ TRONG DB
+                        $subtotal = $qty * (float)$dbCombo['price']; 
                         $comboTotal += $subtotal;
                         $validatedCombos[] = [
                             'id' => $dbCombo['id'],

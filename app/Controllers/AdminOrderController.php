@@ -6,7 +6,7 @@ class AdminOrderController extends Controller {
         $this->middlewareAdmin();
     }
 
-    // Hiển thị danh sách toàn bộ đơn hàng (Có Search, Filter và Bulk Delete)
+    // Hiển thị danh sách đơn hàng - Đã fix route và tối ưu JOIN
     public function index() {
         $orderModel = $this->model('Order');
         $keyword = trim((string)($_GET['q'] ?? ''));
@@ -19,11 +19,12 @@ class AdminOrderController extends Controller {
         if ($page < 1) $page = 1;
         $offset = ($page - 1) * $limit;
 
+        // Sử dụng hàm đã tối ưu JOIN từ Model Order
         $totalRows = $orderModel->countAdminOrders($keyword, $status, $paymentStatus);
         $totalPages = ceil($totalRows / $limit);
-
         $orders = $orderModel->searchAdminOrders($keyword, $status, $paymentStatus, $sort, $limit, $offset);
 
+        // View vẫn nằm trong thư mục plural 'orders'
         $this->adminView('admin/orders/index', 'order', [
             'orders' => $orders,
             'keyword' => $keyword,
@@ -35,10 +36,10 @@ class AdminOrderController extends Controller {
         ]);
     }
 
-    // Hiển thị chi tiết 1 đơn hàng
     public function detail($id = null) {
+        // Fix redirect 404: về admin/order thay vì admin/order/index
         if (!$id) { $this->redirect('admin/order/index'); return; }
-
+        
         $orderModel = $this->model('Order');
         $order = $orderModel->getOrderById($id);
 
@@ -61,24 +62,28 @@ class AdminOrderController extends Controller {
             $orderModel = $this->model('Order');
             
             if ($orderModel->updateStatus($id, $status)) {
-                $_SESSION['success'] = "Cập nhật trạng thái đơn hàng #$id thành công!";
+                $_SESSION['success'] = "Cập nhật trạng thái đơn hàng thành công!";
             } else {
                 $_SESSION['error'] = "Cập nhật thất bại!";
             }
         }
+        // Redirect về trang chi tiết của chính đơn hàng đó
         $this->redirect('admin/order/detail/' . $id);
     }
+
     public function deleteMultiple() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ids'])) {
             $ids = explode(',', $_POST['ids']);
             $orderModel = $this->model('Order');
             
+            // Sử dụng logic Soft-delete (Cancelled) để bảo toàn dữ liệu tài chính
             if ($orderModel->cancelMultipleOrders($ids)) {
-                $_SESSION['success'] = "Đã chuyển trạng thái " . count($ids) . " đơn hàng sang 'Đã hủy'.";
+                $_SESSION['success'] = "Đã hủy " . count($ids) . " đơn hàng thành công.";
             } else {
-                $_SESSION['error'] = "Lỗi hệ thống khi cập nhật!";
+                $_SESSION['error'] = "Lỗi hệ thống khi xử lý!";
             }
         }
+        // Fix redirect 404: về admin/order
         $this->redirect('admin/order/index');
     }
 }
