@@ -3,7 +3,10 @@
 $comments = $comments ?? [];
 $activeTab = $activeTab ?? 'all';
 $selectedNewsId = $selectedNewsId ?? null;
-$stats = $stats ?? ['total' => 0, 'reported' => 0, 'pending' => 0];
+// layout `stats` comes from controller (users/movies/showtimes/combos/news)
+$stats = $stats ?? ['users' => 0, 'movies' => 0, 'showtimes' => 0, 'combos' => 0, 'news' => 0];
+// comment-specific stats
+$commentStats = $commentStats ?? ['total' => 0, 'reported' => 0, 'pending' => 0];
 
 // Pagination vars (passed from controller)
 $page = $page ?? 1;
@@ -21,33 +24,28 @@ $totalComments = $totalComments ?? $stats['total'];
     </div>
 
     <!-- Stats Cards -->
-    <div class="comments-stats d-flex gap-3 mb-4">
+        <div class="comments-stats d-flex gap-3 mb-4">
         <div class="stat-badge stat-badge-all">
-            <span class="stat-value"><?= $stats['total'] ?></span>
+            <span class="stat-value"><?= $commentStats['total'] ?></span>
             <span class="stat-label">Tổng bình luận</span>
         </div>
         <div class="stat-badge stat-badge-reported">
-            <span class="stat-value"><?= $stats['reported'] ?></span>
+            <span class="stat-value"><?= $commentStats['reported'] ?></span>
             <span class="stat-label">Báo cáo</span>
         </div>
-        <!-- Removed separate 'pending' stat per request to simplify dashboard -->
     </div>
 
     <!-- Tabs Navigation -->
     <ul class="nav nav-tabs admin-comment-tabs mb-3" role="tablist">
         <li class="nav-item" role="presentation">
             <a class="nav-link <?= $activeTab === 'all' ? 'active' : '' ?>" id="all-tab" href="<?= BASE_URL ?>admin/comments/index/all<?= !empty($selectedNewsId) ? '?news_id=' . (int)$selectedNewsId : '' ?>">
-                <i class="fas fa-comments me-2"></i>Tất cả (<span class="tab-count"><?= $stats['total'] ?></span>)
+                <i class="fas fa-comments me-2"></i>Tất cả (<span class="tab-count"><?= $commentStats['total'] ?></span>)
             </a>
         </li>
-        <li class="nav-item" role="presentation">
-            <a class="nav-link <?= $activeTab === 'pending' ? 'active' : '' ?>" id="pending-tab" href="<?= BASE_URL ?>admin/comments/index/pending<?= !empty($selectedNewsId) ? '?news_id=' . (int)$selectedNewsId : '' ?>">
-                <i class="fas fa-hourglass-half me-2"></i>Chờ duyệt (<span class="tab-count"><?= $stats['pending'] ?></span>)
-            </a>
-        </li>
+        <!-- Pending tab removed as requested -->
         <li class="nav-item" role="presentation">
             <a class="nav-link <?= $activeTab === 'reported' ? 'active' : '' ?>" id="reported-tab" href="<?= BASE_URL ?>admin/comments/index/reported<?= !empty($selectedNewsId) ? '?news_id=' . (int)$selectedNewsId : '' ?>">
-                <i class="fas fa-flag me-2"></i>Báo cáo (<span class="tab-count"><?= $stats['reported'] ?></span>)
+                <i class="fas fa-flag me-2"></i>Báo cáo (<span class="tab-count"><?= $commentStats['reported'] ?></span>)
             </a>
         </li>
     </ul>
@@ -132,69 +130,7 @@ $totalComments = $totalComments ?? $stats['total'];
             <?php endif; ?>
         </div>
 
-        <!-- Pending Comments Tab -->
-        <div class="tab-pane fade <?= $activeTab === 'pending' ? 'show active' : '' ?>" id="pending-comments" role="tabpanel" aria-labelledby="pending-tab">
-            <?php if (($totalComments ?? 0) === 0): ?>
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle me-2"></i>Không có bình luận chờ duyệt
-                </div>
-            <?php else: ?>
-                <div class="comments-toolbar mb-3 d-flex gap-2 align-items-center">
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input" id="selectPendingComments" title="Chọn tất cả">
-                        <label class="form-check-label" for="selectPendingComments">Chọn tất cả</label>
-                    </div>
-                    <button type="button" class="btn btn-danger btn-sm" id="deletePendingBtn" style="display:none;">
-                        <i class="fas fa-trash me-1"></i><span id="deletePendingCountText">Xoá</span>
-                    </button>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover admin-comments-table" id="pendingCommentsTable">
-                        <thead>
-                            <tr>
-                                <th style="width: 40px;"><input type="checkbox" class="form-check-input" id="pendingHeaderCheckbox" onchange="toggleAllCheckboxes(this, 'pendingCommentsTable')"></th>
-                                <th>Người bình luận</th>
-                                <th>Bài đăng</th>
-                                <th>Nội dung</th>
-                                <th>Ngày bình luận</th>
-                                <th>Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($comments as $comment): ?>
-                                <tr class="admin-comment-row" data-comment-id="<?= $comment['id'] ?>">
-                                    <td>
-                                        <input type="checkbox" class="form-check-input comment-checkbox" value="<?= $comment['id'] ?>" onchange="updateDeleteButton()">
-                                    </td>
-                                    <td><strong><?= htmlspecialchars($comment['username']) ?></strong></td>
-                                    <td>
-                                        <a href="<?= BASE_URL ?>news/detail/<?= (int)$comment['news_id'] ?>" target="_blank" class="text-decoration-none text-primary">
-                                            <?= htmlspecialchars(substr($comment['news_title'], 0, 35)) ?>
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <span class="admin-comment-preview">
-                                            <?= htmlspecialchars(substr($comment['content'], 0, 50)) ?>...
-                                        </span>
-                                    </td>
-                                    <td class="text-muted small">
-                                        <?= date('d/m/Y H:i', strtotime($comment['created_at'])) ?>
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-success btn-approve" data-comment-id="<?= $comment['id'] ?>">
-                                            <i class="fas fa-check me-1"></i>Duyệt
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-danger btn-delete" data-comment-id="<?= $comment['id'] ?>">
-                                            <i class="fas fa-trash me-1"></i>Xoá
-                                        </button>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php endif; ?>
-        </div>
+        <!-- Pending tab removed -->
 
         <!-- Reported Comments Tab -->
         <div class="tab-pane fade <?= $activeTab === 'reported' ? 'show active' : '' ?>" id="reported-comments" role="tabpanel" aria-labelledby="reported-tab">

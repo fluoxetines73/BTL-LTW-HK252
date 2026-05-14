@@ -42,10 +42,26 @@ class AdminCommentController extends Controller {
             $reportedCount = count($this->commentModel->getReported());
             $pendingCount = count($this->commentModel->getPending());
 
-            $stats = [
+            // comment-specific stats (for the comments view)
+            $commentStats = [
                 'total' => $allCount,
                 'reported' => $reportedCount,
-                'pending' => $pendingCount
+                'pending' => $pendingCount,
+            ];
+
+            // layout/global stats (used by admin layout header)
+            $userModel = $this->model('User');
+            $movieModel = $this->model('Movie');
+            $showtimeModel = $this->model('Showtime');
+            $comboModel = $this->model('Combo');
+            $newsModel = $this->model('News');
+
+            $layoutStats = [
+                'users' => $userModel->count(),
+                'movies' => $movieModel->count(),
+                'showtimes' => $showtimeModel->count(),
+                'combos' => $comboModel->count(),
+                'news' => $newsModel->count(),
             ];
 
             // Pagination
@@ -66,7 +82,10 @@ class AdminCommentController extends Controller {
                 'comments' => $commentsPaged,
                 'activeTab' => $tab,
                 'selectedNewsId' => $newsId,
-                'stats' => $stats,
+                // layout stats for the header cards
+                'stats' => $layoutStats,
+                // comment-specific stats for badges and counts inside the page
+                'commentStats' => $commentStats,
                 'page' => $page,
                 'totalPages' => $totalPages,
                 'perPage' => $perPage,

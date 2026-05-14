@@ -54,7 +54,6 @@ function updateDeleteButton() {
     const allChecked = document.querySelectorAll('tbody .comment-checkbox:checked');
     const deleteButtons = {
         all: document.getElementById('deleteSelectedBtn'),
-        pending: document.getElementById('deletePendingBtn'),
         reported: document.getElementById('deleteReportedBtn')
     };
     
@@ -116,9 +115,7 @@ function deleteComment(commentId, btn) {
 
 // Delete multiple comments
 document.addEventListener('click', function(e) {
-    if (e.target.closest('#deleteSelectedBtn') || 
-        e.target.closest('#deletePendingBtn') || 
-        e.target.closest('#deleteReportedBtn')) {
+    if (e.target.closest('#deleteSelectedBtn') || e.target.closest('#deleteReportedBtn')) {
         
         const btn = e.target.closest('button[id$="Btn"]');
         const table = btn.closest('.tab-pane').querySelector('table');
