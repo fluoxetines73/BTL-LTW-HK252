@@ -277,6 +277,21 @@ class Movie extends Model {
             $db->beginTransaction();
 
             $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $sqlCheck = "SELECT COUNT(*) FROM bookings b
+                         JOIN showtimes st ON b.showtime_id = st.id
+                         WHERE st.movie_id IN ($placeholders)";
+            
+            $stmtCheck = $db->prepare($sqlCheck);
+            $stmtCheck->execute($ids);
+            $totalBookings = $stmtCheck->fetchColumn();
+
+            if ($totalBookings > 0) {
+                
+                $db->rollBack();
+                
+                error_log("Bulk Delete Aborted: Phát hiện $totalBookings đơn hàng liên quan đến danh sách phim đang cố xóa.");
+                return false; 
+            }
 
             $sqlShowtimes = "DELETE FROM showtimes WHERE movie_id IN ($placeholders)";
             $stmt1 = $db->prepare($sqlShowtimes);
@@ -321,5 +336,14 @@ class Movie extends Model {
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchColumn() > 0;
+    }
+    public function hasBookings($movieId) {
+        $sql = "SELECT COUNT(*) FROM bookings b
+                JOIN showtimes st ON b.showtime_id = st.id
+                WHERE st.movie_id = :movie_id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':movie_id' => $movieId]);
+        
+        return $stmt->fetchColumn() > 0; 
     }
 }
