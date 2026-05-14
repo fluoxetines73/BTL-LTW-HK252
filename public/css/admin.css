@@ -282,17 +282,62 @@ body {
     text-overflow: ellipsis;
 }
 
+/* Sidebar Overlay Backdrop */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.open {
+    display: block;
+    opacity: 1;
+}
+
+/* Sidebar Close Button - Mobile Only */
+.sidebar-close-btn {
+    display: none;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: var(--cgv-red);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    z-index: 1001;
+    transition: color 0.2s ease;
+}
+
+.sidebar-close-btn:hover {
+    color: #c0392b;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
-        width: 100%;
-        height: auto;
+        width: 280px;
+        height: 100vh;
         position: fixed;
+        top: 0;
+        left: 0;
     }
 
     .sidebar.open {
         transform: translateX(0);
+    }
+
+    .sidebar-close-btn {
+        display: block;
     }
 
     .main-content {
@@ -301,10 +346,11 @@ body {
     }
 
     .admin-header {
-        flex-direction: column;
+        flex-direction: row;
         gap: 8px;
-        text-align: center;
+        text-align: left;
         padding: 10px 12px;
+        flex-wrap: wrap;
     }
 
     .admin-stats-bar {
@@ -321,9 +367,44 @@ body {
     }
 }
 
+/* Tablet View (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar {
+        width: var(--sidebar-collapsed-width);
+    }
+
+    .sidebar .sidebar-text {
+        display: none;
+    }
+
+    .sidebar .sidebar-logo h3 {
+        font-size: 0;
+    }
+
+    .sidebar .sidebar-logo h3 i {
+        font-size: 1.5rem;
+    }
+
+    .sidebar .sidebar-menu a {
+        justify-content: center;
+    }
+
+    .sidebar .sidebar-menu a i {
+        margin-right: 0;
+    }
+
+    .main-content {
+        margin-left: var(--sidebar-collapsed-width);
+    }
+
+    .sidebar.collapsed ~ .main-content {
+        margin-left: var(--sidebar-collapsed-width);
+    }
+}
+
 @media (max-width: 480px) {
     .sidebar {
-        overflow-x: auto;
+        width: 260px;
     }
 
     .admin-header-title {

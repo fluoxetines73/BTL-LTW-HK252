@@ -1,5 +1,6 @@
 
 -- Bước 1: Tắt kiểm tra khóa ngoại để dọn dẹp dữ liệu cũ an toàn[cite: 9]
+SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE `tickets`;
 TRUNCATE TABLE `booking_combos`;

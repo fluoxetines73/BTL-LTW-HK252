@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     var sidebar = document.getElementById('sidebar');
     var toggleBtn = document.getElementById('sidebar-toggle');
+    var closeBtn = document.getElementById('sidebar-close-btn');
 
     if (!sidebar || !toggleBtn) {
         console.warn('Admin Sidebar: Required elements not found');
@@ -9,14 +10,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var STORAGE_KEY = 'sidebar-collapsed';
 
+    // Create overlay element for mobile
+    var overlay = document.createElement('div');
+    overlay.className = 'sidebar-overlay';
+    overlay.id = 'sidebar-overlay';
+    document.body.appendChild(overlay);
+
+    function openSidebar() {
+        sidebar.classList.add('open');
+        if (window.innerWidth < 768) {
+            overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
     function initializeSidebarState() {
         var savedState = localStorage.getItem(STORAGE_KEY);
         var isMobile = window.innerWidth < 768;
 
         if (isMobile) {
             sidebar.classList.remove('collapsed');
-            sidebar.classList.remove('open');
+            closeSidebar();
         } else {
+            closeSidebar();
             if (savedState === 'true') {
                 sidebar.classList.add('collapsed');
             } else {
@@ -34,7 +56,11 @@ document.addEventListener('DOMContentLoaded', function () {
         var isMobile = window.innerWidth < 768;
 
         if (isMobile) {
-            sidebar.classList.toggle('open');
+            if (sidebar.classList.contains('open')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
         } else {
             sidebar.classList.toggle('collapsed');
             var isCollapsed = sidebar.classList.contains('collapsed');
@@ -42,6 +68,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Close button inside sidebar
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeSidebar();
+        });
+    }
+
+    // Click outside to close (including overlay)
     document.addEventListener('click', function (e) {
         var isMobile = window.innerWidth < 768;
 
@@ -51,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var clickedOutside = !sidebar.contains(e.target) && !toggleBtn.contains(e.target);
 
         if (clickedOutside) {
-            sidebar.classList.remove('open');
+            closeSidebar();
         }
     });
 
