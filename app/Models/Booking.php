@@ -2,27 +2,22 @@
 class Booking extends Model {
     protected string $table = 'bookings';
 
-    public function getOccupiedSeats($showtimeId) {
-        $sql = "
-            SELECT CONCAT(s.row_label, s.col_number) AS seat_code
-            FROM seats s
-            JOIN tickets t ON s.id = t.seat_id
-            JOIN bookings b ON t.booking_id = b.id
-            WHERE b.showtime_id = :showtime_id AND b.status != 'cancelled'
-
-            UNION
-
-            SELECT CONCAT(s.row_label, s.col_number) AS seat_code
-            FROM seats s
-            JOIN seat_reservations sr ON s.id = sr.seat_id
-            WHERE sr.showtime_id = :showtime_id AND sr.status = 'locked' AND sr.locked_until > NOW()
-        ";
+    public function getOccupiedSeats($showtimeId, $currentUserId = 0) {
+        $sql = "SELECT DISTINCT CONCAT(s.row_label, s.col_number) as seat_code
+                FROM seats s
+                LEFT JOIN tickets t ON s.id = t.seat_id
+                LEFT JOIN bookings b ON t.booking_id = b.id
+                LEFT JOIN seat_reservations sr ON s.id = sr.seat_id
+                WHERE (b.showtime_id = :sid1 AND b.status != 'cancelled')
+                OR (sr.showtime_id = :sid2 AND sr.locked_until > NOW() AND sr.user_id != :uid)";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':showtime_id' => $showtimeId,
+            ':sid1' => $showtimeId,
+            ':sid2' => $showtimeId,
+            ':uid'  => $currentUserId // Truyền ID người dùng hiện tại vào đây
         ]);
-
+        
         return $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
 
@@ -66,6 +61,21 @@ class Booking extends Model {
             ':combo_id'   => $data['combo_id'],
             ':quantity'   => $data['quantity'],
             ':price'      => $data['price']
+        ]);
+    }
+    public function updateSeatReservation($showtimeId, $seatId, $userId, $action) {
+        if ($action === 'lock') {
+            $sql = "INSERT INTO seat_reservations (showtime_id, seat_id, user_id, status, locked_until) 
+                    VALUES (:showtime_id, :seat_id, :user_id, 'locked', DATE_ADD(NOW(), INTERVAL 5 MINUTE))
+                    ON DUPLICATE KEY UPDATE status='locked', locked_until=DATE_ADD(NOW(), INTERVAL 5 MINUTE)";
+        } else {
+            $sql = "DELETE FROM seat_reservations WHERE showtime_id = :showtime_id AND seat_id = :seat_id AND user_id = :user_id";
+        }
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            ':showtime_id' => $showtimeId,
+            ':seat_id'     => $seatId,
+            ':user_id'     => $userId
         ]);
     }
 }

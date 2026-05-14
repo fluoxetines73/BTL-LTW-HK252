@@ -204,11 +204,15 @@ class ProductController extends Controller {
                 $seatId = $stmt->fetchColumn();
 
                 if ($seatId) {
-                    $bookingModel->createTicket([
+                    $res = $bookingModel->createTicket([
                         'booking_id' => $bookingId,
                         'seat_id'    => $seatId,
                         'price'      => $realTicketPrice
                     ]);
+                    if (!$res) error_log("Lỗi: Không thể insert vào bảng tickets cho ghế $code");
+                } else {
+                   
+                    error_log("Lỗi: Không tìm thấy seat_id cho ghế $code trong room $roomId");
                 }
             }
 
