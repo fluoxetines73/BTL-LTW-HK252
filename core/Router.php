@@ -19,7 +19,9 @@ class Router {
                 $this->controllerFoundFromUrl = true;
                 unset($url[0], $url[1]);
                 $url = array_values($url);
-                $url = array_combine(range(1, count($url)), $url);
+                if (count($url) > 0) {
+                    $url = array_combine(range(1, count($url)), $url);
+                }
             }
         }
 
