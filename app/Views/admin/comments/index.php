@@ -16,11 +16,15 @@ $totalComments = $totalComments ?? $stats['total'];
 ?>
 
 <div class="admin-section admin-comments">
-    <div class="admin-section-header">
-        <div class="admin-section-title">
-            <h2 class="admin-page-title">Quản lý bình luận</h2>
-            <p class="admin-page-subtitle">Duyệt, xoá, và xử lý báo cáo bình luận từ người dùng</p>
-        </div>
+    <nav class="admin-breadcrumb" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/admin_dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Quản lý Bình luận</li>
+        </ol>
+    </nav>
+
+    <div class="page-header page-header-compact">
+        <h2 class="page-title"><i class="fas fa-comments"></i> Quản lý bình luận</h2>
     </div>
 
     <!-- Stats Cards -->
