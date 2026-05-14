@@ -346,4 +346,48 @@ class Movie extends Model {
         
         return $stmt->fetchColumn() > 0; 
     }
+    public function getClientMovies($status, $genreSlugs = [], $keyword = '') {
+        $sql = "SELECT m.* FROM {$this->table} m ";
+        
+        if (!empty($genreSlugs)) {
+            $sql .= " JOIN movie_genres mg ON m.id = mg.movie_id 
+                      JOIN genres g ON mg.genre_id = g.id ";
+        }
+        
+        // Sửa :status thành ?
+        $sql .= " WHERE m.status = ? ";
+
+        if (!empty($genreSlugs)) {
+            $inQuery = implode(',', array_fill(0, count($genreSlugs), '?'));
+            $sql .= " AND g.slug IN ($inQuery) ";
+        }
+
+        if (!empty($keyword)) {
+            $sql .= " AND (m.title LIKE ? OR m.director LIKE ?) ";
+        }
+
+        $sql .= " GROUP BY m.id ORDER BY m.release_date DESC";
+
+        $stmt = $this->db->prepare($sql);
+        
+        $bindIndex = 1;
+        // Bind status
+        $stmt->bindValue($bindIndex++, $status);
+        
+        // Bind genres
+        if (!empty($genreSlugs)) {
+            foreach ($genreSlugs as $slug) {
+                $stmt->bindValue($bindIndex++, $slug);
+            }
+        }
+        
+        // Bind keyword
+        if (!empty($keyword)) {
+            $stmt->bindValue($bindIndex++, "%{$keyword}%");
+            $stmt->bindValue($bindIndex++, "%{$keyword}%");
+        }
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
