@@ -66,7 +66,15 @@ body {
     font-weight: bold;
 }
 
-.sidebar-menu {
+/* Override srtdash sidebar-menu styles */
+.sidebar .sidebar-menu {
+    position: static;
+    left: auto;
+    top: auto;
+    width: auto;
+    height: auto;
+    background: transparent;
+    box-shadow: none;
     list-style: none;
     padding: 0;
     margin: 0;
@@ -415,6 +423,31 @@ body {
 
     .admin-stats-bar {
         grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Override srtdash responsive sidebar styles */
+@media (min-width: 1200px) and (max-width: 1364px) {
+    .sidebar .sidebar-menu {
+        position: static;
+        width: auto;
+        left: auto;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .sidebar .sidebar-menu {
+        position: static;
+        width: auto;
+        left: auto;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .sidebar .sidebar-menu {
+        position: static;
+        width: auto;
+        left: auto;
     }
 }
 
