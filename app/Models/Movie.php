@@ -346,7 +346,7 @@ class Movie extends Model {
         
         return $stmt->fetchColumn() > 0; 
     }
-    public function getClientMovies($status, $genreSlugs = [], $keyword = '') {
+    public function getClientMovies($status, $genreSlugs = [], $keyword = '', $limit = 8, $offset = 0) {
         $sql = "SELECT m.* FROM {$this->table} m ";
         
         if (!empty($genreSlugs)) {
@@ -354,7 +354,6 @@ class Movie extends Model {
                       JOIN genres g ON mg.genre_id = g.id ";
         }
         
-        // Sửa :status thành ?
         $sql .= " WHERE m.status = ? ";
 
         if (!empty($genreSlugs)) {
@@ -366,28 +365,67 @@ class Movie extends Model {
             $sql .= " AND (m.title LIKE ? OR m.director LIKE ?) ";
         }
 
-        $sql .= " GROUP BY m.id ORDER BY m.release_date DESC";
+        $sql .= " GROUP BY m.id ORDER BY m.release_date DESC LIMIT ? OFFSET ?";
 
         $stmt = $this->db->prepare($sql);
         
         $bindIndex = 1;
-        // Bind status
         $stmt->bindValue($bindIndex++, $status);
         
-        // Bind genres
         if (!empty($genreSlugs)) {
             foreach ($genreSlugs as $slug) {
                 $stmt->bindValue($bindIndex++, $slug);
             }
         }
         
-        // Bind keyword
+        if (!empty($keyword)) {
+            $stmt->bindValue($bindIndex++, "%{$keyword}%");
+            $stmt->bindValue($bindIndex++, "%{$keyword}%");
+        }
+
+        $stmt->bindValue($bindIndex++, (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue($bindIndex++, (int)$offset, PDO::PARAM_INT);
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function countClientMovies($status, $genreSlugs = [], $keyword = '') {
+        $sql = "SELECT COUNT(DISTINCT m.id) FROM {$this->table} m ";
+        
+        if (!empty($genreSlugs)) {
+            $sql .= " JOIN movie_genres mg ON m.id = mg.movie_id 
+                      JOIN genres g ON mg.genre_id = g.id ";
+        }
+        
+        $sql .= " WHERE m.status = ? ";
+
+        if (!empty($genreSlugs)) {
+            $inQuery = implode(',', array_fill(0, count($genreSlugs), '?'));
+            $sql .= " AND g.slug IN ($inQuery) ";
+        }
+
+        if (!empty($keyword)) {
+            $sql .= " AND (m.title LIKE ? OR m.director LIKE ?) ";
+        }
+
+        $stmt = $this->db->prepare($sql);
+        
+        $bindIndex = 1;
+        $stmt->bindValue($bindIndex++, $status);
+        
+        if (!empty($genreSlugs)) {
+            foreach ($genreSlugs as $slug) {
+                $stmt->bindValue($bindIndex++, $slug);
+            }
+        }
+        
         if (!empty($keyword)) {
             $stmt->bindValue($bindIndex++, "%{$keyword}%");
             $stmt->bindValue($bindIndex++, "%{$keyword}%");
         }
 
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchColumn();
     }
 }
