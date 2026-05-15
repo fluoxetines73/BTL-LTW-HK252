@@ -1,3 +1,10 @@
+
+<?php
+/**
+ * @var array $movie 
+ * @var array $currentGenres 
+ */
+?>
 <div class="card shadow-sm border-0">
     <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
         <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Chỉnh sửa: <span class="text-info"><?= htmlspecialchars($movie['title']) ?></span></h5>

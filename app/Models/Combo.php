@@ -47,6 +47,7 @@ class Combo extends Model {
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
+    
     // Hàm đếm tổng số combo để tính số trang
     public function countAdminCombos($keyword = '', $status = 'all') {
         $sql = "SELECT COUNT(*) FROM combos WHERE 1=1";
@@ -91,10 +92,7 @@ class Combo extends Model {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
-    /**
-     * Xóa hàng loạt Combo
-     */
+    
     public function deleteMultipleCombos(array $ids) {
         if (empty($ids)) return false;
         $db = Database::getInstance()->getPdo();

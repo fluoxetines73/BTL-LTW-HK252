@@ -281,36 +281,25 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     });
 
+  
     // 2. Lắng nghe sự kiện click suất chiếu
     function attachShowtimeEvents() {
         document.querySelectorAll('.st-btn').forEach(btn => {
             btn.addEventListener('click', function() {
-                // Đổi UI trạng thái nút bấm
-                document.querySelectorAll('.st-btn').forEach(b => {
-                    b.classList.remove('btn-danger', 'text-white');
-                    b.classList.add('btn-outline-danger');
-                });
-                this.classList.remove('btn-outline-danger');
-                this.classList.add('btn-danger', 'text-white');
                 
-                // Lấy ID và Giá vé từ suất chiếu hiện tại
                 const showtimeId = this.dataset.id;
-                ticketPrice = parseInt(this.dataset.price); // Gán giá động
+                ticketPrice = parseInt(this.dataset.price); 
                 
-                // Gán vào Form
                 selectedShowtimeInput.value = showtimeId;
                 ticketPriceInput.value = ticketPrice;
-                
-                // Hiển thị giá mới ra Label
                 ticketPriceLabel.innerText = `(${new Intl.NumberFormat('vi-VN').format(ticketPrice)}đ/ghế)`;
 
-                // Mở khóa bản đồ ghế
                 seatMapSection.style.opacity = '1';
                 seatMapSection.style.pointerEvents = 'auto';
                 selectedSeatsArr = [];
                 updateSeatDisplay();
 
-                // Lấy dữ liệu ghế đã bán
+                // Lấy dữ liệu ghế lần đầu
                 fetch(`<?= BASE_URL ?>api/getOccupiedSeats?showtime_id=${showtimeId}`)
                     .then(res => res.json())
                     .then(data => {
@@ -322,6 +311,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                     seat.classList.add('occupied');
                                 }
                             });
+                            
+                            
+                            startSeatPolling(showtimeId); 
+                           
                         }
                     });
             });
@@ -331,17 +324,50 @@ document.addEventListener('DOMContentLoaded', function() {
     // 3. Xử lý click ghế
     seats.forEach(seat => {
         seat.addEventListener('click', function() {
+            // Nếu ghế đã bị người khác mua (màu đỏ), không cho click
             if (this.classList.contains('occupied')) return;
             
-            this.classList.toggle('selected');
-            const seatId = this.dataset.seat;
+            const seatId = this.dataset.seat; // VD: 'A1'
+            const showtimeId = selectedShowtimeInput.value;
+            
+            // Xác định hành động: Nếu đang xanh thì là 'unlock', nếu đang trắng thì là 'lock'
+            const action = this.classList.contains('selected') ? 'unlock' : 'lock';
 
-            if (this.classList.contains('selected')) {
-                selectedSeatsArr.push(seatId);
-            } else {
-                selectedSeatsArr = selectedSeatsArr.filter(id => id !== seatId);
-            }
-            updateSeatDisplay();
+            // Gửi yêu cầu AJAX đến ApiController
+            fetch(`<?= BASE_URL ?>api/updateReservation`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    showtime_id: showtimeId,
+                    seat_code: seatId,
+                    action: action
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Nếu Server lưu thành công, mới đổi màu ghế trên giao diện
+                    this.classList.toggle('selected');
+                    
+                    if (this.classList.contains('selected')) {
+                        selectedSeatsArr.push(seatId);
+                    } else {
+                        selectedSeatsArr = selectedSeatsArr.filter(id => id !== seatId);
+                    }
+                    updateSeatDisplay();
+                } else {
+                    // Nếu thất bại (VD: có người khác nhanh tay hơn khóa mất)
+                    alert(data.message || "Ghế này vừa có người giữ chỗ, vui lòng chọn ghế khác!");
+                    // Tải lại danh sách ghế bận để cập nhật màu đỏ
+                    location.reload(); 
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Có lỗi xảy ra khi giữ chỗ. Vui lòng thử lại!");
+            });
         });
     });
 
@@ -362,4 +388,36 @@ document.addEventListener('DOMContentLoaded', function() {
     // Lắng nghe combo
     document.querySelectorAll('.combo-qty').forEach(input => input.addEventListener('input', updateSeatDisplay));
 });
+function startSeatPolling(showtimeId) {
+    // Xóa interval cũ nếu có để tránh chạy chồng chéo
+    if (window.seatInterval) clearInterval(window.seatInterval);
+
+    window.seatInterval = setInterval(() => {
+        fetch(`<?= BASE_URL ?>api/getOccupiedSeats?showtime_id=${showtimeId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const occupiedSeats = data.data;
+                    const seats = document.querySelectorAll('.seat');
+                    
+                    seats.forEach(seat => {
+                        const seatCode = seat.dataset.seat;
+                        // Nếu ghế bận và KHÔNG PHẢI ghế mình đang chọn xanh
+                        if (occupiedSeats.includes(seatCode)) {
+                            if (!seat.classList.contains('selected')) {
+                                seat.classList.add('occupied');
+                                seat.classList.remove('available');
+                            }
+                        } else {
+                            // Nếu ghế đó được giải phóng (hết hạn 5p) thì cho trắng lại
+                            if (!seat.classList.contains('selected')) {
+                                seat.classList.remove('occupied');
+                                seat.classList.add('available');
+                            }
+                        }
+                    });
+                }
+            });
+    }, 3000); // Cứ 3 giây cập nhật 1 lần
+}
 </script>

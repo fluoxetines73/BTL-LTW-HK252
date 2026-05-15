@@ -59,13 +59,17 @@ class Order extends Model {
     }
 
     public function countAdminOrders($keyword = '', $status = 'all', $paymentStatus = 'all') {
+        // Đã thêm JOIN tới showtimes và movies
         $sql = "SELECT COUNT(*) FROM bookings b 
                 JOIN users u ON b.user_id = u.id 
+                JOIN showtimes st ON b.showtime_id = st.id
+                JOIN movies m ON st.movie_id = m.id
                 WHERE 1=1";
         $params = [];
         if (!empty($keyword)) {
-            $sql .= " AND (b.booking_code LIKE :kw1 OR u.full_name LIKE :kw2 OR u.email LIKE :kw3)";
-            $params[':kw1'] = $params[':kw2'] = $params[':kw3'] = "%$keyword%";
+            // Nâng cấp: Cho phép tìm kiếm đơn hàng theo cả Tên Phim (m.title)
+            $sql .= " AND (b.booking_code LIKE :kw1 OR u.full_name LIKE :kw2 OR u.email LIKE :kw3 OR m.title LIKE :kw4)";
+            $params[':kw1'] = $params[':kw2'] = $params[':kw3'] = $params[':kw4'] = "%$keyword%";
         }
         if ($status !== 'all') {
             $sql .= " AND b.status = :status";
@@ -81,15 +85,19 @@ class Order extends Model {
     }
 
     public function searchAdminOrders($keyword = '', $status = 'all', $paymentStatus = 'all', $sort = 'newest', $limit = 10, $offset = 0) {
-        $sql = "SELECT b.*, u.full_name, u.email 
+        // Đã thêm JOIN tới showtimes và movies, SELECT thêm m.title
+        $sql = "SELECT b.*, u.full_name, u.email, m.title as movie_title
                 FROM bookings b 
                 JOIN users u ON b.user_id = u.id 
+                JOIN showtimes st ON b.showtime_id = st.id
+                JOIN movies m ON st.movie_id = m.id
                 WHERE 1=1";
         $params = [];
         
         if (!empty($keyword)) {
-            $sql .= " AND (b.booking_code LIKE :kw1 OR u.full_name LIKE :kw2 OR u.email LIKE :kw3)";
-            $params[':kw1'] = $params[':kw2'] = $params[':kw3'] = "%$keyword%";
+            // Nâng cấp: Cho phép tìm kiếm đơn hàng theo cả Tên Phim (m.title)
+            $sql .= " AND (b.booking_code LIKE :kw1 OR u.full_name LIKE :kw2 OR u.email LIKE :kw3 OR m.title LIKE :kw4)";
+            $params[':kw1'] = $params[':kw2'] = $params[':kw3'] = $params[':kw4'] = "%$keyword%";
         }
         if ($status !== 'all') {
             $sql .= " AND b.status = :status";

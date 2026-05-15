@@ -20,38 +20,34 @@ class MoviesController extends Controller {
     public function current(): void {
         $movieModel = $this->model('Movie');
         $selectedGenres = $this->filterGenres();
+        $keyword = trim((string)($_GET['q'] ?? ''));
 
-        if (!empty($selectedGenres)) {
-            $movies = $movieModel->getMoviesByStatusAndGenre('now_showing', $selectedGenres);
-        } else {
-            $movies = $movieModel->getMoviesByStatus('now_showing');
-        }
+        $movies = $movieModel->getClientMovies('now_showing', $selectedGenres, $keyword);
 
         $this->view('layouts/main', [
             'title' => 'Phim Đang Chiếu',
             'content' => 'movies/current',
             'nowShowing' => $movies,
             'genres' => $this->genres,
-            'selectedGenres' => $selectedGenres
+            'selectedGenres' => $selectedGenres,
+            'keyword' => $keyword
         ]);
     }
 
     public function coming(): void {
         $movieModel = $this->model('Movie');
         $selectedGenres = $this->filterGenres();
+        $keyword = trim((string)($_GET['q'] ?? ''));
 
-        if (!empty($selectedGenres)) {
-            $movies = $movieModel->getMoviesByStatusAndGenre('coming_soon', $selectedGenres);
-        } else {
-            $movies = $movieModel->getMoviesByStatus('coming_soon');
-        }
+        $movies = $movieModel->getClientMovies('coming_soon', $selectedGenres, $keyword);
 
         $this->view('layouts/main', [
             'title' => 'Phim Sắp Chiếu',
             'content' => 'movies/coming',
             'comingSoon' => $movies,
             'genres' => $this->genres,
-            'selectedGenres' => $selectedGenres
+            'selectedGenres' => $selectedGenres,
+            'keyword' => $keyword
         ]);
     }
 

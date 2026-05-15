@@ -104,6 +104,11 @@ class AdminMovieController extends Controller {
     public function delete($id = null) {
         if ($id) {
             $movieModel = $this->model('Movie');
+            if ($movieModel->hasBookings($id)) {
+                $_SESSION['error'] = "Không thể xóa! Phim này đã phát sinh giao dịch đặt vé. Vui lòng chuyển trạng thái sang 'Ngừng chiếu' để bảo toàn dữ liệu doanh thu.";
+                $this->redirect('admin/movie/index');
+                return;
+            }
             $movie = $movieModel->getMovieById($id);
 
             if ($movie) {
