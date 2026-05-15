@@ -375,12 +375,12 @@
                             <div class="mb-2">
                                 <label class="form-label small">Loại avatar</label>
                                 <select class="form-select" name="leadership[<?= $index ?>][avatar_type]" 
-                                        onchange="toggleAvatarInput(this, <?= $index ?>)">
+                                        onchange="toggleAvatarInput(this, <?= $member['id'] ?>)">
                                     <option value="icon" <?= $member['avatar_type'] === 'icon' ? 'selected' : '' ?>>Icon FontAwesome</option>
                                     <option value="image" <?= $member['avatar_type'] === 'image' ? 'selected' : '' ?>>Hình ảnh</option>
                                 </select>
                             </div>
-                            <div class="mb-2 avatar-input-<?= $index ?>">
+                            <div class="mb-2 avatar-input-<?= $member['id'] ?>">
                                 <?php if ($member['avatar_type'] === 'icon'): ?>
                                     <label class="form-label small">Icon class</label>
                                     <input type="text" class="form-control" 
