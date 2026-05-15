@@ -211,18 +211,15 @@
 					<div class="homepage-search-input-wrap">
 						<i class="fas fa-magnifying-glass homepage-search-icon"></i>
 						<input id="homepage-search-input" type="search" name="q" class="homepage-search-input" placeholder="Nhập từ khóa: phim, khuyến mãi, sự kiện...">
+						<button type="submit" class="homepage-search-btn-inline">
+							<i class="fas fa-search"></i>
+						</button>
 					</div>
 					<div class="homepage-search-chip-row" role="group" aria-label="Lọc nhanh theo chủ đề">
 						<button type="button" class="homepage-search-chip is-active" data-section="">Tất cả</button>
 						<button type="button" class="homepage-search-chip" data-section="tin-tuc">Tin tức</button>
 						<button type="button" class="homepage-search-chip" data-section="khuyen-mai">Khuyến mãi</button>
 						<button type="button" class="homepage-search-chip" data-section="phim-hay-thang">Phim hay tháng</button>
-					</div>
-					<div class="d-flex gap-2 justify-content-end flex-wrap mt-3">
-						<button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Đóng</button>
-						<button type="submit" class="homepage-search-btn">
-							<i class="fas fa-search me-2"></i>Tìm kiếm
-						</button>
 					</div>
 				</form>
 			</div>

@@ -1,4 +1,21 @@
 <?php
+// Check PHP version compatibility
+if (PHP_VERSION_ID < 70400) {
+    die("Error: This application requires PHP 7.4.0 or higher. Current version: " . PHP_VERSION);
+}
+
+// Check required extensions
+$required_extensions = ['pdo', 'pdo_mysql'];
+$missing_extensions = [];
+foreach ($required_extensions as $ext) {
+    if (!extension_loaded($ext)) {
+        $missing_extensions[] = $ext;
+    }
+}
+if (!empty($missing_extensions)) {
+    die("Error: Missing required PHP extensions: " . implode(', ', $missing_extensions));
+}
+
 define('ROOT', dirname(__FILE__));
 define('APPROOT', ROOT . '/app');
 

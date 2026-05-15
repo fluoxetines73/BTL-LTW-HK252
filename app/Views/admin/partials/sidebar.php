@@ -43,6 +43,11 @@
             </a>
         </li>
         <li>
+            <a href="<?= BASE_URL ?>admin/comments/index" class="<?= ($activeSection ?? '') === 'comments' ? 'active' : '' ?>">
+                <i class="fas fa-comments"></i> <span class="sidebar-text">Quản lý Bình luận</span>
+            </a>
+        </li>
+        <li>
             <a href="<?= BASE_URL ?>admin/order/index" class="<?= ($activeSection ?? '') === 'order' ? 'active' : '' ?>">
                 <i class="fas fa-receipt"></i> <span class="sidebar-text">Quản lý Đơn hàng</span>
             </a>
