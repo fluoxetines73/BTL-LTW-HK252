@@ -68,20 +68,13 @@ class AdminAboutController extends Controller {
                 $this->updateCoreValues($_POST['values']);
             }
 
-<<<<<<< HEAD
             // Store mapping of temp IDs to actual database IDs
             $tempIdToDbId = [];
-=======
->>>>>>> remove-ai-slops
             if (isset($_POST['leadership'])) {
                 $tempIdToDbId = $this->updateLeadership($_POST['leadership']);
             }
 
-<<<<<<< HEAD
             $this->handleFileUploads($tempIdToDbId);
-=======
-            $this->handleFileUploads();
->>>>>>> remove-ai-slops
 
             $_SESSION['success'] = 'Cập nhật trang Giới thiệu thành công.';
         } catch (Exception $e) {
@@ -217,11 +210,7 @@ class AdminAboutController extends Controller {
         }
     }
 
-<<<<<<< HEAD
     private function updateLeadership(array $items): array {
-=======
-    private function updateLeadership(array $items): void {
->>>>>>> remove-ai-slops
         $leadershipModel = $this->model('AboutLeadership');
         
         $existingIds = array_column($leadershipModel->getAllItemsAdmin(), 'id');
