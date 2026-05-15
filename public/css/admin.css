@@ -24,6 +24,7 @@ body {
 .admin-container {
     display: flex;
     min-height: 100vh;
+    position: relative;
 }
 
 .main-content {
@@ -31,6 +32,12 @@ body {
     padding: 30px;
     margin-left: var(--sidebar-width);
     transition: margin-left 0.3s ease;
+    overflow-x: auto;
+}
+
+/* When sidebar is collapsed */
+.admin-container.sidebar-collapsed .main-content {
+    margin-left: var(--sidebar-collapsed-width);
 }
 
 /* Sidebar Base - Light Theme */
@@ -59,7 +66,15 @@ body {
     font-weight: bold;
 }
 
-.sidebar-menu {
+/* Override srtdash sidebar-menu styles */
+.sidebar .sidebar-menu {
+    position: static;
+    left: auto;
+    top: auto;
+    width: auto;
+    height: auto;
+    background: transparent;
+    box-shadow: none;
     list-style: none;
     padding: 0;
     margin: 0;
@@ -117,11 +132,6 @@ body {
 
 .sidebar.collapsed .sidebar-menu a i {
     margin-right: 0;
-}
-
-/* Main content margin adjustment when sidebar is collapsed */
-.sidebar.collapsed ~ .main-content {
-    margin-left: var(--sidebar-collapsed-width);
 }
 
 /* Toggle Button */
@@ -413,6 +423,31 @@ body {
 
     .admin-stats-bar {
         grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Override srtdash responsive sidebar styles */
+@media (min-width: 1200px) and (max-width: 1364px) {
+    .sidebar .sidebar-menu {
+        position: static;
+        width: auto;
+        left: auto;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .sidebar .sidebar-menu {
+        position: static;
+        width: auto;
+        left: auto;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .sidebar .sidebar-menu {
+        position: static;
+        width: auto;
+        left: auto;
     }
 }
 

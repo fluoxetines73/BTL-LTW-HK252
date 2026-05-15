@@ -5,6 +5,152 @@
  */
 ?>
 
+<style>
+.user-edit-page {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.user-edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.user-edit-title {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.avatar-section {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 20px;
+    align-items: start;
+    margin-bottom: 22px;
+}
+
+.avatar-preview img {
+    width: 220px;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+}
+
+.avatar-upload h5 {
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.file-input-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 110px;
+    border: 2px dashed #d1d5db;
+    border-radius: 10px;
+    background: #f9fafb;
+    color: #374151;
+    cursor: pointer;
+    transition: all .2s ease;
+    padding: 10px;
+    text-align: center;
+}
+
+.file-input-label:hover {
+    border-color: #E71A0F;
+    background: #fff5f4;
+}
+
+.file-input-label i {
+    font-size: 20px;
+    color: #E71A0F;
+    margin-bottom: 6px;
+}
+
+.form-help {
+    color: #6b7280;
+    font-size: 0.88rem;
+    margin-top: 10px;
+    line-height: 1.55;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    height: 42px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 12px;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #E71A0F;
+    box-shadow: 0 0 0 3px rgba(231, 26, 15, 0.12);
+}
+
+.form-group input.error,
+.form-group select.error {
+    border-color: #ef4444;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.error-list {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+}
+
+@media (max-width: 900px) {
+    .avatar-section,
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .avatar-preview img {
+        width: 100%;
+        max-width: 280px;
+        height: auto;
+    }
+}
+</style>
+
 <!-- Error Messages -->
 <?php if (!empty($_SESSION['errors'])): ?>
     <div class="error-list">
@@ -19,11 +165,9 @@
 <?php endif; ?>
 
 <!-- Form Container -->
-<div class="form-container">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-        <div>
-            <small style="color: #999;">ID: <?= htmlspecialchars($user['id']) ?></small>
-        </div>
+<div class="form-container user-edit-page">
+    <div class="user-edit-header">
+        <h2 class="user-edit-title"><i class="fas fa-user-edit"></i> Chỉnh sửa người dùng</h2>
         <a href="<?= BASE_URL ?>admin/users" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Quay lại
         </a>
@@ -100,7 +244,7 @@
             <div class="form-group">
                 <label for="address">Địa chỉ</label>
                 <input type="text" id="address" name="address" 
-                    value="" 
+                    value="<?= htmlspecialchars($user['address'] ?? '') ?>" 
                        placeholder="Nhập địa chỉ">
             </div>
         </div>
