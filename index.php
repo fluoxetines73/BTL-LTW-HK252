@@ -16,6 +16,14 @@ if (!empty($missing_extensions)) {
     die("Error: Missing required PHP extensions: " . implode(', ', $missing_extensions));
 }
 
+// Polyfill for mbstring functions if extension is not available
+if (!function_exists('mb_strlen')) {
+    function mb_strlen($str, $encoding = 'UTF-8') {
+        $count = preg_match_all('/./us', $str);
+        return $count === false ? 0 : $count;
+    }
+}
+
 define('ROOT', dirname(__FILE__));
 define('APPROOT', ROOT . '/app');
 

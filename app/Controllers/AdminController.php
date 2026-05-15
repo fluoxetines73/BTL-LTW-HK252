@@ -185,27 +185,34 @@ class AdminController extends Controller {
                     $newsModel = $this->model('News');
                     $slug = $this->makeSlug($title) . '-' . time();
 
-                    $created = $newsModel->createNews([
-                        'title' => $title,
-                        'highlight_title' => $highlightTitle,
-                        'slug' => $slug,
-                        'content' => $content,
-                        'detail_content' => $detailContent,
-                        'image' => $imagePath,
-                        'category' => $category,
-                        'author_id' => (int)($_SESSION['auth_user']['id'] ?? 0),
-                        'status' => 'published',
-                        'featured' => $featured,
-                        'published_at' => date('Y-m-d H:i:s'),
-                    ]);
+                    $authorId = (int)($_SESSION['auth_user']['id'] ?? 0);
+                    $userModel = $this->model('User');
+                    $author = $userModel->findById($authorId);
+                    if (!$author) {
+                        $flash = ['type' => 'error', 'message' => 'Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.'];
+                    } else {
+                        $created = $newsModel->createNews([
+                            'title' => $title,
+                            'highlight_title' => $highlightTitle,
+                            'slug' => $slug,
+                            'content' => $content,
+                            'detail_content' => $detailContent,
+                            'image' => $imagePath,
+                            'category' => $category,
+                            'author_id' => $authorId,
+                            'status' => 'published',
+                            'featured' => $featured,
+                            'published_at' => date('Y-m-d H:i:s'),
+                        ]);
 
-                    if ($created) {
-                        $_SESSION['success'] = 'Đăng tin thành công.';
-                        $this->redirect('admin/news');
-                        return;
+                        if ($created) {
+                            $_SESSION['success'] = 'Đăng tin thành công.';
+                            $this->redirect('admin/news');
+                            return;
+                        }
+
+                        $flash = ['type' => 'error', 'message' => 'Không thể tạo tin tức. Vui lòng thử lại.'];
                     }
-
-                    $flash = ['type' => 'error', 'message' => 'Không thể tạo tin tức. Vui lòng thử lại.'];
                 }
             }
         }
