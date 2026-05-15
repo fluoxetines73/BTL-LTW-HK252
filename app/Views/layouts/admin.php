@@ -4,11 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($title ?? 'Admin Dashboard') ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Use SRTdash's bundled Bootstrap to match template styles (avoid duplicate Bootstrap versions) -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/fontawesome.min.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/themify-icons.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/metismenujs.min.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/swiper-bundle.min.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/typography.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/default-css.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/styles.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/responsive.css">
     <?php if (!empty($extraHead)) echo $extraHead; ?>
+    <!-- Srtdash vendor CSS (adds the Srtdash visual system) -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/fontawesome.min.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/themify-icons.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/styles.css">
+
+    <!-- Project CSS (load after Srtdash so we can override where needed) -->
+    <!-- Project admin styles and overrides (load after template CSS) -->
     <link rel="stylesheet" href="<?= BASE_URL ?>public/css/admin.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>public/css/admin-components.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/css/srtdash-overrides.css">
+
+    <!-- Small overrides to make current views look like Srtdash -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>public/css/srtdash-overrides.css">
 </head>
 <body>
 
