@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($title ?? 'Admin Dashboard') ?></title>
-    <!-- Use SRTdash's bundled Bootstrap to match template styles (avoid duplicate Bootstrap versions) -->
+    <!-- SRTdash structural template CSS -->
     <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/fontawesome.min.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/themify-icons.css">
@@ -15,20 +15,10 @@
     <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/styles.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/responsive.css">
     <?php if (!empty($extraHead)) echo $extraHead; ?>
-    <!-- Srtdash vendor CSS (adds the Srtdash visual system) -->
-    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/fontawesome.min.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/themify-icons.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/css/styles.css">
 
-    <!-- Project CSS (load after Srtdash so we can override where needed) -->
-    <!-- Project admin styles and overrides (load after template CSS) -->
+    <!-- Project custom CSS (loads after Srtdash to preserve CGV branding) -->
     <link rel="stylesheet" href="<?= BASE_URL ?>public/css/admin.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>public/css/admin-components.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>public/css/srtdash-overrides.css">
-
-    <!-- Small overrides to make current views look like Srtdash -->
-    <link rel="stylesheet" href="<?= BASE_URL ?>public/css/srtdash-overrides.css">
 </head>
 <body>
 
@@ -125,7 +115,7 @@
         </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<?= BASE_URL ?>public/vendor/srtdash/srtdash/assets/js/bootstrap.bundle.min.js"></script>
     <script src="<?= BASE_URL ?>public/js/admin.js"></script>
     <?php if (!empty($extraScripts)) echo $extraScripts; ?>
 
