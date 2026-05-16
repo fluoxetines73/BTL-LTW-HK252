@@ -45,7 +45,10 @@ mysql -u root -p cgv_booking < database/06-setup-rooms-seats.sql
 
 ### Hoặc chạy tất cả một lần (Windows PowerShell):
 ```powershell
-Get-ChildItem database\*.sql | Sort-Object Name | ForEach-Object { mysql -u root -p cgv_booking < $_.FullName }
+Get-ChildItem database\*.sql | Sort-Object Name | ForEach-Object {
+    Get-Content $_.FullName | & mysql -u root -p cgv_booking
+}
+
 ```
 
 ---
