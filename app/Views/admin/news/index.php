@@ -68,6 +68,7 @@
             <strong>Danh sách bài viết đã đăng</strong>
             <?php if (!empty($articles)): ?>
                 <form method="POST" class="d-inline" id="bulk-delete-form">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                     <input type="hidden" name="action" value="delete_selected">
                     <input type="hidden" name="selected_ids" id="selected_ids" value="">
                     <button type="button" id="bulk-delete-btn" class="btn-action btn-delete" style="display:none;" onclick="deleteSelected();">Xóa đã chọn</button>
