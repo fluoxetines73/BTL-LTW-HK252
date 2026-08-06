@@ -1,0 +1,74 @@
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/admin_dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="<?= BASE_URL ?>admin/showtime/index">Quản lý Suất chiếu</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Sửa thông tin</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-edit me-2"></i>Sửa Suất Chiếu #<?= $showtime['id'] ?></h5>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form action="<?= BASE_URL ?>admin/showtime/update/<?= $showtime['id'] ?>" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Chọn Phim <span class="text-danger">*</span></label>
+                            <select name="movie_id" class="form-select" required>
+                                <?php foreach($movies as $movie): ?>
+                                    <option value="<?= $movie['id'] ?>" <?= ($movie['id'] == $showtime['movie_id']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($movie['title']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Chọn Phòng Chiếu <span class="text-danger">*</span></label>
+                            <select name="room_id" class="form-select" required>
+                                <?php foreach($rooms as $room): ?>
+                                    <option value="<?= $room['id'] ?>" <?= ($room['id'] == $showtime['room_id']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($room['name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Thời gian bắt đầu <span class="text-danger">*</span></label>
+                            <?php $formattedTime = date('Y-m-d\TH:i', strtotime($showtime['start_time'])); ?>
+                            <input type="datetime-local" name="start_time" class="form-control" value="<?= $formattedTime ?>" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Giá vé cơ bản (VNĐ) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="number" name="base_price" class="form-control" value="<?= (int)$showtime['base_price'] ?>" min="0" step="1000" required>
+                                <span class="input-group-text bg-light">VNĐ</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="<?= BASE_URL ?>admin/showtime/index" class="btn btn-outline-cgv">
+                                <i class="fas fa-arrow-left me-1"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn px-4" style="background-color: #E71A0F; color: white; border-color: #E71A0F;">
+                                <i class="fas fa-save me-1"></i> Cập nhật Suất Chiếu
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // Chỉ cho phép chọn thời gian từ hiện tại trở đi
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.querySelector('input[name="start_time"]').min = now.toISOString().slice(0,16);
+</script>

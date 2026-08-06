@@ -3,16 +3,35 @@ class Router {
     private string $controller = 'HomeController';
     private string $method     = 'index';
     private array  $params     = [];
+    private bool   $controllerFoundFromUrl = false;
+    private bool   $methodFoundFromUrl = false;
 
     public function dispatch(): void {
         $url = $this->parseUrl();
 
-        // Xác định controller
+        // Admin routes: /admin/movie/create -> AdminMovieController::create
+        if (!empty($url[0]) && strtolower($url[0]) === 'admin' && !empty($url[1])) {
+            $adminControllerName = 'Admin' . ucfirst(strtolower($url[1])) . 'Controller';
+            $adminFile = APPROOT . '/Controllers/' . $adminControllerName . '.php';
+
+            if (file_exists($adminFile)) {
+                $this->controller = $adminControllerName;
+                $this->controllerFoundFromUrl = true;
+                unset($url[0], $url[1]);
+                $url = array_values($url);
+                if (count($url) > 0) {
+                    $url = array_combine(range(1, count($url)), $url);
+                }
+            }
+        }
+
+        // Determine controller from URL
         if (!empty($url[0])) {
             $controllerName = ucfirst(strtolower($url[0])) . 'Controller';
             $file = APPROOT . '/Controllers/' . $controllerName . '.php';
             if (file_exists($file)) {
                 $this->controller = $controllerName;
+                $this->controllerFoundFromUrl = true;
                 unset($url[0]);
             }
         }
@@ -26,29 +45,52 @@ class Router {
             return;
         }
 
+        if (!$this->controllerFoundFromUrl && !empty($url[0])) {
+            http_response_code(404);
+            require_once APPROOT . '/Controllers/HomeController.php';
+            $fallbackController = new HomeController();
+            $fallbackController->notFound();
+            return;
+        }
+
         require_once $controllerFile;
         $controller = new $this->controller();
 
-        // Xác định method
+        // Determine method from URL
         if (!empty($url[1])) {
             if (method_exists($controller, $url[1])) {
                 $this->method = $url[1];
+                $this->methodFoundFromUrl = true;
                 unset($url[1]);
             }
         }
 
-        // Phần còn lại là params
         $this->params = array_values($url ?? []);
 
-        if (!method_exists($controller, $this->method)) {
+        if (!$this->methodFoundFromUrl && !empty($url[1])) {
+            http_response_code(404);
             if (method_exists($controller, 'notFound')) {
-                http_response_code(404);
+                $controller->notFound();
+                return;
+            }
+            require_once APPROOT . '/Controllers/HomeController.php';
+            $fallbackController = new HomeController();
+            $fallbackController->notFound();
+            return;
+        }
+
+        if (!method_exists($controller, $this->method)) {
+            http_response_code(404);
+            if (method_exists($controller, 'notFound')) {
                 $controller->notFound();
                 return;
             }
 
-            http_response_code(404);
-            throw new RuntimeException('Method không tồn tại.');
+            // Fallback to HomeController::notFound()
+            require_once APPROOT . '/Controllers/HomeController.php';
+            $fallbackController = new HomeController();
+            $fallbackController->notFound();
+            return;
         }
 
         call_user_func_array([$controller, $this->method], $this->params);
@@ -79,7 +121,5 @@ class Router {
         $raw = filter_var($path, FILTER_SANITIZE_URL);
         $parts = explode('/', $raw);
         return array_values(array_filter($parts, static fn($part) => $part !== ''));
-
-        return [];
     }
 }

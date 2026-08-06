@@ -109,10 +109,4 @@ class ProfileController extends Controller {
         ]);
     }
 
-    public function notFound(): void {
-        $this->view('layouts/main', [
-            'title' => '404',
-            'content' => 'home/not_found',
-        ]);
     }
-}

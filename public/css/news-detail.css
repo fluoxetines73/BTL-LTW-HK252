@@ -1,0 +1,321 @@
+.news-detail-page {
+    background: #fff;
+    border-radius: 12px;
+    padding: 22px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.news-detail-back {
+    color: #0d6efd;
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.news-detail-highlight-title {
+    margin: 18px 0 10px;
+    color: #E71A0F;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+}
+
+.news-detail-main-title {
+    margin: 0 0 10px;
+    font-size: clamp(1.7rem, 3.2vw, 2.6rem);
+    color: #1f2937;
+    font-weight: 800;
+}
+
+.news-detail-meta {
+    margin: 0 0 18px;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.news-detail-content-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+}
+
+.news-detail-figure {
+    margin: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.news-detail-figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+
+.news-detail-article-body {
+    color: #111827;
+    line-height: 1.72;
+    font-size: 1.05rem;
+    white-space: normal;
+}
+
+.news-detail-article-body h1,
+.news-detail-article-body h2,
+.news-detail-article-body h3,
+.news-detail-article-body h4 {
+    margin: 0 0 10px;
+    color: #111827;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.news-detail-article-body h1 { font-size: 1.8rem; }
+.news-detail-article-body h2 { font-size: 1.55rem; }
+.news-detail-article-body h3 { font-size: 1.3rem; }
+.news-detail-article-body h4 { font-size: 1.1rem; }
+
+.news-detail-article-body p {
+    margin: 0 0 10px;
+}
+
+.news-detail-article-body ul,
+.news-detail-article-body ol {
+    margin: 0 0 12px 20px;
+    padding: 0;
+}
+
+.news-detail-article-body li {
+    margin-bottom: 4px;
+}
+
+.news-detail-article-body strong,
+.news-detail-article-body b {
+    font-weight: 800;
+}
+
+@media (max-width: 992px) {
+    .news-detail-content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 576px) {
+    .news-detail-page {
+        padding: 16px;
+        border-radius: 10px;
+    }
+
+    .news-detail-main-title {
+        font-size: clamp(1.5rem, 8vw, 2rem);
+    }
+
+    .news-detail-content-grid {
+        gap: 14px;
+    }
+
+    .news-detail-article-body {
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+
+    .news-detail-article-body h1 { font-size: 1.45rem; }
+    .news-detail-article-body h2 { font-size: 1.3rem; }
+    .news-detail-article-body h3 { font-size: 1.18rem; }
+}
+
+/* Comments Section Styles */
+.news-detail-comments-section {
+    background: white;
+    border-radius: 12px;
+    padding: 22px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.news-comments-container {
+    max-width: 100%;
+}
+
+.news-comments-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 18px;
+}
+
+.news-comments-title {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.news-comments-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    background-color: #E71A0F;
+    color: white;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* Comment Form */
+.news-comment-form-wrapper {
+    margin-top: 22px;
+}
+
+.news-comment-form-card {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 22px;
+}
+
+.news-comment-form-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.news-comment-login-prompt {
+    text-align: center;
+    padding: 18px;
+    background: #eff6ff;
+    border-radius: 8px;
+}
+
+.news-comment-login-prompt p {
+    color: #0c63e4;
+    font-weight: 500;
+}
+
+.news-comment-input {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.news-comment-input:focus {
+    border-color: #E71A0F;
+    box-shadow: 0 0 0 3px rgba(231, 26, 15, 0.15);
+}
+
+/* Comments List */
+.news-comments-list {
+    margin-top: 28px;
+}
+
+.news-comment-item {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.news-comment-item:hover {
+    background-color: #f9fafb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.news-comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.news-comment-author-info {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.news-comment-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #e5e7eb;
+}
+
+.news-comment-author-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.news-comment-author {
+    font-size: 0.95rem;
+    color: #1f2937;
+    display: block;
+}
+
+.news-comment-date {
+    font-size: 0.8rem;
+    color: #9ca3af;
+}
+
+.news-comment-content {
+    color: #4b5563;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .news-detail-comments-section {
+        padding: 16px;
+    }
+
+    .news-comment-form-card {
+        padding: 16px;
+    }
+
+    .news-comment-item {
+        padding: 14px;
+    }
+
+    .news-comments-header {
+        flex-wrap: wrap;
+    }
+
+    .news-comment-header {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 576px) {
+    .news-detail-comments-section {
+        border-radius: 10px;
+        padding: 14px;
+    }
+
+    .news-comment-form-card {
+        padding: 12px;
+    }
+
+    .news-comments-title {
+        font-size: 1.1rem;
+    }
+
+    .news-comment-item {
+        padding: 12px;
+        gap: 10px;
+    }
+}
+
