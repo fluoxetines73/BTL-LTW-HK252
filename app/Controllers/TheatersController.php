@@ -83,6 +83,8 @@ class TheatersController extends Controller {
 	private function seedAllTheaters(): array {
 		return $this->seedTheaters();
 	}
+
+	private function seedSpecialTheaters(): array {
 		return [
 			[
 				'id' => 2,
