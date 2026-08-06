@@ -44,16 +44,15 @@ jobs:
           tools: composer
 
       - name: Create DB config
+        # core/Database.php requires this file and reads DB_* constants,
+        # so it must match the real configs/database.php shape (define() calls)
         run: |
           cat > configs/database.php << 'EOF'
           <?php
-          return [
-              'host' => '127.0.0.1',
-              'user' => 'mvc_user',
-              'password' => 'mvc_pass',
-              'database' => 'mvc_demo',
-              'port' => 3306,
-          ];
+          define('DB_HOST', '127.0.0.1');
+          define('DB_NAME', 'mvc_demo');
+          define('DB_USER', 'mvc_user');
+          define('DB_PASS', 'mvc_pass');
           EOF
 
       - name: Wait for MySQL
@@ -68,8 +67,8 @@ jobs:
 
       - name: Setup Database
         run: |
-          mysql -h 127.0.0.1 -u mvc_user -pmvc_pass mvc_demo < database/schema.sql
-          mysql -h 127.0.0.1 -u mvc_user -pmvc_pass mvc_demo < database/seed.sql || true
+          mysql -h 127.0.0.1 -u mvc_user -pmvc_pass mvc_demo < database/01-schema.sql
+          mysql -h 127.0.0.1 -u mvc_user -pmvc_pass mvc_demo < database/02-seed.sql || true
 
       - name: Verify Project
         run: |
