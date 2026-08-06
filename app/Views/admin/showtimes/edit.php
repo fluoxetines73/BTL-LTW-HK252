@@ -66,3 +66,9 @@
         </div>
     </div>
 </div>
+<script>
+    // Chỉ cho phép chọn thời gian từ hiện tại trở đi
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.querySelector('input[name="start_time"]').min = now.toISOString().slice(0,16);
+</script>

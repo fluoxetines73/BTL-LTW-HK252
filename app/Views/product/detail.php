@@ -77,6 +77,40 @@
                                 </tr>
                             </table>
 
+                            <!-- BẮT ĐẦU: Khu vực hiển thị tất cả suất chiếu -->
+                            <h5 class="text-warning fw-bold mb-3"><i class="fas fa-calendar-week me-2"></i>Tất cả lịch chiếu sắp tới</h5>
+                            <?php if (!empty($allShowtimes)): ?>
+                                <div class="row g-3">
+                                    <?php
+                                    // Logic nhóm các suất chiếu theo từng ngày
+                                    $groupedShowtimes = [];
+                                    foreach ($allShowtimes as $st) {
+                                        $date = date('d/m/Y', strtotime($st['start_time']));
+                                        $groupedShowtimes[$date][] = $st;
+                                    }
+                                    ?>
+                                    
+                                    <?php foreach ($groupedShowtimes as $date => $shows): ?>
+                                        <div class="col-12">
+                                            <div class="p-3 border border-secondary rounded" style="background-color: rgba(255,255,255,0.05);">
+                                                <strong class="text-info d-block mb-2"><i class="far fa-calendar-alt me-1"></i> Ngày: <?= $date ?></strong>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <?php foreach ($shows as $st): ?>
+                                                        <span class="badge border border-danger text-dark p-2 fs-6">
+                                                            <?= date('H:i', strtotime($st['start_time'])) ?> 
+                                                            <small class="text-muted ms-1">(<?= htmlspecialchars($st['room_name']) ?>)</small>
+                                                        </span>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php else: ?>
+                                <p class="text-muted fst-italic">Hiện chưa có lịch chiếu nào sắp tới cho bộ phim này.</p>
+                            <?php endif; ?>
+                            <!-- KẾT THÚC: Khu vực hiển thị tất cả suất chiếu -->
+
                             <hr class="border-secondary my-4">
                             <h5 class="text-info fw-bold mb-3"><i class="fas fa-align-left me-2"></i>Nội dung tóm tắt</h5>
                             <p class="text-dark" style="line-height: 1.6;">
@@ -91,7 +125,7 @@
             <div class="col-lg-4">
                 <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
                     <div class="card-header bg-danger text-white py-3 text-center">
-                        <h5 class="mb-0 fw-bold"><i class="fas fa-ticket-alt me-2"></i>Giỏ Hàng Củ a Bạn</h5>
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-ticket-alt me-2"></i>Giỏ Hàng Của Bạn</h5>
                     </div>
                     
                     <div class="card-body p-4">
@@ -199,7 +233,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const movieId = <?= $movie['id'] ?>;
-    const ticketPrice = 100000;
+    let ticketPrice = 0; // Thay vì hardcode 100000, ta khởi tạo bằng 0
     let selectedSeatsArr = []; 
 
     const datePicker = document.getElementById('datePicker');
@@ -209,17 +243,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const seatMapSection = document.getElementById('seatMapSection');
     const seats = document.querySelectorAll('.seat');
 
+    // Thêm các biến lấy từ DOM
+    const ticketPriceInput = document.querySelector('input[name="ticket_price"]');
+    const ticketPriceLabel = document.querySelector('#seatMapSection .text-danger');
+
     // 1. Fetch Suất chiếu khi đổi Ngày
     datePicker.addEventListener('change', function() {
         const selectedDate = this.value;
         showtimeContainer.style.display = 'block';
         showtimeButtons.innerHTML = '<span class="text-muted small">Đang tải...</span>';
         
-        // Reset ghế
+        // Reset giao diện ghế và giá
         seatMapSection.style.opacity = '0.3';
         seatMapSection.style.pointerEvents = 'none';
         selectedShowtimeInput.value = '';
         selectedSeatsArr = [];
+        ticketPrice = 0;
+        ticketPriceInput.value = 0;
+        ticketPriceLabel.innerText = '(...đ/ghế)';
         updateSeatDisplay();
 
         fetch(`<?= BASE_URL ?>api/getShowtimes?movie_id=${movieId}&date=${selectedDate}`)
@@ -229,7 +270,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     let html = '';
                     data.data.forEach(st => {
                         let time = new Date(st.start_time).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
-                        html += `<button type="button" class="btn btn-outline-danger btn-sm st-btn" data-id="${st.id}">${time}</button>`;
+                        // THÊM: Truyền data-price vào từng nút bấm
+                        html += `<button type="button" class="btn btn-outline-danger btn-sm st-btn" data-id="${st.id}" data-price="${st.base_price}">${time}</button>`;
                     });
                     showtimeButtons.innerHTML = html;
                     attachShowtimeEvents();
@@ -239,27 +281,25 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     });
 
-    // 2. Fetch Ghế khi đổi Suất chiếu
+  
+    // 2. Lắng nghe sự kiện click suất chiếu
     function attachShowtimeEvents() {
         document.querySelectorAll('.st-btn').forEach(btn => {
             btn.addEventListener('click', function() {
-                document.querySelectorAll('.st-btn').forEach(b => {
-                    b.classList.remove('btn-danger', 'text-white');
-                    b.classList.add('btn-outline-danger');
-                });
-                this.classList.remove('btn-outline-danger');
-                this.classList.add('btn-danger', 'text-white');
                 
                 const showtimeId = this.dataset.id;
-                selectedShowtimeInput.value = showtimeId;
+                ticketPrice = parseInt(this.dataset.price); 
                 
-                // Mở khóa bản đồ ghế
+                selectedShowtimeInput.value = showtimeId;
+                ticketPriceInput.value = ticketPrice;
+                ticketPriceLabel.innerText = `(${new Intl.NumberFormat('vi-VN').format(ticketPrice)}đ/ghế)`;
+
                 seatMapSection.style.opacity = '1';
                 seatMapSection.style.pointerEvents = 'auto';
-                
                 selectedSeatsArr = [];
                 updateSeatDisplay();
 
+                // Lấy dữ liệu ghế lần đầu
                 fetch(`<?= BASE_URL ?>api/getOccupiedSeats?showtime_id=${showtimeId}`)
                     .then(res => res.json())
                     .then(data => {
@@ -271,6 +311,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                     seat.classList.add('occupied');
                                 }
                             });
+                            
+                            
+                            startSeatPolling(showtimeId); 
+                           
                         }
                     });
             });
@@ -280,17 +324,50 @@ document.addEventListener('DOMContentLoaded', function() {
     // 3. Xử lý click ghế
     seats.forEach(seat => {
         seat.addEventListener('click', function() {
+            // Nếu ghế đã bị người khác mua (màu đỏ), không cho click
             if (this.classList.contains('occupied')) return;
             
-            this.classList.toggle('selected');
-            const seatId = this.dataset.seat;
+            const seatId = this.dataset.seat; // VD: 'A1'
+            const showtimeId = selectedShowtimeInput.value;
+            
+            // Xác định hành động: Nếu đang xanh thì là 'unlock', nếu đang trắng thì là 'lock'
+            const action = this.classList.contains('selected') ? 'unlock' : 'lock';
 
-            if (this.classList.contains('selected')) {
-                selectedSeatsArr.push(seatId);
-            } else {
-                selectedSeatsArr = selectedSeatsArr.filter(id => id !== seatId);
-            }
-            updateSeatDisplay();
+            // Gửi yêu cầu AJAX đến ApiController
+            fetch(`<?= BASE_URL ?>api/updateReservation`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    showtime_id: showtimeId,
+                    seat_code: seatId,
+                    action: action
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Nếu Server lưu thành công, mới đổi màu ghế trên giao diện
+                    this.classList.toggle('selected');
+                    
+                    if (this.classList.contains('selected')) {
+                        selectedSeatsArr.push(seatId);
+                    } else {
+                        selectedSeatsArr = selectedSeatsArr.filter(id => id !== seatId);
+                    }
+                    updateSeatDisplay();
+                } else {
+                    // Nếu thất bại (VD: có người khác nhanh tay hơn khóa mất)
+                    alert(data.message || "Ghế này vừa có người giữ chỗ, vui lòng chọn ghế khác!");
+                    // Tải lại danh sách ghế bận để cập nhật màu đỏ
+                    location.reload(); 
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Có lỗi xảy ra khi giữ chỗ. Vui lòng thử lại!");
+            });
         });
     });
 
@@ -300,6 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('ticketQtyInput').value = selectedSeatsArr.length;
         document.getElementById('selectedSeatsDisplay').innerText = selectedSeatsArr.length > 0 ? selectedSeatsArr.join(', ') : 'Chưa chọn ghế nào';
         
+        // Tổng tiền dựa trên giá vé ĐỘNG
         let total = selectedSeatsArr.length * ticketPrice;
         document.querySelectorAll('.combo-qty').forEach(input => {
             total += (parseInt(input.value) || 0) * parseInt(input.closest('.combo-item').querySelector('.combo-price').dataset.price);
@@ -310,4 +388,36 @@ document.addEventListener('DOMContentLoaded', function() {
     // Lắng nghe combo
     document.querySelectorAll('.combo-qty').forEach(input => input.addEventListener('input', updateSeatDisplay));
 });
+function startSeatPolling(showtimeId) {
+    // Xóa interval cũ nếu có để tránh chạy chồng chéo
+    if (window.seatInterval) clearInterval(window.seatInterval);
+
+    window.seatInterval = setInterval(() => {
+        fetch(`<?= BASE_URL ?>api/getOccupiedSeats?showtime_id=${showtimeId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const occupiedSeats = data.data;
+                    const seats = document.querySelectorAll('.seat');
+                    
+                    seats.forEach(seat => {
+                        const seatCode = seat.dataset.seat;
+                        // Nếu ghế bận và KHÔNG PHẢI ghế mình đang chọn xanh
+                        if (occupiedSeats.includes(seatCode)) {
+                            if (!seat.classList.contains('selected')) {
+                                seat.classList.add('occupied');
+                                seat.classList.remove('available');
+                            }
+                        } else {
+                            // Nếu ghế đó được giải phóng (hết hạn 5p) thì cho trắng lại
+                            if (!seat.classList.contains('selected')) {
+                                seat.classList.remove('occupied');
+                                seat.classList.add('available');
+                            }
+                        }
+                    });
+                }
+            });
+    }, 3000); // Cứ 3 giây cập nhật 1 lần
+}
 </script>

@@ -109,6 +109,12 @@
                         <!-- Thể loại: Bí Ẩn -->
                         <input type="checkbox" class="btn-check" id="genre-bi-an" name="genres[]" value="bi-an" autocomplete="off">
                         <label class="btn btn-outline-info rounded-pill" for="genre-bi-an">Bí Ẩn</label>
+                        <!-- Thể loại: Tài liệu -->
+                        <input type="checkbox" class="btn-check" id="genre-tai-lieu" name="genres[]" value="tai-lieu" autocomplete="off">
+                        <label class="btn btn-outline-info rounded-pill" for="genre-tai-lieu">Tài Liệu</label>
+                        <!-- Thể loại: Võ thuật -->
+                        <input type="checkbox" class="btn-check" id="genre-vo-thuat" name="genres[]" value="vo-thuat" autocomplete="off">
+                        <label class="btn btn-outline-info rounded-pill" for="genre-vo-thuat">Võ Thuật</label>
 
                     </div>
                     

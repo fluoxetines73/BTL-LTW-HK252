@@ -4,12 +4,7 @@ require_once ROOT . '/app/Models/Model.php';
 class Movie extends Model {
     protected string $table = 'movies';
 
-    /**
-     * Lấy toàn bộ danh sách phim (kèm phân trang hoặc tìm kiếm nếu cần)
-     */
     public function getAllMovies($keyword = '') {
-        // Sử dụng bí danh 'm' cho bảng phim hiện tại
-        // Dùng LEFT JOIN để kết nối các bảng và GROUP_CONCAT để gộp tên thể loại
         $sql = "SELECT m.*, GROUP_CONCAT(g.name SEPARATOR ', ') as genre_names 
                 FROM {$this->table} m
                 LEFT JOIN movie_genres mg ON m.id = mg.movie_id
@@ -17,33 +12,24 @@ class Movie extends Model {
         
         $params = [];
 
-        // Nếu có từ khóa tìm kiếm
         if (!empty($keyword)) {
-            // Cần thêm bí danh 'm.' phía trước cột title và director để tránh lỗi "ambiguous" (trùng tên cột)
             $sql .= " WHERE m.title LIKE :keyword_title OR m.director LIKE :keyword_director";
             $params[':keyword_title'] = "%{$keyword}%";
             $params[':keyword_director'] = "%{$keyword}%";
         }
 
-        // Rất quan trọng: Bắt buộc phải gom nhóm (GROUP BY) theo ID phim 
-        // trước khi sắp xếp (ORDER BY) để hàm GROUP_CONCAT gộp đúng dữ liệu
         $sql .= " GROUP BY m.id ORDER BY m.id DESC";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         
-        // Trả về toàn bộ dữ liệu dưới dạng mảng (Tôi đã hoàn thiện nốt chữ 'r' đang viết dở của bạn)
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
-     * Lấy thông tin chi tiết 1 bộ phim
-     */
-    /**
-     * Lấy thông tin chi tiết 1 bộ phim kèm theo Tên thể loại
+     * Lấy thông tin chi tiết 1 bộ phim kèm thể loại
      */
     public function getMovieById($id) {
-        // Dùng LEFT JOIN và GROUP_CONCAT để lấy chuỗi thể loại (vd: "Hành Động, Hài")
         $sql = "SELECT m.*, GROUP_CONCAT(g.name SEPARATOR ', ') as genre_names 
                 FROM {$this->table} m
                 LEFT JOIN movie_genres mg ON m.id = mg.movie_id
@@ -57,9 +43,6 @@ class Movie extends Model {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Thêm một bộ phim mới
-     */
     public function createMovie($data) {
         $sql = "INSERT INTO {$this->table} 
                 (title, slug, description, director, cast, duration_min, release_date, age_rating, status, poster) 
@@ -68,7 +51,6 @@ class Movie extends Model {
         
         $stmt = $this->db->prepare($sql);
         
-        // Bạn có thể dùng vòng lặp để bind tự động, nhưng ở mức cơ bản, ta gán trực tiếp cho rõ ràng
         $stmt->bindParam(':title', $data['title']);
         $stmt->bindParam(':slug', $data['slug']);
         $stmt->bindParam(':description', $data['description']);
@@ -78,14 +60,11 @@ class Movie extends Model {
         $stmt->bindParam(':release_date', $data['release_date']);
         $stmt->bindParam(':age_rating', $data['age_rating']);
         $stmt->bindParam(':status', $data['status']);
-        $stmt->bindParam(':poster', $data['poster']); // Tên file ảnh đã upload
+        $stmt->bindParam(':poster', $data['poster']);
 
         return $stmt->execute();
     }
 
-    /**
-     * Thêm một bộ phim mới với cả poster và banner
-     */
     public function createMovieWithImages($data) {
         $sql = "INSERT INTO {$this->table} 
                 (title, slug, description, director, cast, duration_min, release_date, age_rating, status, poster, banner) 
@@ -112,11 +91,7 @@ class Movie extends Model {
         return false;
     }
 
-    /**
-     * Cập nhật thông tin phim
-     */
     public function updateMovie($id, $data) {
-        // Cập nhật cơ bản không bao gồm poster để tránh rắc rối khi user không đổi ảnh
         $sql = "UPDATE {$this->table} SET 
                 title = :title, slug = :slug, description = :description, director = :director, 
                 cast = :cast, duration_min = :duration_min, release_date = :release_date, 
@@ -139,9 +114,6 @@ class Movie extends Model {
         return $stmt->execute();
     }
 
-    /**
-     * Cập nhật thông tin phim với cả poster và banner
-     */
     public function updateMovieWithImages($id, $data) {
         $sql = "UPDATE {$this->table} SET 
                 title = :title, slug = :slug, description = :description, director = :director, 
@@ -167,16 +139,25 @@ class Movie extends Model {
         return $stmt->execute();
     }
 
-    /**
-     * Xóa một bộ phim
-     */
     public function deleteMovie($id) {
-        $sql = "DELETE FROM {$this->table} WHERE id = :id";
-        $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        return $stmt->execute();
+        $db = Database::getInstance()->getPdo();
+        try {
+            $db->beginTransaction();
+
+            $stmt1 = $db->prepare("DELETE FROM showtimes WHERE movie_id = :id");
+            $stmt1->execute([':id' => $id]);
+
+            $stmt2 = $db->prepare("DELETE FROM movies WHERE id = :id");
+            $stmt2->execute([':id' => $id]);
+
+            $db->commit();
+            return true;
+        } catch (Exception $e) {
+            $db->rollBack();
+            return false;
+        }
     }
-    // Hàm lấy danh sách phim theo trạng thái (Đang chiếu / Sắp chiếu)
+
     public function getMoviesByStatus($status) {
         $stmt = $this->db->prepare("SELECT * FROM movies WHERE status = :status ORDER BY release_date DESC");
         $stmt->bindParam(':status', $status);
@@ -184,10 +165,8 @@ class Movie extends Model {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Hàm tìm kiếm phim theo tên
     public function searchMovies($keyword) {
         $keyword = "%{$keyword}%";
-        // Chỉ tìm những phim đang chiếu hoặc sắp chiếu
         $sql = "SELECT * FROM movies 
                 WHERE (status = 'now_showing' OR status = 'coming_soon') 
                 AND title LIKE :keyword 
@@ -197,48 +176,27 @@ class Movie extends Model {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
     public function getGenreSlugsByMovieId($movieId) {
-        try {
-            // Giả định bạn có bảng 'movie_genres' nối giữa 'movies' và 'genres'
-            // Nếu cấu trúc DB của bạn khác, hãy điều chỉnh lại câu SQL này nhé
-            $sql = "SELECT g.slug FROM genres g 
-                    JOIN movie_genres mg ON g.id = mg.genre_id 
-                    WHERE mg.movie_id = :movie_id";
-            
-            // Tùy thuộc vào cách bạn setup PDO trong core/Model.php
-            // Có thể là $this->db->prepare($sql) hoặc Database::getInstance()->getPdo()->prepare()
-            $stmt = $this->db->prepare($sql); 
-            $stmt->execute(['movie_id' => $movieId]);
-            
-            // Lấy ra một mảng chỉ chứa giá trị của cột 'slug' (VD: ['hai', 'hanh-dong'])
-            $result = $stmt->fetchAll(PDO::FETCH_COLUMN);
-            
-            return $result ? $result : [];
-        } catch (PDOException $e) {
-            // Trả về mảng rỗng nếu bảng chưa tồn tại để tránh sập trang web (Lỗi 500)
-            return []; 
-        }
+        $sql = "SELECT g.slug FROM genres g 
+                JOIN movie_genres mg ON g.id = mg.genre_id 
+                WHERE mg.movie_id = :movie_id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['movie_id' => $movieId]);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN) ?: [];
     }
-    /**
-     * Đồng bộ thể loại phim
-     * Xóa các thể loại cũ và chèn các thể loại mới được chọn
-     */
+
     public function syncMovieGenres($movieId, $genreSlugs) {
-        // 1. Xóa các thể loại cũ của phim này
         $stmtDelete = $this->db->prepare("DELETE FROM movie_genres WHERE movie_id = ?");
         $stmtDelete->execute([$movieId]);
 
-        // Nếu không có thể loại nào được chọn thì dừng lại
         if (empty($genreSlugs)) return true;
 
-        // 2. Lấy ID của các thể loại dựa trên slug
-        // Tạo chuỗi dấu '?' để dùng cho toán tử IN
         $placeholders = implode(',', array_fill(0, count($genreSlugs), '?'));
         $stmtGetIds = $this->db->prepare("SELECT id FROM genres WHERE slug IN ($placeholders)");
         $stmtGetIds->execute($genreSlugs);
         $genreIds = $stmtGetIds->fetchAll(PDO::FETCH_COLUMN);
 
-        // 3. Insert các thể loại mới vào bảng trung gian
         if (!empty($genreIds)) {
             $sqlInsert = "INSERT INTO movie_genres (movie_id, genre_id) VALUES (?, ?)";
             $stmtInsert = $this->db->prepare($sqlInsert);
@@ -248,85 +206,226 @@ class Movie extends Model {
         }
         return true;
     }
-    /**
-     * Tìm kiếm phim cho admin với bộ lọc và sắp xếp
-     * @param string|null $keyword Từ khóa tìm kiếm (tên phim hoặc đạo diễn)
-     * @param string|null $status Trạng thái phim (now_showing, coming_soon, ended)
-     * @param string $sort Cách sắp xếp (newest hoặc oldest)
-     * @return array
-     */
-    public function searchAdminMovies(?string $keyword, ?string $status, string $sort = 'newest'): array {
-        $sql = "SELECT m.*, GROUP_CONCAT(g.name SEPARATOR ', ') as genre_names 
-                FROM {$this->table} m
-                LEFT JOIN movie_genres mg ON m.id = mg.movie_id
-                LEFT JOIN genres g ON mg.genre_id = g.id";
 
-        $params = [];
-        $conditions = [];
-
-        // Tìm theo từ khóa (tên phim hoặc đạo diễn)
-        if ($keyword !== null && $keyword !== '') {
-            $conditions[] = "(m.title LIKE :keyword_title OR m.director LIKE :keyword_director)";
-            $params[':keyword_title'] = "%{$keyword}%";
-            $params[':keyword_director'] = "%{$keyword}%";
-        }
-
-        // Lọc theo trạng thái
-        if ($status !== null && $status !== '') {
-            $conditions[] = "m.status = :status";
-            $params[':status'] = $status;
-        }
-
-        if (!empty($conditions)) {
-            $sql .= " WHERE " . implode(' AND ', $conditions);
-        }
-
-        // GROUP BY trước ORDER BY
-        $sql .= " GROUP BY m.id";
-
-        // Sắp xếp
-        $orderDir = ($sort === 'oldest') ? 'ASC' : 'DESC';
-        $sql .= " ORDER BY m.created_at {$orderDir}";
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    /**
-     * Lấy danh sách phim theo Trạng thái chiếu VÀ Slug Thể loại
-     */
-    /**
-     * Lấy danh sách phim theo Trạng thái chiếu VÀ Mảng Thể loại (Hỗ trợ chọn nhiều)
-     */
     public function getMoviesByStatusAndGenre($status, $genreSlugs) {
-        // Nếu mảng rỗng, trả về tất cả phim của trạng thái đó
         if (empty($genreSlugs)) {
             return $this->getMoviesByStatus($status);
         }
 
-        try {
-            // Tạo chuỗi dấu '?' tương ứng với số lượng thể loại được chọn (VD: ?,?,?)
-            $placeholders = implode(',', array_fill(0, count($genreSlugs), '?'));
-            
-            // Dùng toán tử IN để lấy phim thuộc bất kỳ thể loại nào trong danh sách
-            $sql = "SELECT m.* 
-                    FROM {$this->table} m
-                    JOIN movie_genres mg ON m.id = mg.movie_id
-                    JOIN genres g ON mg.genre_id = g.id
-                    WHERE m.status = ? AND g.slug IN ($placeholders)
-                    GROUP BY m.id
-                    ORDER BY m.id DESC";
+        $placeholders = implode(',', array_fill(0, count($genreSlugs), '?'));
+        $sql = "SELECT m.* 
+                FROM {$this->table} m
+                JOIN movie_genres mg ON m.id = mg.movie_id
+                JOIN genres g ON mg.genre_id = g.id
+                WHERE m.status = ? AND g.slug IN ($placeholders)
+                GROUP BY m.id
+                ORDER BY m.id DESC";
 
-            $stmt = $this->db->prepare($sql);
-            
-            // Gộp mảng tham số: phần tử đầu tiên là $status, theo sau là các $genreSlugs
-            $params = array_merge([$status], $genreSlugs);
-            $stmt->execute($params);
-            
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            return [];
+        $stmt = $this->db->prepare($sql);
+        $params = array_merge([$status], $genreSlugs);
+        $stmt->execute($params);
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function searchAdminMovies($keyword = '', $status = 'all', $sort = 'newest', $limit = 10, $offset = 0) {
+        $sql = "SELECT m.*, GROUP_CONCAT(g.name SEPARATOR ', ') as genre_names 
+                FROM movies m
+                LEFT JOIN movie_genres mg ON m.id = mg.movie_id
+                LEFT JOIN genres g ON mg.genre_id = g.id
+                WHERE 1=1";
+        $params = [];
+
+        if (!empty($keyword)) {
+            $sql .= " AND (m.title LIKE :q1 OR m.director LIKE :q2)";
+            $params[':q1'] = $params[':q2'] = "%$keyword%";
         }
+
+        if ($status !== 'all') {
+            $sql .= " AND m.status = :status";
+            $params[':status'] = $status;
+        }
+
+        $sql .= " GROUP BY m.id";
+
+        if ($sort === 'oldest') {
+            $sql .= " ORDER BY m.created_at ASC, m.id ASC";
+        } else {
+            $sql .= " ORDER BY m.created_at DESC, m.id DESC";
+        }
+        
+        $sql .= " LIMIT :limit OFFSET :offset";
+        
+        $stmt = $this->db->prepare($sql);
+
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val);
+        }
+
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function deleteMultipleMovies(array $ids) {
+        if (empty($ids)) return false;
+        
+        $db = Database::getInstance()->getPdo();
+        try {
+            $db->beginTransaction();
+
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $sqlCheck = "SELECT COUNT(*) FROM bookings b
+                         JOIN showtimes st ON b.showtime_id = st.id
+                         WHERE st.movie_id IN ($placeholders)";
+            
+            $stmtCheck = $db->prepare($sqlCheck);
+            $stmtCheck->execute($ids);
+            $totalBookings = $stmtCheck->fetchColumn();
+
+            if ($totalBookings > 0) {
+                
+                $db->rollBack();
+                
+                error_log("Bulk Delete Aborted: Phát hiện $totalBookings đơn hàng liên quan đến danh sách phim đang cố xóa.");
+                return false; 
+            }
+
+            $sqlShowtimes = "DELETE FROM showtimes WHERE movie_id IN ($placeholders)";
+            $stmt1 = $db->prepare($sqlShowtimes);
+            $stmt1->execute($ids);
+
+            $sqlMovies = "DELETE FROM movies WHERE id IN ($placeholders)";
+            $stmt2 = $db->prepare($sqlMovies);
+            $stmt2->execute($ids);
+
+            $db->commit();
+            return true;
+        } catch (Exception $e) {
+            $db->rollBack();
+            error_log("Bulk Delete Error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function countAdminMovies($keyword = '', $status = 'all') {
+        $sql = "SELECT COUNT(*) FROM movies WHERE 1=1";
+        $params = [];
+        if (!empty($keyword)) {
+            $sql .= " AND (title LIKE :q1 OR director LIKE :q2)";
+            $params[':q1'] = $params[':q2'] = "%$keyword%";
+        }
+        if ($status !== 'all') {
+            $sql .= " AND status = :status";
+            $params[':status'] = $status;
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchColumn();
+    }
+
+    public function isSlugExists($slug, $excludeId = null) {
+        $sql = "SELECT COUNT(*) FROM movies WHERE slug = :slug";
+        $params = [':slug' => $slug];
+        if ($excludeId) {
+            $sql .= " AND id != :id";
+            $params[':id'] = $excludeId;
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchColumn() > 0;
+    }
+    public function hasBookings($movieId) {
+        $sql = "SELECT COUNT(*) FROM bookings b
+                JOIN showtimes st ON b.showtime_id = st.id
+                WHERE st.movie_id = :movie_id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':movie_id' => $movieId]);
+        
+        return $stmt->fetchColumn() > 0; 
+    }
+    public function getClientMovies($status, $genreSlugs = [], $keyword = '', $limit = 8, $offset = 0) {
+        $sql = "SELECT m.* FROM {$this->table} m ";
+        
+        if (!empty($genreSlugs)) {
+            $sql .= " JOIN movie_genres mg ON m.id = mg.movie_id 
+                      JOIN genres g ON mg.genre_id = g.id ";
+        }
+        
+        $sql .= " WHERE m.status = ? ";
+
+        if (!empty($genreSlugs)) {
+            $inQuery = implode(',', array_fill(0, count($genreSlugs), '?'));
+            $sql .= " AND g.slug IN ($inQuery) ";
+        }
+
+        if (!empty($keyword)) {
+            $sql .= " AND (m.title LIKE ? OR m.director LIKE ?) ";
+        }
+
+        $sql .= " GROUP BY m.id ORDER BY m.release_date DESC LIMIT ? OFFSET ?";
+
+        $stmt = $this->db->prepare($sql);
+        
+        $bindIndex = 1;
+        $stmt->bindValue($bindIndex++, $status);
+        
+        if (!empty($genreSlugs)) {
+            foreach ($genreSlugs as $slug) {
+                $stmt->bindValue($bindIndex++, $slug);
+            }
+        }
+        
+        if (!empty($keyword)) {
+            $stmt->bindValue($bindIndex++, "%{$keyword}%");
+            $stmt->bindValue($bindIndex++, "%{$keyword}%");
+        }
+
+        $stmt->bindValue($bindIndex++, (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue($bindIndex++, (int)$offset, PDO::PARAM_INT);
+
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function countClientMovies($status, $genreSlugs = [], $keyword = '') {
+        $sql = "SELECT COUNT(DISTINCT m.id) FROM {$this->table} m ";
+        
+        if (!empty($genreSlugs)) {
+            $sql .= " JOIN movie_genres mg ON m.id = mg.movie_id 
+                      JOIN genres g ON mg.genre_id = g.id ";
+        }
+        
+        $sql .= " WHERE m.status = ? ";
+
+        if (!empty($genreSlugs)) {
+            $inQuery = implode(',', array_fill(0, count($genreSlugs), '?'));
+            $sql .= " AND g.slug IN ($inQuery) ";
+        }
+
+        if (!empty($keyword)) {
+            $sql .= " AND (m.title LIKE ? OR m.director LIKE ?) ";
+        }
+
+        $stmt = $this->db->prepare($sql);
+        
+        $bindIndex = 1;
+        $stmt->bindValue($bindIndex++, $status);
+        
+        if (!empty($genreSlugs)) {
+            foreach ($genreSlugs as $slug) {
+                $stmt->bindValue($bindIndex++, $slug);
+            }
+        }
+        
+        if (!empty($keyword)) {
+            $stmt->bindValue($bindIndex++, "%{$keyword}%");
+            $stmt->bindValue($bindIndex++, "%{$keyword}%");
+        }
+
+        $stmt->execute();
+        return $stmt->fetchColumn();
     }
 }

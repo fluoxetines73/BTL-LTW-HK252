@@ -3,9 +3,6 @@ require_once ROOT . '/app/Models/Model.php';
 
 class Order extends Model {
     
-    /**
-     * 1. Lấy danh sách tất cả đơn hàng (Gộp bảng bookings và users)
-     */
     public function getAllOrders() {
         $sql = "SELECT b.*, u.full_name, u.email 
                 FROM bookings b 
@@ -16,9 +13,6 @@ class Order extends Model {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * 2. Lấy thông tin chung của 1 đơn hàng cụ thể
-     */
     public function getOrderById($id) {
         $sql = "SELECT b.*, u.full_name, u.email, u.phone, 
                        st.start_time, m.title as movie_title, r.name as room_name
@@ -34,24 +28,17 @@ class Order extends Model {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * 3. Lấy danh sách các vé (ghế) mà khách đã đặt trong đơn này
-     */
-    public function getOrderTickets($booking_id) {
-        $sql = "SELECT t.*, s.row_label, s.col_number, st_type.name as seat_type
+    public function getOrderTickets($bookingId) {
+        $sql = "SELECT t.*, s.row_label, s.col_number 
                 FROM tickets t
                 JOIN seats s ON t.seat_id = s.id
-                JOIN seat_types st_type ON s.seat_type_id = st_type.id
                 WHERE t.booking_id = :booking_id";
+        
         $stmt = $this->db->prepare($sql);
-        $stmt->bindParam(':booking_id', $booking_id, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt->execute([':booking_id' => $bookingId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * 4. Lấy danh sách các Combo bắp nước mà khách đã mua kèm
-     */
     public function getOrderCombos($booking_id) {
         $sql = "SELECT bc.*, c.name, c.image
                 FROM booking_combos bc
@@ -63,9 +50,6 @@ class Order extends Model {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * 5. Cập nhật trạng thái đơn hàng
-     */
     public function updateStatus($id, $status) {
         $sql = "UPDATE bookings SET status = :status WHERE id = :id";
         $stmt = $this->db->prepare($sql);
@@ -74,45 +58,98 @@ class Order extends Model {
         return $stmt->execute();
     }
 
-    /**
-     * 6. Tìm kiếm và lọc đơn hàng (cho admin)
-     * @param string $keyword - tìm theo booking_code hoặc customer name
-     * @param string $status - lọc theo status (pending/confirmed/completed/cancelled)
-     * @param string $sort - sắp xếp: newest (default), oldest, price_asc, price_desc
-     * @return array Danh sách đơn hàng
-     */
-    public function searchOrders($keyword = '', $status = 'all', $sort = 'newest') {
-        $sql = "SELECT b.*, u.full_name, u.email 
-                FROM bookings b 
-                JOIN users u ON b.user_id = u.id";
+    public function countAdminOrders($keyword = '', $status = 'all', $paymentStatus = 'all') {
+        // Đã thêm JOIN tới showtimes và movies
+        $sql = "SELECT COUNT(*) FROM bookings b 
+                JOIN users u ON b.user_id = u.id 
+                JOIN showtimes st ON b.showtime_id = st.id
+                JOIN movies m ON st.movie_id = m.id
+                WHERE 1=1";
         $params = [];
-        $conditions = [];
-
-        if ($keyword !== '') {
-            $conditions[] = "(b.booking_code LIKE :keyword_code OR u.full_name LIKE :keyword_name)";
-            $params[':keyword_code'] = "%$keyword%";
-            $params[':keyword_name'] = "%$keyword%";
+        if (!empty($keyword)) {
+            // Nâng cấp: Cho phép tìm kiếm đơn hàng theo cả Tên Phim (m.title)
+            $sql .= " AND (b.booking_code LIKE :kw1 OR u.full_name LIKE :kw2 OR u.email LIKE :kw3 OR m.title LIKE :kw4)";
+            $params[':kw1'] = $params[':kw2'] = $params[':kw3'] = $params[':kw4'] = "%$keyword%";
         }
-
-        if ($status !== 'all' && in_array($status, ['pending', 'confirmed', 'completed', 'cancelled'])) {
-            $conditions[] = "b.status = :status";
+        if ($status !== 'all') {
+            $sql .= " AND b.status = :status";
             $params[':status'] = $status;
         }
-
-        if (!empty($conditions)) {
-            $sql .= " WHERE " . implode(' AND ', $conditions);
+        if ($paymentStatus !== 'all') {
+            $sql .= " AND b.payment_status = :p_status";
+            $params[':p_status'] = $paymentStatus;
         }
-
-        $order = match($sort) {
-            'oldest' => 'b.created_at ASC',
-            'price_asc' => 'b.final_amount ASC',
-            'price_desc' => 'b.final_amount DESC',
-            default => 'b.created_at DESC'
-        };
-        $sql .= " ORDER BY $order";
-
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
+        return $stmt->fetchColumn();
+    }
+
+    public function searchAdminOrders($keyword = '', $status = 'all', $paymentStatus = 'all', $sort = 'newest', $limit = 10, $offset = 0) {
+        // Đã thêm JOIN tới showtimes và movies, SELECT thêm m.title
+        $sql = "SELECT b.*, u.full_name, u.email, m.title as movie_title
+                FROM bookings b 
+                JOIN users u ON b.user_id = u.id 
+                JOIN showtimes st ON b.showtime_id = st.id
+                JOIN movies m ON st.movie_id = m.id
+                WHERE 1=1";
+        $params = [];
+        
+        if (!empty($keyword)) {
+            // Nâng cấp: Cho phép tìm kiếm đơn hàng theo cả Tên Phim (m.title)
+            $sql .= " AND (b.booking_code LIKE :kw1 OR u.full_name LIKE :kw2 OR u.email LIKE :kw3 OR m.title LIKE :kw4)";
+            $params[':kw1'] = $params[':kw2'] = $params[':kw3'] = $params[':kw4'] = "%$keyword%";
+        }
+        if ($status !== 'all') {
+            $sql .= " AND b.status = :status";
+            $params[':status'] = $status;
+        }
+        if ($paymentStatus !== 'all') {
+            $sql .= " AND b.payment_status = :p_status";
+            $params[':p_status'] = $paymentStatus;
+        }
+
+        // Sắp xếp theo ID làm phụ để tránh trùng lặp thứ tự
+        $orderBy = match($sort) {
+            'oldest' => 'b.created_at ASC, b.id ASC',
+            'price_desc' => 'b.final_amount DESC, b.id DESC',
+            'price_asc' => 'b.final_amount ASC, b.id ASC',
+            default => 'b.created_at DESC, b.id DESC'
+        };
+        $sql .= " ORDER BY $orderBy LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) $stmt->bindValue($k, $v);
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function deleteMultipleOrders(array $ids) {
+        if (empty($ids)) return false;
+        $db = Database::getInstance()->getPdo();
+        try {
+            $db->beginTransaction();
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            
+            $db->prepare("DELETE FROM tickets WHERE booking_id IN ($placeholders)")->execute($ids);
+            $db->prepare("DELETE FROM booking_combos WHERE booking_id IN ($placeholders)")->execute($ids);
+            $db->prepare("DELETE FROM bookings WHERE id IN ($placeholders)")->execute($ids);
+            
+            $db->commit();
+            return true;
+        } catch (Exception $e) {
+            $db->rollBack();
+            return false;
+        }
+    }
+
+    public function cancelMultipleOrders(array $ids) {
+        if (empty($ids)) return false;
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        
+        $sql = "UPDATE bookings SET status = 'cancelled' WHERE id IN ($placeholders)";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($ids);
     }
 }

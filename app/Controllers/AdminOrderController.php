@@ -6,51 +6,45 @@ class AdminOrderController extends Controller {
         $this->middlewareAdmin();
     }
 
-    // Hiển thị danh sách toàn bộ đơn hàng
+    // Hiển thị danh sách đơn hàng (Có Search, Filter, Bulk Delete) - Đã fix route và tối ưu JOIN
     public function index() {
         $orderModel = $this->model('Order');
-        
-        $keyword = trim($_GET['q'] ?? '');
-        $status = $_GET['status'] ?? 'all';
-        $sort = $_GET['sort'] ?? 'newest';
-        
-        // Validate sort parameter
-        $validSorts = ['newest', 'oldest', 'price_asc', 'price_desc'];
-        if (!in_array($sort, $validSorts)) {
-            $sort = 'newest';
-        }
-        
-        // Validate status parameter
-        $validStatuses = ['all', 'pending', 'confirmed', 'completed', 'cancelled'];
-        if (!in_array($status, $validStatuses)) {
-            $status = 'all';
-        }
-        
-        if ($keyword !== '' || $status !== 'all') {
-            $orders = $orderModel->searchOrders($keyword, $status, $sort);
-        } else {
-            $orders = $orderModel->getAllOrders();
-        }
-        
+        $keyword = trim((string)($_GET['q'] ?? ''));
+        $status = trim((string)($_GET['status'] ?? 'all'));
+        $paymentStatus = trim((string)($_GET['payment_status'] ?? 'all'));
+        $sort = trim((string)($_GET['sort'] ?? 'newest'));
+
+        $limit = 10;
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        if ($page < 1) $page = 1;
+        $offset = ($page - 1) * $limit;
+
+        // Sử dụng hàm đã tối ưu JOIN từ Model Order
+        $totalRows = $orderModel->countAdminOrders($keyword, $status, $paymentStatus);
+        $totalPages = ceil($totalRows / $limit);
+        $orders = $orderModel->searchAdminOrders($keyword, $status, $paymentStatus, $sort, $limit, $offset);
+
+        // View vẫn nằm trong thư mục plural 'orders'
         $this->adminView('admin/orders/index', 'order', [
             'orders' => $orders,
-            'title' => 'Quản lý Đơn Hàng',
             'keyword' => $keyword,
             'status' => $status,
-            'sort' => $sort
+            'paymentStatus' => $paymentStatus,
+            'sort' => $sort,
+            'currentPage' => $page,
+            'totalPages' => $totalPages
         ]);
     }
 
-    // Hiển thị chi tiết 1 đơn hàng
     public function detail($id = null) {
+        // Fix redirect 404: về admin/order thay vì admin/order/index
         if (!$id) { $this->redirect('admin/order/index'); return; }
-
+        
         $orderModel = $this->model('Order');
         $order = $orderModel->getOrderById($id);
 
         if (!$order) { $this->redirect('admin/order/index'); return; }
 
-        // Lấy thêm danh sách Vé và Combo của đơn hàng đó
         $tickets = $orderModel->getOrderTickets($id);
         $combos = $orderModel->getOrderCombos($id);
 
@@ -62,20 +56,34 @@ class AdminOrderController extends Controller {
         ]);
     }
 
-    // Xử lý cập nhật trạng thái đơn hàng từ Form
     public function updateStatus($id = null) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id) {
             $status = $_POST['status'];
             $orderModel = $this->model('Order');
             
             if ($orderModel->updateStatus($id, $status)) {
-                // Set flash message (nếu hệ thống của bạn có làm hàm flash message)
                 $_SESSION['success'] = "Cập nhật trạng thái đơn hàng thành công!";
             } else {
-                $_SESSION['error'] = "Cập nhật trạng thái thất bại!";
+                $_SESSION['error'] = "Cập nhật thất bại!";
             }
         }
-        // Cập nhật xong thì quay lại trang chi tiết đơn đó
+        // Redirect về trang chi tiết của chính đơn hàng đó
         $this->redirect('admin/order/detail/' . $id);
+    }
+
+    public function deleteMultiple() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ids'])) {
+            $ids = explode(',', $_POST['ids']);
+            $orderModel = $this->model('Order');
+            
+            // Sử dụng logic Soft-delete (Cancelled) để bảo toàn dữ liệu tài chính
+            if ($orderModel->cancelMultipleOrders($ids)) {
+                $_SESSION['success'] = "Đã hủy " . count($ids) . " đơn hàng thành công.";
+            } else {
+                $_SESSION['error'] = "Lỗi hệ thống khi xử lý!";
+            }
+        }
+        // Fix redirect 404: về admin/order
+        $this->redirect('admin/order/index');
     }
 }

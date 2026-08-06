@@ -60,6 +60,11 @@
                         <input type="hidden" name="showtime_id" value="<?= $showtime['id'] ?>">
                         <input type="hidden" name="selected_seats" value="<?= htmlspecialchars($selectedSeats) ?>">
                         <input type="hidden" name="grand_total" value="<?= $grandTotal ?>">
+
+                        <!-- Gửi dữ liệu Combo -->
+                        <?php foreach ($selectedCombos as $c): ?>
+                            <input type="hidden" name="selected_combos[<?= $c['id'] ?>]" value="<?= $c['qty'] ?>|<?= $c['price'] ?>">
+                        <?php endforeach; ?>
                         
                         <div class="d-flex justify-content-between">
                             <a href="javascript:history.back()" class="btn btn-outline-dark px-4 py-2">

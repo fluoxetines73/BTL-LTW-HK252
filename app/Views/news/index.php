@@ -24,6 +24,34 @@ function truncateText(string $text, int $length, string $suffix = '...'): string
 }
 ?>
 <section class="news-page">
+    <div class="news-search-panel">
+        <div class="news-search-copy">
+            <p class="news-search-kicker mb-1">Tìm trong tin tức</p>
+            <h2 class="news-search-title mb-1">Tìm nhanh bài viết, ưu đãi và phim hay tháng</h2>
+            <p class="news-search-description mb-0">Lọc theo chủ đề hoặc nhập từ khóa để tìm đúng nội dung bạn cần.</p>
+        </div>
+
+        <form class="news-search-form" action="<?= BASE_URL ?>news" method="get" role="search">
+            <input type="hidden" name="section" id="news-search-section" value="<?= htmlspecialchars((string)($searchSection ?? '')) ?>">
+            <label class="visually-hidden" for="news-search-input">Tìm kiếm tin tức</label>
+            <div class="news-search-input-wrap">
+                <i class="fas fa-magnifying-glass news-search-icon"></i>
+                <input id="news-search-input" type="search" name="q" value="<?= htmlspecialchars((string)($searchKeyword ?? '')) ?>" class="news-search-input" placeholder="Nhập từ khóa trong tin tức...">
+            </div>
+
+            <div class="news-search-chip-row" role="group" aria-label="Lọc nhanh theo chủ đề">
+                <button type="button" class="news-search-chip <?= empty($searchSection) ? 'is-active' : '' ?>" data-section="">Tất cả</button>
+                <button type="button" class="news-search-chip <?= ($searchSection ?? '') === 'tin-tuc' ? 'is-active' : '' ?>" data-section="tin-tuc">Tin tức</button>
+                <button type="button" class="news-search-chip <?= ($searchSection ?? '') === 'khuyen-mai' ? 'is-active' : '' ?>" data-section="khuyen-mai">Khuyến mãi</button>
+                <button type="button" class="news-search-chip <?= ($searchSection ?? '') === 'phim-hay-thang' ? 'is-active' : '' ?>" data-section="phim-hay-thang">Phim hay tháng</button>
+            </div>
+
+            <button type="submit" class="news-search-btn">
+                <i class="fas fa-search me-2"></i>Tìm kiếm
+            </button>
+        </form>
+    </div>
+
     <?php if (!empty($latestNews)): ?>
     <div id="newsTopSlider" class="carousel slide news-slider mb-5" data-bs-ride="carousel">
         <div class="carousel-indicators">

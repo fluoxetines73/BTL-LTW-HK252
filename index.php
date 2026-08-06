@@ -1,21 +1,41 @@
 <?php
+// Check PHP version compatibility
+if (PHP_VERSION_ID < 70400) {
+    die("Error: This application requires PHP 7.4.0 or higher. Current version: " . PHP_VERSION);
+}
+
+// Check required extensions
+$required_extensions = ['pdo', 'pdo_mysql'];
+$missing_extensions = [];
+foreach ($required_extensions as $ext) {
+    if (!extension_loaded($ext)) {
+        $missing_extensions[] = $ext;
+    }
+}
+if (!empty($missing_extensions)) {
+    die("Error: Missing required PHP extensions: " . implode(', ', $missing_extensions));
+}
+
+// Polyfill for mbstring functions if extension is not available
+if (!function_exists('mb_strlen')) {
+    function mb_strlen($str, $encoding = 'UTF-8') {
+        $count = preg_match_all('/./us', $str);
+        return $count === false ? 0 : $count;
+    }
+}
+
 define('ROOT', dirname(__FILE__));
 define('APPROOT', ROOT . '/app');
 
-// Load environment variables from .env file
 $envFile = ROOT . '/.env';
 if (file_exists($envFile)) {
     $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
-        // Skip comments
         if (strpos(trim($line), '#') === 0) continue;
-        
-        // Parse KEY=VALUE
         if (strpos($line, '=') !== false) {
             list($key, $value) = explode('=', $line, 2);
             $key = trim($key);
             $value = trim($value);
-            // Remove quotes if present
             $value = trim($value, '\'"');
             if (!empty($key)) {
                 putenv("{$key}={$value}");

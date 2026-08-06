@@ -1,5 +1,8 @@
 <?php
 $flash = $flash ?? null;
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 ?>
 <section class="panel">
     <h1>Đăng Tin Tức</h1>
@@ -9,6 +12,7 @@ $flash = $flash ?? null;
     <?php endif; ?>
 
     <form method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
         <div class="field">
             <label for="title">Tiêu đề</label>
             <input id="title" type="text" name="title" required minlength="4">

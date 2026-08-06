@@ -5,6 +5,9 @@
  */
 ?>
 <aside class="sidebar" id="sidebar">
+    <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close sidebar">
+        <i class="fas fa-times"></i>
+    </button>
     <div class="sidebar-logo">
         <h3><i class="fas fa-cogs"></i> <span class="sidebar-text">Admin</span></h3>
     </div>
@@ -37,6 +40,11 @@
         <li>
             <a href="<?= BASE_URL ?>admin/news" class="<?= ($activeSection ?? '') === 'news' ? 'active' : '' ?>">
                 <i class="fas fa-newspaper"></i> <span class="sidebar-text">Quản lý Tin tức</span>
+            </a>
+        </li>
+        <li>
+            <a href="<?= BASE_URL ?>admin/comments/index" class="<?= ($activeSection ?? '') === 'comments' ? 'active' : '' ?>">
+                <i class="fas fa-comments"></i> <span class="sidebar-text">Quản lý Bình luận</span>
             </a>
         </li>
         <li>

@@ -47,6 +47,8 @@ if (!empty($authUser['avatar'])) {
                             Tin tức
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="newsDropdown">
+                            <li><a class="dropdown-item" href="<?= BASE_URL ?>news">Xem tất cả</a></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="<?= BASE_URL ?>news/promotions">Ưu đãi</a></li>
                             <li><a class="dropdown-item" href="<?= BASE_URL ?>news/monthlyMovies">Phim hay tháng</a></li>
                         </ul>

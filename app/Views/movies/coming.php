@@ -1,84 +1,117 @@
-<!-- app/Views/movies/coming.php -->
-<div class="container py-5">
-    <h3 class="mb-4 fw-bold text-uppercase border-start border-5 border-info ps-3 text-dark">Phim Sắp Chiếu</h3>
-    
-   <!-- Thanh Bộ Lọc (Filter) Thể Loại -->
-    <?php if (!empty($genres)): ?>
-        <div class="genre-filter-wrapper mb-5 d-flex flex-wrap justify-content-center gap-2">
-            <!-- Nút Tất cả: Xóa toàn bộ filter -->
-            <a href="<?= BASE_URL ?>movies/coming" 
-               class="btn rounded-pill px-4 py-2 <?= empty($selectedGenres) ? 'btn-info text-dark fw-bold' : 'btn-outline-secondary text-dark' ?>">
-                Tất cả
-            </a>
-            
-            <?php foreach ($genres as $genre): ?>
-                <?php 
-                    // Copy mảng các thể loại đang được chọn hiện tại
-                    $currentQuery = $selectedGenres; 
-                    
-                    // Logic Bật/Tắt (Toggle):
-                    if (in_array($genre['slug'], $currentQuery)) {
-                        // Nếu đã chọn rồi -> Bấm vào sẽ Gỡ ra khỏi mảng
-                        $currentQuery = array_diff($currentQuery, [$genre['slug']]);
-                    } else {
-                        // Nếu chưa chọn -> Bấm vào sẽ Thêm vào mảng
-                        $currentQuery[] = $genre['slug'];
-                    }
-                    
-                    // Dùng http_build_query để tự động tạo chuỗi URL chuẩn (vd: genre[0]=hai&genre[1]=hanh-dong)
-                    $queryString = !empty($currentQuery) ? '?' . http_build_query(['genre' => $currentQuery]) : '';
-                    $url = BASE_URL . 'movies/coming' . $queryString;
-                ?>
-                <!-- In nút bấm -->
-                <a href="<?= $url ?>" 
-                   class="btn rounded-pill px-4 py-2 <?= in_array($genre['slug'], $selectedGenres) ? 'btn-info text-dark fw-bold' : 'btn-outline-secondary text-dark' ?>">
-                    <?= htmlspecialchars($genre['name']) ?>
-                </a>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-2 border-info pb-2">
+        <h2 class="text-uppercase text-info fw-bold mb-0"><i class="fas fa-calendar-alt me-2"></i>Phim Sắp Chiếu</h2>
+    </div>
 
-    <!-- Danh sách phim Sắp Chiếu -->
-    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
-        <?php if (!empty($comingSoon)): ?>
-            <?php foreach ($comingSoon as $movie): ?>
-                <div class="col">
-                    <!-- Thêm hiệu ứng opacity cho phim chưa chiếu -->
-                    <div class="card h-100 shadow-sm bg-white text-dark border-0" style="opacity: 0.95;">
-                        <!-- Hình ảnh Poster phim -->
-                        <img src="<?= !empty($movie['poster']) ? BASE_URL . 'public/uploads/movies/' . htmlspecialchars($movie['poster']) : 'https://via.placeholder.com/300x450?text=No+Poster' ?>" 
-                             class="card-img-top" 
-                             alt="<?= htmlspecialchars($movie['title']) ?>" 
-                             style="height: 350px; object-fit: cover;">
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-info text-white fw-bold">
+                    <i class="fas fa-filter me-1"></i> Bộ lọc tìm kiếm
+                </div>
+                <div class="card-body">
+                    <form action="<?= BASE_URL ?>movies/coming" method="GET">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Từ khóa</label>
+                            <input type="text" class="form-control form-control-sm" name="q" placeholder="Tên phim, đạo diễn..." value="<?= htmlspecialchars($keyword ?? '') ?>">
+                        </div>
                         
-                        <div class="card-body d-flex flex-column text-center">
-                            <!-- Tên phim -->
-                            <h5 class="card-title fw-bold text-truncate" title="<?= htmlspecialchars($movie['title']) ?>">
-                                <?= htmlspecialchars($movie['title']) ?>
-                            </h5>
-                            
-                            <!-- Thông tin ngày khởi chiếu -->
-                            <p class="text-info small mb-3">
-                                <i class="fas fa-calendar-alt me-1"></i>
-                                Khởi chiếu: <?= !empty($movie['release_date']) ? date('d/m/Y', strtotime($movie['release_date'])) : 'Đang cập nhật' ?>
-                            </p>
-                            
-                            <!-- Nút điều hướng Xem Thông Tin -->
-                            <div class="mt-auto d-grid">
-                                <a href="<?= BASE_URL ?>product/detail/<?= $movie['id'] ?>" class="btn btn-outline-info fw-bold">
-                                    <i class="fas fa-info-circle me-1"></i> Xem Thông Tin
-                                </a>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small">Thể loại</label>
+                            <div class="row g-2">
+                                <?php foreach ($genres as $genre): ?>
+                                    <div class="col-6 col-lg-12">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="genre[]" value="<?= $genre['slug'] ?>" id="genre_<?= $genre['slug'] ?>" <?= in_array($genre['slug'], $selectedGenres ?? []) ? 'checked' : '' ?>>
+                                            <label class="form-check-label small" for="genre_<?= $genre['slug'] ?>">
+                                                <?= $genre['name'] ?>
+                                            </label>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
                             </div>
                         </div>
-                    </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-info text-white btn-sm fw-bold"><i class="fas fa-search me-1"></i> Lọc Phim</button>
+                            <a href="<?= BASE_URL ?>movies/coming" class="btn btn-outline-secondary btn-sm">Xóa bộ lọc</a>
+                        </div>
+                    </form>
                 </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <!-- Hiển thị khi không có phim nào -->
-            <div class="col-12 text-center py-5">
-                <p class="text-dark fs-5">Hiện không có phim sắp chiếu nào thuộc thể loại này.</p>
-                <a href="<?= BASE_URL ?>movies/coming" class="btn btn-outline-info mt-3">Xem tất cả phim sắp chiếu</a>
             </div>
-        <?php endif; ?>
+        </div>
+
+        <div class="col-lg-9">
+            <?php if (empty($comingSoon)): ?>
+                <div class="alert alert-warning text-center py-5 shadow-sm border-0">
+                    <i class="fas fa-box-open fa-3x mb-3 text-muted"></i>
+                    <h5 class="text-muted">Không có bộ phim sắp chiếu nào phù hợp với điều kiện lọc.</h5>
+                </div>
+            <?php else: ?>
+                <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-4">
+                    <?php foreach ($comingSoon as $movie): ?>
+                        <div class="col">
+                            <div class="card h-100 movie-card shadow-sm border-0 position-relative">
+                                <a href="<?= BASE_URL ?>product/detail/<?= $movie['id'] ?>">
+                                    <img src="<?= empty($movie['poster']) ? BASE_URL . 'public/uploads/movies/default-poster.jpg' : (str_starts_with($movie['poster'], 'http') ? $movie['poster'] : BASE_URL . 'public/uploads/movies/' . $movie['poster']) ?>" 
+                                         class="card-img-top" 
+                                         alt="<?= htmlspecialchars($movie['title']) ?>" 
+                                         style="height: 280px; object-fit: cover; filter: brightness(0.9);">
+                                </a>
+                                
+                                <div class="position-absolute top-0 end-0 bg-info text-white px-2 py-1 m-2 rounded small fw-bold shadow-sm">
+                                    <?= date('d/m/Y', strtotime($movie['release_date'])) ?>
+                                </div>
+
+                                <div class="card-body p-3 d-flex flex-column">
+                                    <h6 class="card-title fw-bold text-truncate mb-1" title="<?= htmlspecialchars($movie['title']) ?>">
+                                        <a href="<?= BASE_URL ?>product/detail/<?= $movie['id'] ?>" class="text-decoration-none text-dark"><?= htmlspecialchars($movie['title']) ?></a>
+                                    </h6>
+                                    <p class="card-text small text-muted mb-3">
+                                        <i class="fas fa-clock me-1"></i> <?= htmlspecialchars($movie['duration'] ?? 120) ?> phút
+                                    </p>
+                                    <div class="mt-auto d-grid">
+                                        <a href="<?= BASE_URL ?>product/detail/<?= $movie['id'] ?>" class="btn btn-outline-info btn-sm fw-bold">
+                                            <i class="fas fa-info-circle me-1"></i> Xem Chi Tiết
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <?php if (isset($totalPages) && $totalPages > 1): ?>
+                    <nav aria-label="Page navigation" class="mt-5">
+                        <ul class="pagination justify-content-center">
+                            <?php 
+                            $queryParams = $_GET;
+                            unset($queryParams['url']); 
+                            unset($queryParams['page']); 
+                            $baseQueryString = http_build_query($queryParams);
+                            $baseLink = BASE_URL . 'movies/coming?' . ($baseQueryString ? $baseQueryString . '&' : '');
+                            ?>
+                            
+                            <li class="page-item <?= ($currentPage <= 1) ? 'disabled' : '' ?>">
+                                <a class="page-link shadow-none" href="<?= $baseLink . 'page=' . ($currentPage - 1) ?>">&laquo;</a>
+                            </li>
+                            
+                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                <li class="page-item <?= ($i == $currentPage) ? 'active' : '' ?>">
+                                    <a class="page-link shadow-none <?= ($i == $currentPage) ? 'bg-info border-info text-white' : 'text-dark' ?>" 
+                                       href="<?= $baseLink . 'page=' . $i ?>">
+                                        <?= $i ?>
+                                    </a>
+                                </li>
+                            <?php endfor; ?>
+                            
+                            <li class="page-item <?= ($currentPage >= $totalPages) ? 'disabled' : '' ?>">
+                                <a class="page-link shadow-none text-dark" href="<?= $baseLink . 'page=' . ($currentPage + 1) ?>">&raquo;</a>
+                            </li>
+                        </ul>
+                    </nav>
+                <?php endif; ?>
+            <?php endif; ?>
+        </div>
     </div>
 </div>

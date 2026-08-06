@@ -1,192 +1,54 @@
-/**
- * Homepage Swiper Carousel Initialization
- * Initializes 3 carousels: recommendations, ads, coming-soon
- * Features: Auto-play, pause-on-hover, infinite loop, responsive breakpoints
- */
-
-// Verify Swiper is loaded
 if (typeof Swiper === 'undefined') {
     console.warn('Swiper CDN not loaded, carousels disabled');
 } else {
-    // Initialize carousels after DOM is ready
     document.addEventListener('DOMContentLoaded', function() {
-        // =====================================================
-        // 1. RECOMMENDATIONS CAROUSEL
-        // =====================================================
-        const recommendationsContainer = document.querySelector('.recommendations-carousel');
-        if (recommendationsContainer) {
-            const recommendationsSwiper = new Swiper('.recommendations-carousel', {
-                // Autoplay settings
-                autoplay: {
-                    delay: 4000,                    // 4 second interval
-                    pauseOnMouseEnter: true         // Pause on hover
-                },
+        const homeSearchForm = document.querySelector('.homepage-search-form--modal');
+        if (homeSearchForm) {
+            const sectionInput = homeSearchForm.querySelector('#home-search-section');
+            const chipButtons = homeSearchForm.querySelectorAll('.homepage-search-chip');
 
-                // Loop settings
-                loop: true,                         // Infinite loop
-
-                // Pagination (dots)
-                pagination: {
-                    el: '.recommendations-pagination',
-                    clickable: true
-                },
-
-                // Navigation (arrows)
-                navigation: {
-                    nextEl: '.recommendations-button-next',
-                    prevEl: '.recommendations-button-prev'
-                },
-
-                // Responsive breakpoints for slide count
-                breakpoints: {
-                    // Mobile: 375px and up
-                    375: {
-                        slidesPerView: 1,
-                        spaceBetween: 10
-                    },
-                    // Tablet: 768px and up
-                    768: {
-                        slidesPerView: 2,
-                        spaceBetween: 15
-                    },
-                    // Desktop: 1024px and up
-                    1024: {
-                        slidesPerView: 4,
-                        spaceBetween: 20
+            chipButtons.forEach((button) => {
+                button.addEventListener('click', function () {
+                    const section = this.getAttribute('data-section') || '';
+                    if (sectionInput) {
+                        sectionInput.value = section;
                     }
-                },
 
-                // Touch/swipe support (native Swiper feature)
-                simulateTouch: true,
-                touchRatio: 1,
-
-                // Accessibility
-                a11y: {
-                    enabled: true
-                }
+                    chipButtons.forEach((chip) => chip.classList.remove('is-active'));
+                    this.classList.add('is-active');
+                });
             });
         }
 
-        // =====================================================
-        // 2. ADS CAROUSEL
-        // =====================================================
-        const adsContainer = document.querySelector('.ads-carousel');
-        if (adsContainer) {
-            const adsSwiper = new Swiper('.ads-carousel', {
-                // Autoplay settings
+        const homepageContainer = document.querySelector('.homepage-carousel');
+        if (homepageContainer) {
+            const homepageSwiper = new Swiper('.homepage-carousel', {
                 autoplay: {
-                    delay: 5000,                    // 5 second interval
-                    pauseOnMouseEnter: true         // Pause on hover
+                    delay: 4500,
+                    pauseOnMouseEnter: true
                 },
-
-                // Loop settings
-                loop: true,                         // Infinite loop
-
-                // Pagination (dots)
+                loop: true,
                 pagination: {
-                    el: '.ads-pagination',
+                    el: '.homepage-pagination',
                     clickable: true
                 },
-
-                // Navigation (arrows)
                 navigation: {
-                    nextEl: '.ads-button-next',
-                    prevEl: '.ads-button-prev'
+                    nextEl: '.homepage-button-next',
+                    prevEl: '.homepage-button-prev'
                 },
-
-                // Responsive breakpoints for slide count
                 breakpoints: {
-                    // Mobile: 375px and up
-                    375: {
-                        slidesPerView: 1,
-                        spaceBetween: 10
-                    },
-                    // Tablet: 768px and up
-                    768: {
-                        slidesPerView: 2,
-                        spaceBetween: 15
-                    },
-                    // Desktop: 1024px and up
-                    1024: {
-                        slidesPerView: 4,
-                        spaceBetween: 20
-                    }
+                    375: { slidesPerView: 1, spaceBetween: 10 },
+                    768: { slidesPerView: 2, spaceBetween: 15 },
+                    1024: { slidesPerView: 4, spaceBetween: 20 }
                 },
-
-                // Touch/swipe support (native Swiper feature)
                 simulateTouch: true,
                 touchRatio: 1,
-
-                // Accessibility
-                a11y: {
-                    enabled: true
-                }
+                a11y: { enabled: true }
             });
         }
 
-        // =====================================================
-        // 3. COMING SOON CAROUSEL
-        // =====================================================
-        const comingSoonContainer = document.querySelector('.coming-soon-carousel');
-        if (comingSoonContainer) {
-            const comingSoonSwiper = new Swiper('.coming-soon-carousel', {
-                // Autoplay settings
-                autoplay: {
-                    delay: 4000,                    // 4 second interval
-                    pauseOnMouseEnter: true         // Pause on hover
-                },
-
-                // Loop settings
-                loop: true,                         // Infinite loop
-
-                // Pagination (dots)
-                pagination: {
-                    el: '.coming-soon-pagination',
-                    clickable: true
-                },
-
-                // Navigation (arrows)
-                navigation: {
-                    nextEl: '.coming-soon-button-next',
-                    prevEl: '.coming-soon-button-prev'
-                },
-
-                // Responsive breakpoints for slide count
-                breakpoints: {
-                    // Mobile: 375px and up
-                    375: {
-                        slidesPerView: 1,
-                        spaceBetween: 10
-                    },
-                    // Tablet: 768px and up
-                    768: {
-                        slidesPerView: 3,
-                        spaceBetween: 15
-                    },
-                    // Desktop: 1024px and up
-                    1024: {
-                        slidesPerView: 5,
-                        spaceBetween: 20
-                    }
-                },
-
-                // Touch/swipe support (native Swiper feature)
-                simulateTouch: true,
-                touchRatio: 1,
-
-                // Accessibility
-                a11y: {
-                    enabled: true
-                }
-            });
-        }
-
-        // =====================================================
-        // NEWSLETTER FORM VALIDATION
-        // =====================================================
         const newsletterForm = document.querySelector('#newsletter-form');
         if (newsletterForm) {
-            // Create error message div if it doesn't exist
             let errorDiv = newsletterForm.querySelector('.error-message');
             if (!errorDiv) {
                 errorDiv = document.createElement('div');
@@ -196,7 +58,6 @@ if (typeof Swiper === 'undefined') {
                 newsletterForm.insertBefore(errorDiv, newsletterForm.firstChild);
             }
 
-            // Create success message div if it doesn't exist
             let successDiv = newsletterForm.querySelector('.success-message');
             if (!successDiv) {
                 successDiv = document.createElement('div');
@@ -206,7 +67,6 @@ if (typeof Swiper === 'undefined') {
                 newsletterForm.insertBefore(successDiv, newsletterForm.firstChild.nextSibling);
             }
 
-            // Handle form submission
             newsletterForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
@@ -214,18 +74,15 @@ if (typeof Swiper === 'undefined') {
                 const errorDiv = this.querySelector('.error-message');
                 const successDiv = this.querySelector('.success-message');
                 
-                // Reset messages
                 errorDiv.style.display = 'none';
                 successDiv.style.display = 'none';
                 
-                // Validation: Check if email is empty
                 if (!email) {
                     errorDiv.textContent = 'Email required';
                     errorDiv.style.display = 'block';
                     return;
                 }
                 
-                // Validation: Check email format with regex
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(email)) {
                     errorDiv.textContent = 'Please enter a valid email';
@@ -233,14 +90,11 @@ if (typeof Swiper === 'undefined') {
                     return;
                 }
                 
-                // Valid email - show success message
                 successDiv.textContent = 'Thanks for subscribing!';
                 successDiv.style.display = 'block';
                 
-                // Clear email input
                 this.querySelector('input[name="email"]').value = '';
                 
-                // Hide success message after 3 seconds
                 setTimeout(() => {
                     successDiv.style.display = 'none';
                 }, 3000);

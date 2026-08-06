@@ -22,7 +22,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Giá tiền (VNĐ)</label>
-                            <input type="number" class="form-control" name="price" required value="<?= (int)$combo['price'] ?>">
+                           <input type="number" class="form-control" name="price" required min="0" value="<?= (int)$combo['price'] ?>">
                         </div>
 
                         <div class="col-md-6">

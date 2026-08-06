@@ -6,91 +6,72 @@ class AdminComboController extends Controller {
         $this->middlewareAdmin();
     }
 
+    /**
+     * Trang danh sách Combo
+     */
     public function index() {
         $comboModel = $this->model('Combo');
+        $keyword = trim((string)($_GET['q'] ?? ''));
+        $status  = trim((string)($_GET['status'] ?? 'all'));
+        $sort    = trim((string)($_GET['sort'] ?? 'newest'));
 
-        // Build query with search and sort
-        $search = trim($_GET['q'] ?? '');
-        $sort = $_GET['sort'] ?? 'price_asc';
+        // Logic Phân trang
+        $limit = 10;
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        if ($page < 1) $page = 1;
+        $offset = ($page - 1) * $limit;
 
-        // Get all combos from model
-        $combos = $comboModel->getAllCombos();
+        $totalRows = $comboModel->countAdminCombos($keyword, $status);
+        $totalPages = ceil($totalRows / $limit);
 
-        // Filter by search term if provided
-        if ($search !== '') {
-            $combos = array_filter($combos, function($combo) use ($search) {
-                return stripos($combo['name'], $search) !== false;
-            });
-            $combos = array_values($combos); // Re-index array
-        }
-
-        // Sort order
-        usort($combos, function($a, $b) use ($sort) {
-            switch ($sort) {
-                case 'price_desc':
-                    return $b['price'] <=> $a['price'];
-                case 'name_asc':
-                    return strcasecmp($a['name'], $b['name']);
-                case 'name_desc':
-                    return strcasecmp($b['name'], $a['name']);
-                case 'price_asc':
-                default:
-                    return $a['price'] <=> $b['price'];
-            }
-        });
+        $combos = $comboModel->searchAdminCombos($keyword, $status, $sort, $limit, $offset);
 
         $this->adminView('admin/combo/index', 'combo', [
             'combos' => $combos,
-            'title' => 'Quản lý Combo',
-            'search' => $search,
-            'sort' => $sort
+            'keyword' => $keyword,
+            'status' => $status,
+            'sort' => $sort,
+            'currentPage' => $page,
+            'totalPages' => $totalPages
         ]);
     }
-
     public function create() {
         $this->adminView('admin/combo/create', 'combo', ['title' => 'Thêm Combo Mới']);
     }
+        /**
+     * Lưu Combo mới
+     */
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            
-            // 1. Khởi tạo tên ảnh mặc định nếu user không chọn ảnh
-            $imageName = 'default-combo.png'; 
+            $comboModel = $this->model('Combo');
+            $name = trim($_POST['name']);
+            $price = (float)$_POST['price'];
 
-            // 2. Xử lý Upload file (Kiểm tra xem có file gửi lên và không bị lỗi)
-            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-                
-                // Khai báo thư mục lưu ảnh
-                $uploadDir = ROOT . '/public/uploads/combos/';
-                
-                // Nếu thư mục chưa tồn tại thì tự động tạo mới
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0777, true);
-                }
-
-                // Lấy đuôi file (jpg, png, jpeg...)
-                $fileExtension = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-                
-                // Đổi tên file bằng hàm time() và uniqid() để đảm bảo 100% không bị trùng lặp đè file cũ
-                $imageName = time() . '_' . uniqid() . '.' . $fileExtension;
-                
-                // Di chuyển file từ thư mục tạm của server vào thư mục dự án
-                move_uploaded_file($_FILES['image']['tmp_name'], $uploadDir . $imageName);
+            if ($comboModel->isNameExists($name)) {
+                $_SESSION['error'] = "Tên Combo này đã tồn tại!";
+                $this->redirect('admin/combo/create');
+                return;
             }
 
-            // 3. Gom dữ liệu lưu vào DB
+            if ($price < 0) {
+                $_SESSION['error'] = "Giá tiền không được nhỏ hơn 0!";
+                $this->redirect('admin/combo/create');
+                return;
+            }
+
+            $imageName = $this->handleFileUpload('image') ?: 'default-combo.png';
+
             $data = [
-                'name' => trim($_POST['name']),
+                'name' => $name,
                 'description' => trim($_POST['description'] ?? ''),
-                'price' => (float)$_POST['price'],
-                'image' => $imageName, // Lưu tên ảnh vừa upload
+                'price' => $price,
+                'image' => $imageName,
                 'is_active' => $_POST['is_active'] ?? 1
             ];
 
-            $comboModel = $this->model('Combo');
             if ($comboModel->createCombo($data)) {
+                $_SESSION['success'] = "Thêm Combo thành công!";
                 $this->redirect('admin/combo/index');
-            } else {
-                echo "Lỗi khi lưu Combo!";
             }
         }
     }
@@ -100,16 +81,15 @@ class AdminComboController extends Controller {
     public function delete($id = null) {
         if ($id) {
             $comboModel = $this->model('Combo');
-            
-            // Lấy thông tin để xóa file ảnh trong thư mục (nếu không phải ảnh mặc định)
+
             $combo = $comboModel->getComboById($id);
             if ($combo && $combo['image'] !== 'default-combo.png') {
                 $filePath = ROOT . '/public/uploads/combos/' . $combo['image'];
                 if (file_exists($filePath)) {
-                    unlink($filePath); // Xóa file vật lý để tiết kiệm bộ nhớ
+                    unlink($filePath);
                 }
             }
-            
+
             $comboModel->deleteCombo($id);
         }
         $this->redirect('admin/combo/index');
@@ -129,33 +109,35 @@ class AdminComboController extends Controller {
         $this->adminView('admin/combo/edit', 'combo', ['combo' => $combo, 'title' => 'Sửa Combo']);
     }
 
-    /**
-     * Xử lý cập nhật dữ liệu
+        /**
+     * Cập nhật Combo
      */
     public function update($id = null) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id) {
             $comboModel = $this->model('Combo');
             $oldCombo = $comboModel->getComboById($id);
-            
-            $imageName = $oldCombo['image']; // Mặc định giữ ảnh cũ
+            if (!$oldCombo) { $this->redirect('admin/combo/index'); return; }
 
-            // Nếu user chọn ảnh mới
-            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-                $uploadDir = ROOT . '/public/uploads/combos/';
-                
-                // Xóa ảnh cũ nếu không phải ảnh mặc định
+            $name = trim($_POST['name']);
+            if ($comboModel->isNameExists($name, $id)) {
+                $_SESSION['error'] = "Tên Combo đã bị trùng!";
+                $this->redirect('admin/combo/edit/' . $id);
+                return;
+            }
+
+            $imageName = $oldCombo['image'];
+            $newImage = $this->handleFileUpload('image');
+            
+            if ($newImage) {
                 if ($oldCombo['image'] !== 'default-combo.png') {
-                    $oldPath = $uploadDir . $oldCombo['image'];
+                    $oldPath = ROOT . '/public/uploads/combos/' . $oldCombo['image'];
                     if (file_exists($oldPath)) unlink($oldPath);
                 }
-
-                $fileExt = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-                $imageName = time() . '_' . uniqid() . '.' . $fileExt;
-                move_uploaded_file($_FILES['image']['tmp_name'], $uploadDir . $imageName);
+                $imageName = $newImage;
             }
 
             $data = [
-                'name' => trim($_POST['name']),
+                'name' => $name,
                 'description' => trim($_POST['description'] ?? ''),
                 'price' => (float)$_POST['price'],
                 'image' => $imageName,
@@ -163,10 +145,29 @@ class AdminComboController extends Controller {
             ];
 
             if ($comboModel->updateCombo($id, $data)) {
+                $_SESSION['success'] = "Cập nhật thành công!";
                 $this->redirect('admin/combo/index');
-            } else {
-                echo "Lỗi cập nhật!";
             }
         }
+    }
+        /**
+     * Xử lý upload file
+     */
+    private function handleFileUpload($fieldName) {
+        if (isset($_FILES[$fieldName]) && $_FILES[$fieldName]['error'] === UPLOAD_ERR_OK) {
+            $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+            $ext = strtolower(pathinfo($_FILES[$fieldName]['name'], PATHINFO_EXTENSION));
+            
+            if (in_array($ext, $allowed) && $_FILES[$fieldName]['size'] <= 2 * 1024 * 1024) {
+                $uploadDir = ROOT . '/public/uploads/combos/';
+                if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+                $newName = time() . '_' . uniqid() . '.' . $ext;
+                if (move_uploaded_file($_FILES[$fieldName]['tmp_name'], $uploadDir . $newName)) {
+                    return $newName;
+                }
+            }
+        }
+        return null;
     }
 }

@@ -1,10 +1,9 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // ========================================================================
-    // ADMIN SIDEBAR TOGGLE FUNCTIONALITY
-    // ========================================================================
-
     var sidebar = document.getElementById('sidebar');
     var toggleBtn = document.getElementById('sidebar-toggle');
+    var mainContent = document.querySelector('.main-content');
+    var container = document.querySelector('.admin-container');
+    var closeBtn = document.getElementById('sidebar-close-btn');
 
     if (!sidebar || !toggleBtn) {
         console.warn('Admin Sidebar: Required elements not found');
@@ -13,33 +12,47 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var STORAGE_KEY = 'sidebar-collapsed';
 
-    // ========================================================================
-    // 1. RESTORE SAVED STATE ON PAGE LOAD
-    // ========================================================================
+    // Create overlay element for mobile
+    var overlay = document.createElement('div');
+    overlay.className = 'sidebar-overlay';
+    overlay.id = 'sidebar-overlay';
+    document.body.appendChild(overlay);
+
+    function openSidebar() {
+        sidebar.classList.add('open');
+        if (window.innerWidth < 768) {
+            overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
     function initializeSidebarState() {
         var savedState = localStorage.getItem(STORAGE_KEY);
         var isMobile = window.innerWidth < 768;
 
         if (isMobile) {
-            // Mobile: sidebar hidden by default, no collapsed class
             sidebar.classList.remove('collapsed');
-            sidebar.classList.remove('open');
+            closeSidebar();
         } else {
-            // Desktop: restore saved collapsed state
+            closeSidebar();
             if (savedState === 'true') {
                 sidebar.classList.add('collapsed');
+                if (container) container.classList.add('sidebar-collapsed');
             } else {
                 sidebar.classList.remove('collapsed');
+                if (container) container.classList.remove('sidebar-collapsed');
             }
         }
     }
 
-    // Initialize sidebar state on load
     initializeSidebarState();
 
-    // ========================================================================
-    // 2. TOGGLE BUTTON CLICK HANDLER
-    // ========================================================================
     toggleBtn.addEventListener('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -47,46 +60,65 @@ document.addEventListener('DOMContentLoaded', function () {
         var isMobile = window.innerWidth < 768;
 
         if (isMobile) {
-            // Mobile: toggle 'open' class for slide-in sidebar
-            sidebar.classList.toggle('open');
+            if (sidebar.classList.contains('open')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
         } else {
-            // Desktop: toggle 'collapsed' class for narrow sidebar
             sidebar.classList.toggle('collapsed');
-
-            // Save state to localStorage
             var isCollapsed = sidebar.classList.contains('collapsed');
+            if (container) {
+                if (isCollapsed) {
+                    container.classList.add('sidebar-collapsed');
+                } else {
+                    container.classList.remove('sidebar-collapsed');
+                }
+            }
             localStorage.setItem(STORAGE_KEY, isCollapsed ? 'true' : 'false');
         }
     });
 
-    // ========================================================================
-    // 3. MOBILE: CLOSE SIDEBAR ON CLICK OUTSIDE
-    // ========================================================================
+    // Close button inside sidebar
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeSidebar();
+        });
+    }
+
+    // Click outside to close (including overlay)
     document.addEventListener('click', function (e) {
         var isMobile = window.innerWidth < 768;
 
         if (!isMobile) return;
         if (!sidebar.classList.contains('open')) return;
 
-        // Check if click was outside sidebar and toggle button
         var clickedOutside = !sidebar.contains(e.target) && !toggleBtn.contains(e.target);
 
         if (clickedOutside) {
-            sidebar.classList.remove('open');
+            closeSidebar();
         }
     });
 
-    // ========================================================================
-    // 4. OPTIONAL: ACTIVE LINK DETECTION FALLBACK
-    // ========================================================================
+    function normalizePath(path) {
+        if (!path) return '/';
+        var clean = path.split('?')[0].split('#')[0].replace(/\/$/, '') || '/';
+
+        // Treat `/foo/index` as `/foo` for active menu matching.
+        clean = clean.replace(/\/index$/i, '') || '/';
+        return clean;
+    }
+
     function initializeActiveLinks() {
         var sidebarLinks = document.querySelectorAll('.sidebar-menu a');
 
-        if (!sidebarLinks || sidebarLinks.length === 0) {
+        if (sidebarLinks.length === 0) {
             return;
         }
 
-        var currentPath = window.location.pathname.replace(/\/$/, '') || '/';
+        var currentPath = normalizePath(window.location.pathname);
 
         sidebarLinks.forEach(function (link) {
             if (link.getAttribute('href') === '#' || !link.getAttribute('href')) {
@@ -94,12 +126,20 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             var href = link.getAttribute('href');
-            var normalizedHref = href.replace(window.location.origin, '').replace(/\/$/, '') || '/';
+            var url;
+
+            try {
+                url = new URL(href, window.location.origin);
+            } catch (err) {
+                return;
+            }
+
+            var normalizedHref = normalizePath(url.pathname);
 
             var isMatch = false;
             if (normalizedHref === '/' && currentPath === '/') {
                 isMatch = true;
-            } else if (normalizedHref !== '/' && currentPath.endsWith(normalizedHref)) {
+            } else if (normalizedHref !== '/' && (currentPath === normalizedHref || currentPath.startsWith(normalizedHref + '/'))) {
                 isMatch = true;
             }
 
@@ -113,9 +153,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     initializeActiveLinks();
 
-    // ========================================================================
-    // 5. HANDLE WINDOW RESIZE (MOBILE/DESKTOP TRANSITION)
-    // ========================================================================
     var resizeTimeout;
     window.addEventListener('resize', function () {
         clearTimeout(resizeTimeout);

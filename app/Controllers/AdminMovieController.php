@@ -1,118 +1,72 @@
 <?php
-// Không cần require_once Model thủ công nữa vì đã có class Controller cha lo việc đó
 require_once ROOT . '/core/Controller.php';
 
 class AdminMovieController extends Controller {
-    
-    // Gắn middleware để bắt buộc phải là Admin mới được vào các trang này
+
     public function __construct() {
         $this->middlewareAdmin();
     }
 
-    /**
-     * Hiển thị danh sách phim (có tìm kiếm, lọc trạng thái, sắp xếp)
-     */
     public function index() {
         $movieModel = $this->model('Movie');
-
-        // Lấy tham số tìm kiếm / lọc / sắp xếp từ GET
         $keyword = trim((string)($_GET['q'] ?? ''));
-        $status = trim((string)($_GET['status'] ?? ''));
-        $sort = trim((string)($_GET['sort'] ?? 'newest'));
+        $status  = trim((string)($_GET['status'] ?? 'all'));
+        $sort    = trim((string)($_GET['sort'] ?? 'newest'));
 
-        // Validate sort
-        $sort = in_array($sort, ['newest', 'oldest'], true) ? $sort : 'newest';
+        $limit = 10;
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        if ($page < 1) $page = 1;
+        $offset = ($page - 1) * $limit;
 
-        // Validate status
-        $validStatuses = ['now_showing', 'coming_soon', 'ended'];
-        $statusFilter = in_array($status, $validStatuses, true) ? $status : '';
+        $totalRows = $movieModel->countAdminMovies($keyword, $status);
+        $totalPages = ceil($totalRows / $limit);
 
-        // Tìm kiếm phim với bộ lọc
-        $movies = $movieModel->searchAdminMovies(
-            $keyword !== '' ? $keyword : null,
-            $statusFilter !== '' ? $statusFilter : null,
-            $sort
-        );
+        $movies = $movieModel->searchAdminMovies($keyword, $status, $sort, $limit, $offset);
 
         $this->adminView('admin/movies/index', 'movie', [
             'movies' => $movies,
-            'title' => 'Quản lý Phim',
             'keyword' => $keyword,
             'status' => $status,
             'sort' => $sort,
+            'currentPage' => $page,
+            'totalPages' => $totalPages
         ]);
     }
 
-    /**
-     * Giao diện thêm phim mới
-     */
     public function create() {
         $this->adminView('admin/movies/create', 'movie', [
             'title' => 'Thêm Phim Mới'
         ]);
     }
-    /**
-     * Xử lý dữ liệu form thêm mới và lưu vào database
-     */
+
     public function store() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Khởi tạo tên file mặc định
-            $posterName = null;
-            $bannerName = null;
-            $uploadErrors = [];
+            $movieModel = $this->model('Movie');
+            $slug = trim($_POST['slug']);
 
-            // Xử lý Upload POSTER
-            if (isset($_FILES['poster']) && $_FILES['poster']['error'] !== UPLOAD_ERR_NO_FILE) {
-                if ($_FILES['poster']['error'] === UPLOAD_ERR_OK) {
-                    $uploadDir = ROOT . '/public/uploads/movies/';
-                    
-                    // Tạo thư mục nếu chưa tồn tại
-                    if (!is_dir($uploadDir)) {
-                        mkdir($uploadDir, 0777, true);
-                    }
-
-                    $fileExtension = pathinfo($_FILES['poster']['name'], PATHINFO_EXTENSION);
-                    $posterName = 'poster_' . time() . '_' . uniqid() . '.' . $fileExtension;
-                    
-                    if (move_uploaded_file($_FILES['poster']['tmp_name'], $uploadDir . $posterName)) {
-                    } else {
-                        $uploadErrors[] = "Lỗi khi di chuyển file poster";
-                    }
-                } else {
-                    $uploadErrors[] = "Lỗi upload poster: " . $this->getUploadErrorMessage($_FILES['poster']['error']);
-                }
-            } else {
+            if ($movieModel->isSlugExists($slug)) {
+                $_SESSION['error'] = "Đường dẫn tĩnh (Slug) này đã tồn tại, vui lòng đổi tên khác!";
+                $this->redirect('admin/movie/create');
+                return;
             }
 
-            // Xử lý Upload BANNER
-            if (isset($_FILES['banner']) && $_FILES['banner']['error'] !== UPLOAD_ERR_NO_FILE) {
-                if ($_FILES['banner']['error'] === UPLOAD_ERR_OK) {
-                    $uploadDir = ROOT . '/public/uploads/movies/';
-                    
-                    if (!is_dir($uploadDir)) {
-                        mkdir($uploadDir, 0777, true);
-                    }
-
-                    $fileExtension = pathinfo($_FILES['banner']['name'], PATHINFO_EXTENSION);
-                    $bannerName = 'banner_' . time() . '_' . uniqid() . '.' . $fileExtension;
-                    
-                    if (move_uploaded_file($_FILES['banner']['tmp_name'], $uploadDir . $bannerName)) {
-                    } else {
-                        $uploadErrors[] = "Lỗi khi di chuyển file banner";
-                    }
-                } else {
-                    $uploadErrors[] = "Lỗi upload banner: " . $this->getUploadErrorMessage($_FILES['banner']['error']);
-                }
-            } else {
+            $duration = (int)$_POST['duration_min'];
+            if ($duration <= 0) {
+                $_SESSION['error'] = "Thời lượng phim phải là số dương!";
+                $this->redirect('admin/movie/create');
+                return;
             }
+
+            $posterName = $this->handleFileUpload('poster');
+            $bannerName = $this->handleFileUpload('banner');
 
             $data = [
                 'title' => trim($_POST['title']),
-                'slug' => trim($_POST['slug']),
+                'slug' => $slug,
                 'description' => trim($_POST['description'] ?? ''),
                 'director' => trim($_POST['director'] ?? ''),
                 'cast' => trim($_POST['cast'] ?? ''),
-                'duration_min' => (int)$_POST['duration_min'],
+                'duration_min' => $duration,
                 'release_date' => $_POST['release_date'],
                 'age_rating' => $_POST['age_rating'],
                 'status' => $_POST['status'],
@@ -120,55 +74,59 @@ class AdminMovieController extends Controller {
                 'banner' => $bannerName
             ];
 
-            // 1. Lấy mảng thể loại từ Form
-            $selectedGenres = $_POST['genres'] ?? [];
-
-            $movieModel = $this->model('Movie');
             $newMovieId = $movieModel->createMovieWithImages($data);
-
             if ($newMovieId) {
-                // 2. Đồng bộ thể loại vào Database
-                $movieModel->syncMovieGenres($newMovieId, $selectedGenres);
-                
-                // Set success message
-                $_SESSION['success'] = 'Thêm phim thành công!' . (!empty($uploadErrors) ? ' (Có lỗi upload: ' . implode(', ', $uploadErrors) . ')' : '');
+                $movieModel->syncMovieGenres($newMovieId, $_POST['genres'] ?? []);
+                $_SESSION['success'] = 'Thêm phim thành công!';
                 $this->redirect('admin/movie/index');
-            } else {
-                $_SESSION['error'] = 'Có lỗi xảy ra khi lưu vào CSDL!';
-                $this->redirect('admin/movie/create');
             }
         }
     }
 
-    /**
-     * Helper method to get upload error message
-     */
-    private function getUploadErrorMessage($errorCode) {
-        $errors = [
-            UPLOAD_ERR_INI_SIZE => 'File vượt quá kích thước cho phép trong php.ini',
-            UPLOAD_ERR_FORM_SIZE => 'File vượt quá kích thước cho phép trong form',
-            UPLOAD_ERR_PARTIAL => 'File chỉ được upload một phần',
-            UPLOAD_ERR_NO_FILE => 'Không có file nào được upload',
-            UPLOAD_ERR_NO_TMP_DIR => 'Thiếu thư mục tạm',
-            UPLOAD_ERR_CANT_WRITE => 'Không thể ghi file vào đĩa',
-            UPLOAD_ERR_EXTENSION => 'Upload bị dừng bởi extension'
-        ];
-        return $errors[$errorCode] ?? 'Lỗi không xác định';
+    private function handleFileUpload($fieldName) {
+        if (isset($_FILES[$fieldName]) && $_FILES[$fieldName]['error'] === UPLOAD_ERR_OK) {
+            $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+            $ext = strtolower(pathinfo($_FILES[$fieldName]['name'], PATHINFO_EXTENSION));
+
+            if (in_array($ext, $allowed) && $_FILES[$fieldName]['size'] <= 2 * 1024 * 1024) {
+                $uploadDir = ROOT . '/public/uploads/movies/';
+                if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+                $newName = $fieldName . '_' . time() . '_' . uniqid() . '.' . $ext;
+                if (move_uploaded_file($_FILES[$fieldName]['tmp_name'], $uploadDir . $newName)) {
+                    return $newName;
+                }
+            }
+        }
+        return null;
     }
-    /**
-     * Xử lý xóa phim
-     */
+
     public function delete($id = null) {
         if ($id) {
             $movieModel = $this->model('Movie');
-            $movieModel->deleteMovie($id);
+            if ($movieModel->hasBookings($id)) {
+                $_SESSION['error'] = "Không thể xóa! Phim này đã phát sinh giao dịch đặt vé. Vui lòng chuyển trạng thái sang 'Ngừng chiếu' để bảo toàn dữ liệu doanh thu.";
+                $this->redirect('admin/movie/index');
+                return;
+            }
+            $movie = $movieModel->getMovieById($id);
+
+            if ($movie) {
+                $uploadDir = ROOT . '/public/uploads/movies/';
+                if (!empty($movie['poster']) && file_exists($uploadDir . $movie['poster'])) {
+                    unlink($uploadDir . $movie['poster']);
+                }
+                if (!empty($movie['banner']) && file_exists($uploadDir . $movie['banner'])) {
+                    unlink($uploadDir . $movie['banner']);
+                }
+
+                $movieModel->deleteMovie($id);
+                $_SESSION['success'] = "Đã xóa phim và dọn dẹp bộ nhớ!";
+            }
         }
-        // Xóa xong thì tự động quay về trang danh sách
         $this->redirect('admin/movie/index');
     }
-    /**
-     * Giao diện sửa thông tin phim
-     */
+
     public function edit($id = null) {
         if (!$id) {
             $this->redirect('admin/movie/index');
@@ -178,13 +136,12 @@ class AdminMovieController extends Controller {
         $movieModel = $this->model('Movie');
         $movie = $movieModel->getMovieById($id);
 
-        // Nếu người dùng nhập ID bậy bạ trên URL, đẩy về trang chủ admin
         if (!$movie) {
             $this->redirect('admin/movie/index');
             return;
         }
 
-        $currentGenres = $this->model('Movie')->getGenreSlugsByMovieId($id); 
+        $currentGenres = $this->model('Movie')->getGenreSlugsByMovieId($id);
 
         $this->adminView('admin/movies/edit', 'movie', [
             'movie' => $movie,
@@ -192,95 +149,58 @@ class AdminMovieController extends Controller {
             'title' => 'Sửa Phim'
         ]);
     }
-    /**
-     * Xử lý dữ liệu form sửa và cập nhật database
-     */
+
     public function update($id = null) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id) {
             $movieModel = $this->model('Movie');
             $oldMovie = $movieModel->getMovieById($id);
-            
+
             if (!$oldMovie) {
                 $_SESSION['error'] = 'Không tìm thấy phim!';
                 $this->redirect('admin/movie/index');
                 return;
             }
 
-            // Khởi tạo với giá trị cũ
-            $posterName = $oldMovie['poster'];
-            $bannerName = $oldMovie['banner'];
-            $uploadErrors = [];
-            $uploadSuccess = [];
-
-            // Xử lý Upload POSTER mới
-            if (isset($_FILES['poster']) && $_FILES['poster']['error'] !== UPLOAD_ERR_NO_FILE) {
-                if ($_FILES['poster']['error'] === UPLOAD_ERR_OK) {
-                    $uploadDir = ROOT . '/public/uploads/movies/';
-                    
-                    if (!is_dir($uploadDir)) {
-                        mkdir($uploadDir, 0777, true);
-                    }
-
-                    // Xóa ảnh cũ nếu có
-                    if (!empty($oldMovie['poster'])) {
-                        $oldPath = $uploadDir . $oldMovie['poster'];
-                        if (file_exists($oldPath)) {
-                            unlink($oldPath);
-                        }
-                    }
-
-                    $fileExtension = pathinfo($_FILES['poster']['name'], PATHINFO_EXTENSION);
-                    $posterName = 'poster_' . time() . '_' . uniqid() . '.' . $fileExtension;
-                    
-                    if (move_uploaded_file($_FILES['poster']['tmp_name'], $uploadDir . $posterName)) {
-                        $uploadSuccess[] = "Poster";
-                    } else {
-                        $uploadErrors[] = "Lỗi khi di chuyển file poster";
-                        $posterName = $oldMovie['poster']; // Giữ ảnh cũ
-                    }
-                } else {
-                    $uploadErrors[] = "Lỗi upload poster: " . $this->getUploadErrorMessage($_FILES['poster']['error']);
-                }
+            $slug = trim($_POST['slug']);
+            if ($movieModel->isSlugExists($slug, $id)) {
+                $_SESSION['error'] = "Slug '$slug' đã bị phim khác sử dụng!";
+                $this->redirect('admin/movie/edit/' . $id);
+                return;
             }
 
-            // Xử lý Upload BANNER mới
-            if (isset($_FILES['banner']) && $_FILES['banner']['error'] !== UPLOAD_ERR_NO_FILE) {
-                if ($_FILES['banner']['error'] === UPLOAD_ERR_OK) {
-                    $uploadDir = ROOT . '/public/uploads/movies/';
-                    
-                    if (!is_dir($uploadDir)) {
-                        mkdir($uploadDir, 0777, true);
-                    }
+            $duration = (int)$_POST['duration_min'];
+            if ($duration <= 0) {
+                $_SESSION['error'] = "Thời lượng không hợp lệ!";
+                $this->redirect('admin/movie/edit/' . $id);
+                return;
+            }
 
-                    // Xóa ảnh cũ nếu có
-                    if (!empty($oldMovie['banner'])) {
-                        $oldPath = $uploadDir . $oldMovie['banner'];
-                        if (file_exists($oldPath)) {
-                            unlink($oldPath);
-                        }
-                    }
-
-                    $fileExtension = pathinfo($_FILES['banner']['name'], PATHINFO_EXTENSION);
-                    $bannerName = 'banner_' . time() . '_' . uniqid() . '.' . $fileExtension;
-                    
-                    if (move_uploaded_file($_FILES['banner']['tmp_name'], $uploadDir . $bannerName)) {
-                        $uploadSuccess[] = "Banner";
-                    } else {
-                        $uploadErrors[] = "Lỗi khi di chuyển file banner";
-                        $bannerName = $oldMovie['banner']; // Giữ ảnh cũ
-                    }
-                } else {
-                    $uploadErrors[] = "Lỗi upload banner: " . $this->getUploadErrorMessage($_FILES['banner']['error']);
+            $uploadDir = ROOT . '/public/uploads/movies/';
+            $posterName = $oldMovie['poster'];
+            $newPoster = $this->handleFileUpload('poster');
+            if ($newPoster) {
+                if (!empty($oldMovie['poster']) && file_exists($uploadDir . $oldMovie['poster'])) {
+                    unlink($uploadDir . $oldMovie['poster']);
                 }
+                $posterName = $newPoster;
+            }
+
+            $bannerName = $oldMovie['banner'];
+            $newBanner = $this->handleFileUpload('banner');
+            if ($newBanner) {
+                if (!empty($oldMovie['banner']) && file_exists($uploadDir . $oldMovie['banner'])) {
+                    unlink($uploadDir . $oldMovie['banner']);
+                }
+                $bannerName = $newBanner;
             }
 
             $data = [
                 'title' => trim($_POST['title']),
-                'slug' => trim($_POST['slug']),
+                'slug' => $slug,
                 'description' => trim($_POST['description'] ?? ''),
                 'director' => trim($_POST['director'] ?? ''),
                 'cast' => trim($_POST['cast'] ?? ''),
-                'duration_min' => (int)$_POST['duration_min'],
+                'duration_min' => $duration,
                 'release_date' => $_POST['release_date'],
                 'age_rating' => $_POST['age_rating'],
                 'status' => $_POST['status'],
@@ -288,30 +208,10 @@ class AdminMovieController extends Controller {
                 'banner' => $bannerName
             ];
 
-            // 1. Lấy mảng thể loại từ Form
-            $selectedGenres = $_POST['genres'] ?? [];
-
-            $success = $movieModel->updateMovieWithImages($id, $data);
-
-            if ($success) {
-                // 2. Đồng bộ thể loại vào Database
-                $movieModel->syncMovieGenres($id, $selectedGenres);
-                
-                // Build success message
-                $successMsg = 'Cập nhật phim thành công!';
-                if (!empty($uploadSuccess)) {
-                    $successMsg .= ' Đã upload: ' . implode(', ', $uploadSuccess) . '.';
-                }
-                $_SESSION['success'] = $successMsg;
-                
-                if (!empty($uploadErrors)) {
-                    $_SESSION['error'] = 'Lỗi upload: ' . implode(', ', $uploadErrors);
-                }
-                
+            if ($movieModel->updateMovieWithImages($id, $data)) {
+                $movieModel->syncMovieGenres($id, $_POST['genres'] ?? []);
+                $_SESSION['success'] = "Cập nhật phim thành công!";
                 $this->redirect('admin/movie/index');
-            } else {
-                $_SESSION['error'] = 'Có lỗi xảy ra khi cập nhật CSDL!';
-                $this->redirect('admin/movie/edit/' . $id);
             }
         }
     }

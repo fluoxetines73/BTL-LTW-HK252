@@ -1,6 +1,9 @@
 <?php
 $flash = $flash ?? null;
 $article = $article ?? [];
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 $currentImage = trim((string)($article['image'] ?? ''));
 if ($currentImage !== '') {
     if (str_starts_with($currentImage, 'public/')) {
@@ -29,6 +32,7 @@ if ($currentImage !== '') {
     </div>
 
     <form method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
         <div class="field">
             <label for="title">Tiêu đề</label>
             <input id="title" type="text" name="title" required minlength="4" value="<?= htmlspecialchars((string)($article['title'] ?? '')) ?>">

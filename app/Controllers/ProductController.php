@@ -3,25 +3,17 @@ require_once ROOT . '/core/Controller.php';
 
 class ProductController extends Controller {
 
-    /**
-     * Hiển thị danh sách phim (Thay thế cho danh sách sản phẩm cũ)
-     */
     public function index() {
-        // Gọi model Movie để lấy danh sách phim
         $movieModel = $this->model('Movie');
         $movies = $movieModel->getAllMovies();
 
-        // Truyền dữ liệu sang View
         $this->view('layouts/main', [
             'title' => 'Danh sách Phim',
-            'content' => 'movies/index', // Cập nhật đường dẫn view phù hợp với dự án của bạn
+            'content' => 'movies/index',
             'movies' => $movies,
         ]);
     }
 
-    /**
-     * Trang chi tiết phim và chọn ghế (Đã chuẩn theo mã của bạn)
-     */
     public function detail($id = null) {
         if (!$id) { 
             $this->redirect('home/index'); 
@@ -30,6 +22,7 @@ class ProductController extends Controller {
         
         $movie = $this->model('Movie')->getMovieById($id);
         $combos = $this->model('Combo')->getAllCombos();
+        $allShowtimes = $this->model('Showtime')->getUpcomingShowtimesByMovieId($id);
         
         if (!$movie) { 
             $this->redirect('home/not_found'); 
@@ -40,29 +33,24 @@ class ProductController extends Controller {
             'title' => $movie['title'],
             'content' => 'product/detail',
             'movie' => $movie,
-            'combos' => $combos
+            'combos' => $combos,
+            'allShowtimes' => $allShowtimes
         ]);
     }
 
-    /**
-     * Xử lý dữ liệu đặt vé và hiển thị trang Hóa đơn (Checkout)
-     */
     public function checkout() {
-        // 1. Nếu người dùng truy cập trực tiếp bằng URL (không qua nút submit form), đẩy về trang chủ
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('home/index');
             return;
         }
 
-        // 2. Lấy dữ liệu từ form POST bên trang detail
         $movieId = $_POST['movie_id'] ?? 0;
         $showtimeId = $_POST['showtime_id'] ?? 0;
-        $selectedSeats = $_POST['selected_seats'] ?? '';
+        $selectedSeats = $_POST['selected_seats'] ?? ''; 
         $ticketQty = (int)($_POST['ticket_qty'] ?? 0);
-        $ticketPrice = (int)($_POST['ticket_price'] ?? 100000);
-        $combosPost = $_POST['combos'] ?? []; // Mảng chứa [id_combo => số_lượng]
+        $combosPost = $_POST['combos'] ?? []; 
 
-        // 3. Gọi Model để lấy thông tin chi tiết
+        // Khởi tạo các Model cần thiết
         $movieModel = $this->model('Movie');
         $showtimeModel = $this->model('Showtime');
         $comboModel = $this->model('Combo');
@@ -70,7 +58,15 @@ class ProductController extends Controller {
         $movie = $movieModel->getMovieById($movieId);
         $showtime = $showtimeModel->getShowtimeById($showtimeId);
         
-        // 4. Tính toán tiền Combo Bắp Nước
+        if (!$showtime) {
+            $_SESSION['error'] = "Suất chiếu không tồn tại!";
+            $this->redirect('home/index');
+            return;
+        }
+
+        // Validate giá vé thật từ Database
+        $ticketPrice = (int)$showtime['base_price'];
+
         $selectedCombos = [];
         $comboTotal = 0;
         $allCombos = $comboModel->getAllCombos(); 
@@ -79,27 +75,24 @@ class ProductController extends Controller {
             if ($qty > 0) {
                 foreach ($allCombos as $c) {
                     if ($c['id'] == $comboId) {
-                        $subtotal = $qty * $c['price'];
+                        $subtotal = $qty * $c['price']; 
                         $comboTotal += $subtotal;
-                        
-                        // Lưu lại để hiển thị ra View
                         $selectedCombos[] = [
+                            'id' => $c['id'],
                             'name' => $c['name'],
                             'qty' => $qty,
                             'price' => $c['price'],
                             'subtotal' => $subtotal
                         ];
-                        break; // Tìm thấy combo thì thoát vòng lặp con
+                        break;
                     }
                 }
             }
         }
 
-        // 5. Tính tổng cộng tiền thanh toán
         $ticketTotal = $ticketQty * $ticketPrice;
         $grandTotal = $ticketTotal + $comboTotal;
 
-        // 6. Truyền toàn bộ dữ liệu đã xử lý sang trang giao diện checkout.php
         $this->view('layouts/main', [
             'content' => 'product/checkout',
             'title' => 'Xác nhận Đặt vé',
@@ -113,74 +106,123 @@ class ProductController extends Controller {
             'grandTotal' => $grandTotal
         ]);
     }
-	/**
-     * Xử lý thanh toán và lưu đơn hàng vào Database
-     */
+
     public function processPayment() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('home/index');
             return;
         }
 
-        $showtimeId = $_POST['showtime_id'] ?? 0;
-        $selectedSeatsStr = $_POST['selected_seats'] ?? '';
-        $grandTotal = $_POST['grand_total'] ?? 0;
-        $userId = $_SESSION['user']['id'] ?? 1; // Tạm lấy ID 1 nếu chưa đăng nhập
+        $showtimeId = (int)($_POST['showtime_id'] ?? 0);
+        $selectedSeatsStr = trim($_POST['selected_seats'] ?? '');
+        $selectedCombosPost = $_POST['selected_combos'] ?? []; 
+        $userId = $_SESSION['user']['id'] ?? 1;
 
-        // Sinh mã đặt vé ngẫu nhiên để thỏa mãn ràng buộc UNIQUE
-        $bookingCode = 'CGV-' . strtoupper(bin2hex(random_bytes(4)));
-
+        // Khởi tạo các Model cần thiết
         $bookingModel = $this->model('Booking');
         $showtimeModel = $this->model('Showtime');
+        $comboModel = $this->model('Combo');
 
-        // Chuẩn bị mảng dữ liệu khớp hoàn toàn với Model[cite: 9]
+        $showtime = $showtimeModel->getShowtimeById($showtimeId);
+        if (!$showtime) {
+            $_SESSION['error'] = 'Suất chiếu không tồn tại!';
+            $this->redirect('home/index');
+            return;
+        }
+        $realTicketPrice = (float)$showtime['base_price'];
+
+        // Lọc các ghế rỗng để tránh lỗi
+        $seatCodes = array_filter(explode(',', $selectedSeatsStr));
+        $ticketTotal = count($seatCodes) * $realTicketPrice;
+
+        $comboTotal = 0;
+        $allCombosFromDB = $comboModel->getAllCombos(); 
+        $validatedCombos = [];
+
+        // Validate lại giá combo chống F12 sửa HTML
+        foreach ($selectedCombosPost as $comboId => $comboData) {
+            list($qty, $clientPrice) = explode('|', $comboData);
+            $qty = (int)$qty;
+
+            if ($qty > 0) {
+                foreach ($allCombosFromDB as $dbCombo) {
+                    if ($dbCombo['id'] == $comboId) {
+                        $subtotal = $qty * (float)$dbCombo['price']; 
+                        $comboTotal += $subtotal;
+                        $validatedCombos[] = [
+                            'id' => $dbCombo['id'],
+                            'qty' => $qty,
+                            'price' => $dbCombo['price']
+                        ];
+                        break;
+                    }
+                }
+            }
+        }
+
+        $finalAmount = $ticketTotal + $comboTotal;
+
+        $bookingCode = 'CGV-' . strtoupper(bin2hex(random_bytes(4)));
         $bookingData = [
             'booking_code'    => $bookingCode,
             'user_id'         => $userId,
             'showtime_id'     => $showtimeId,
-            'total_amount'    => $grandTotal,
+            'total_amount'    => $finalAmount,
             'discount_amount' => 0,
-            'final_amount'    => $grandTotal,
-            'payment_method'  => 'cash',      // Theo ENUM trong schema[cite: 11]
-            'payment_status'  => 'pending',   // Theo ENUM trong schema[cite: 11]
-            'status'          => 'confirmed'  // Theo ENUM trong schema[cite: 11]
+            'final_amount'    => $finalAmount,
+            'payment_method'  => 'cash',
+            'payment_status'  => 'pending',
+            'status'          => 'confirmed'
         ];
 
         $bookingId = $bookingModel->createBooking($bookingData);
 
         if ($bookingId) {
-            // Xử lý lưu vé chi tiết (giữ nguyên logic tách ghế cũ)
-            $seatArray = explode(',', $selectedSeatsStr); 
-            foreach ($seatArray as $seatCode) {
-                $seatCode = trim($seatCode);
-                if (empty($seatCode)) continue;
+            $roomId = $showtime['room_id'];
 
-                $row = substr($seatCode, 0, 1);
-                $col = substr($seatCode, 1);
-                $seatId = $showtimeModel->getSeatIdByCode($row, $col);
+            foreach ($seatCodes as $code) {
+                $code = trim($code);
+                if (empty($code)) continue;
+
+                $row = substr($code, 0, 1);
+                $col = (int)substr($code, 1);
+
+                $db = Database::getInstance()->getPdo();
+                $stmt = $db->prepare("SELECT id FROM seats WHERE room_id = :room_id AND row_label = :row AND col_number = :col LIMIT 1");
+                $stmt->execute([':room_id' => $roomId, ':row' => $row, ':col' => $col]);
+                $seatId = $stmt->fetchColumn();
 
                 if ($seatId) {
-                    $bookingModel->createTicket([
-                        'booking_id'  => $bookingId,
-                        'showtime_id' => $showtimeId,
-                        'seat_id'     => $seatId,
-                        'price'       => 100000 
+                    $res = $bookingModel->createTicket([
+                        'booking_id' => $bookingId,
+                        'seat_id'    => $seatId,
+                        'price'      => $realTicketPrice
                     ]);
+                    if (!$res) error_log("Lỗi: Không thể insert vào bảng tickets cho ghế $code");
+                } else {
+                    error_log("Lỗi: Không tìm thấy seat_id cho ghế $code trong room $roomId");
                 }
             }
+
+            foreach ($validatedCombos as $vc) {
+                $bookingModel->createBookingCombo([
+                    'booking_id' => $bookingId,
+                    'combo_id'   => $vc['id'],
+                    'quantity'   => $vc['qty'],
+                    'price'      => $vc['price'] 
+                ]);
+            }
+
             $this->redirect('product/success');
         } else {
-            echo "Lỗi: Không thể khởi tạo đơn hàng.";
+            die("Lỗi: Không thể khởi tạo đơn hàng.");
         }
     }
 
-    /**
-     * Giao diện thông báo thanh toán thành công
-     */
     public function success() {
         $this->view('layouts/main', [
             'title' => 'Đặt vé thành công',
-            'content' => 'product/success' // Bạn có thể tự tạo file view này sau
+            'content' => 'product/success'
         ]);
     }
 }
