@@ -61,7 +61,7 @@ class AdminController extends Controller {
     public function search() {
         $this->middlewareAdmin();
 
-        $keyword = $_GET['q'] ?? '';
+        $keyword = substr(trim((string)($_GET['q'] ?? '')), 0, 255);
         $page = $_GET['page'] ?? 1;
         $sort = trim((string)($_GET['sort'] ?? 'newest'));
         $sort = in_array($sort, ['newest', 'oldest', 'name_asc', 'name_desc', 'email_asc', 'email_desc'], true) ? $sort : 'newest';
@@ -109,11 +109,16 @@ class AdminController extends Controller {
 
         $newsModel = $this->model('News');
 
-        $keyword = trim((string)($_GET['q'] ?? ''));
+        $keyword = substr(trim((string)($_GET['q'] ?? '')), 0, 255);
         $sort = trim((string)($_GET['sort'] ?? 'newest'));
         $sort = in_array($sort, ['newest', 'oldest'], true) ? $sort : 'newest';
 
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && !empty($_POST['action']) && $_POST['action'] === 'delete_selected') {
+            if (!$this->validateCsrfToken()) {
+                $_SESSION['error'] = 'CSRF token validation failed.';
+                header('Location: ' . ($_SERVER['REQUEST_URI'] ?? 'admin/news'));
+                exit();
+            }
             $rawSelectedIds = $_POST['selected_ids'] ?? '';
             if (is_array($rawSelectedIds)) {
                 $selectedIds = array_map('intval', array_map('trim', $rawSelectedIds));
@@ -125,7 +130,13 @@ class AdminController extends Controller {
             $selectedIds = array_values(array_filter($selectedIds, static function ($id) { return $id > 0; }));
 
             if (!empty($selectedIds)) {
-                if ($newsModel->deleteMultipleNews($selectedIds)) {
+                try {
+                    $deleted = $newsModel->deleteMultipleNews($selectedIds);
+                } catch (PDOException $e) {
+                    error_log('Bulk delete news failed: ' . $e->getMessage());
+                    $deleted = false;
+                }
+                if ($deleted) {
                     $_SESSION['success'] = 'Đã xóa ' . count($selectedIds) . ' bài viết.';
                 } else {
                     $_SESSION['error'] = 'Không thể xóa các bài viết đã chọn.';
@@ -137,6 +148,10 @@ class AdminController extends Controller {
         }
 
         $articles = $newsModel->searchAdminNews($category, $keyword !== '' ? $keyword : null, $sort);
+
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
 
         $this->adminView('admin/news/index', 'news', [
             'title' => $title,
@@ -153,65 +168,74 @@ class AdminController extends Controller {
 
         $flash = null;
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
-            $title = trim((string)($_POST['title'] ?? ''));
-            $highlightTitle = trim((string)($_POST['highlight_title'] ?? ''));
-            $content = trim((string)($_POST['content'] ?? ''));
-            $detailContent = trim((string)($_POST['detail_content'] ?? ''));
-            $category = trim((string)($_POST['category'] ?? 'tin-tuc'));
-            $featured = isset($_POST['featured']) && $_POST['featured'] === '1';
-
-            if ($highlightTitle === '') {
-                $highlightTitle = $title;
-            }
-            if ($detailContent === '') {
-                $detailContent = $content;
-            }
-
-            if ($title === '' || mb_strlen($title) < 4) {
-                $flash = ['type' => 'error', 'message' => 'Tiêu đề phải có ít nhất 4 ký tự.'];
-            } elseif ($content === '' || mb_strlen($content) < 10) {
-                $flash = ['type' => 'error', 'message' => 'Nội dung phải có ít nhất 10 ký tự.'];
-            } elseif (!in_array($category, ['tin-tuc', 'khuyen-mai', 'su-kien', 'phim-hay-thang'], true)) {
-                $flash = ['type' => 'error', 'message' => 'Danh mục không hợp lệ.'];
+            if (!$this->validateCsrfToken()) {
+                $flash = ['type' => 'error', 'message' => 'CSRF token validation failed. Please try again.'];
             } else {
-                require_once APPROOT . '/Helpers/Upload.php';
-                $uploader = new Upload();
-                $imagePath = $uploader->handle($_FILES['image'] ?? [], 'news');
+                $title = trim((string)($_POST['title'] ?? ''));
+                $highlightTitle = trim((string)($_POST['highlight_title'] ?? ''));
+                $content = trim((string)($_POST['content'] ?? ''));
+                $detailContent = trim((string)($_POST['detail_content'] ?? ''));
+                $category = trim((string)($_POST['category'] ?? 'tin-tuc'));
+                $featured = isset($_POST['featured']) && $_POST['featured'] === '1';
 
-                if ($imagePath === null) {
-                    $uploadError = $uploader->getError();
-                    $flash = ['type' => 'error', 'message' => $uploadError !== '' ? $uploadError : 'Vui lòng chọn ảnh cho tin tức.'];
+                if ($highlightTitle === '') {
+                    $highlightTitle = $title;
+                }
+                if ($detailContent === '') {
+                    $detailContent = $content;
+                }
+
+                if ($title === '' || mb_strlen($title) < 4) {
+                    $flash = ['type' => 'error', 'message' => 'Tiêu đề phải có ít nhất 4 ký tự.'];
+                } elseif ($content === '' || mb_strlen($content) < 10) {
+                    $flash = ['type' => 'error', 'message' => 'Nội dung phải có ít nhất 10 ký tự.'];
+                } elseif (!in_array($category, ['tin-tuc', 'khuyen-mai', 'su-kien', 'phim-hay-thang'], true)) {
+                    $flash = ['type' => 'error', 'message' => 'Danh mục không hợp lệ.'];
                 } else {
-                    $newsModel = $this->model('News');
-                    $slug = $this->makeSlug($title) . '-' . time();
+                    require_once APPROOT . '/Helpers/Upload.php';
+                    $uploader = new Upload();
+                    $imagePath = $uploader->handle($_FILES['image'] ?? [], 'news');
 
-                    $authorId = (int)($_SESSION['auth_user']['id'] ?? 0);
-                    $userModel = $this->model('User');
-                    $author = $userModel->findById($authorId);
-                    if (!$author) {
-                        $flash = ['type' => 'error', 'message' => 'Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.'];
+                    if ($imagePath === null) {
+                        $uploadError = $uploader->getError();
+                        $flash = ['type' => 'error', 'message' => $uploadError !== '' ? $uploadError : 'Vui lòng chọn ảnh cho tin tức.'];
                     } else {
-                        $created = $newsModel->createNews([
-                            'title' => $title,
-                            'highlight_title' => $highlightTitle,
-                            'slug' => $slug,
-                            'content' => $content,
-                            'detail_content' => $detailContent,
-                            'image' => $imagePath,
-                            'category' => $category,
-                            'author_id' => $authorId,
-                            'status' => 'published',
-                            'featured' => $featured,
-                            'published_at' => date('Y-m-d H:i:s'),
-                        ]);
+                        $newsModel = $this->model('News');
+                        $slug = $this->makeSlug($title) . '-' . time();
 
-                        if ($created) {
-                            $_SESSION['success'] = 'Đăng tin thành công.';
-                            $this->redirect('admin/news');
-                            return;
+                        $authorId = (int)($_SESSION['auth_user']['id'] ?? 0);
+                        $userModel = $this->model('User');
+                        $author = $userModel->findById($authorId);
+                        if (!$author) {
+                            $flash = ['type' => 'error', 'message' => 'Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.'];
+                        } else {
+                            try {
+                                $created = $newsModel->createNews([
+                                    'title' => $title,
+                                    'highlight_title' => $highlightTitle,
+                                    'slug' => $slug,
+                                    'content' => $content,
+                                    'detail_content' => $detailContent,
+                                    'image' => $imagePath,
+                                    'category' => $category,
+                                    'author_id' => $authorId,
+                                    'status' => 'published',
+                                    'featured' => $featured,
+                                    'published_at' => date('Y-m-d H:i:s'),
+                                ]);
+                            } catch (PDOException $e) {
+                                error_log('Create news failed: ' . $e->getMessage());
+                                $created = false;
+                            }
+
+                            if ($created) {
+                                $_SESSION['success'] = 'Đăng tin thành công.';
+                                $this->redirect('admin/news');
+                                return;
+                            }
+
+                            $flash = ['type' => 'error', 'message' => 'Không thể tạo tin tức. Vui lòng thử lại.'];
                         }
-
-                        $flash = ['type' => 'error', 'message' => 'Không thể tạo tin tức. Vui lòng thử lại.'];
                     }
                 }
             }
@@ -238,71 +262,80 @@ class AdminController extends Controller {
 
         $flash = null;
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
-            $title = trim((string)($_POST['title'] ?? ''));
-            $highlightTitle = trim((string)($_POST['highlight_title'] ?? ''));
-            $content = trim((string)($_POST['content'] ?? ''));
-            $detailContent = trim((string)($_POST['detail_content'] ?? ''));
-            $category = trim((string)($_POST['category'] ?? 'tin-tuc'));
-            $featured = isset($_POST['featured']) && $_POST['featured'] === '1';
-
-            if ($highlightTitle === '') {
-                $highlightTitle = $title;
-            }
-            if ($detailContent === '') {
-                $detailContent = $content;
-            }
-
-            if ($title === '' || mb_strlen($title) < 4) {
-                $flash = ['type' => 'error', 'message' => 'Tiêu đề phải có ít nhất 4 ký tự.'];
-            } elseif ($content === '' || mb_strlen($content) < 10) {
-                $flash = ['type' => 'error', 'message' => 'Nội dung phải có ít nhất 10 ký tự.'];
-            } elseif (!in_array($category, ['tin-tuc', 'khuyen-mai', 'su-kien', 'phim-hay-thang'], true)) {
-                $flash = ['type' => 'error', 'message' => 'Danh mục không hợp lệ.'];
+            if (!$this->validateCsrfToken()) {
+                $flash = ['type' => 'error', 'message' => 'CSRF token validation failed. Please try again.'];
             } else {
-                require_once APPROOT . '/Helpers/Upload.php';
-                $uploader = new Upload();
+                $title = trim((string)($_POST['title'] ?? ''));
+                $highlightTitle = trim((string)($_POST['highlight_title'] ?? ''));
+                $content = trim((string)($_POST['content'] ?? ''));
+                $detailContent = trim((string)($_POST['detail_content'] ?? ''));
+                $category = trim((string)($_POST['category'] ?? 'tin-tuc'));
+                $featured = isset($_POST['featured']) && $_POST['featured'] === '1';
 
-                $imagePath = $article['image'] ?? null;
-                if (isset($_FILES['image']) && ($_FILES['image']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
-                    $uploaded = $uploader->handle($_FILES['image'], 'news', (string)($article['image'] ?? ''));
-                    if ($uploaded === null && $uploader->getError() !== '') {
-                        $flash = ['type' => 'error', 'message' => $uploader->getError()];
-                    } else {
-                        $imagePath = $uploaded;
+                if ($highlightTitle === '') {
+                    $highlightTitle = $title;
+                }
+                if ($detailContent === '') {
+                    $detailContent = $content;
+                }
+
+                if ($title === '' || mb_strlen($title) < 4) {
+                    $flash = ['type' => 'error', 'message' => 'Tiêu đề phải có ít nhất 4 ký tự.'];
+                } elseif ($content === '' || mb_strlen($content) < 10) {
+                    $flash = ['type' => 'error', 'message' => 'Nội dung phải có ít nhất 10 ký tự.'];
+                } elseif (!in_array($category, ['tin-tuc', 'khuyen-mai', 'su-kien', 'phim-hay-thang'], true)) {
+                    $flash = ['type' => 'error', 'message' => 'Danh mục không hợp lệ.'];
+                } else {
+                    require_once APPROOT . '/Helpers/Upload.php';
+                    $uploader = new Upload();
+
+                    $imagePath = $article['image'] ?? null;
+                    if (isset($_FILES['image']) && ($_FILES['image']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+                        $uploaded = $uploader->handle($_FILES['image'], 'news', (string)($article['image'] ?? ''));
+                        if ($uploaded === null && $uploader->getError() !== '') {
+                            $flash = ['type' => 'error', 'message' => $uploader->getError()];
+                        } else {
+                            $imagePath = $uploaded;
+                        }
+                    }
+
+                    if ($flash === null) {
+                        $slug = $this->makeSlug($title) . '-' . (int)$article['id'];
+                        try {
+                            $updated = $newsModel->updateNews((int)$article['id'], [
+                                'title' => $title,
+                                'highlight_title' => $highlightTitle,
+                                'slug' => $slug,
+                                'content' => $content,
+                                'detail_content' => $detailContent,
+                                'image' => $imagePath,
+                                'category' => $category,
+                                'featured' => $featured,
+                            ]);
+                        } catch (PDOException $e) {
+                            error_log('Update news failed: ' . $e->getMessage());
+                            $updated = false;
+                        }
+
+                        if ($updated) {
+                            $_SESSION['success'] = 'Cập nhật tin tức thành công.';
+                            $this->redirect('admin/news');
+                            return;
+                        }
+
+                        $flash = ['type' => 'error', 'message' => 'Không thể cập nhật tin tức.'];
                     }
                 }
 
-                if ($flash === null) {
-                    $slug = $this->makeSlug($title) . '-' . (int)$article['id'];
-                    $updated = $newsModel->updateNews((int)$article['id'], [
-                        'title' => $title,
-                        'highlight_title' => $highlightTitle,
-                        'slug' => $slug,
-                        'content' => $content,
-                        'detail_content' => $detailContent,
-                        'image' => $imagePath,
-                        'category' => $category,
-                        'featured' => $featured,
-                    ]);
-
-                    if ($updated) {
-                        $_SESSION['success'] = 'Cập nhật tin tức thành công.';
-                        $this->redirect('admin/news');
-                        return;
-                    }
-
-                    $flash = ['type' => 'error', 'message' => 'Không thể cập nhật tin tức.'];
-                }
+                $article = array_merge($article, [
+                    'title' => $title,
+                    'highlight_title' => $highlightTitle,
+                    'content' => $content,
+                    'detail_content' => $detailContent,
+                    'category' => $category,
+                    'featured' => $featured,
+                ]);
             }
-
-            $article = array_merge($article, [
-                'title' => $title,
-                'highlight_title' => $highlightTitle,
-                'content' => $content,
-                'detail_content' => $detailContent,
-                'category' => $category,
-                'featured' => $featured,
-            ]);
         }
 
         $this->adminView('admin/news/edit', 'news', [
@@ -317,7 +350,14 @@ class AdminController extends Controller {
         $this->middlewareAdmin();
 
         $newsModel = $this->model('News');
-        if ($newsModel->deleteNews((int)$newsId)) {
+        try {
+            $deleted = $newsModel->deleteNews((int)$newsId);
+        } catch (PDOException $e) {
+            error_log('Delete news failed: ' . $e->getMessage());
+            $deleted = false;
+        }
+
+        if ($deleted) {
             $_SESSION['success'] = 'Đã xóa tin tức.';
         } else {
             $_SESSION['error'] = 'Không thể xóa tin tức.';
@@ -528,5 +568,11 @@ class AdminController extends Controller {
         }
 
         $this->redirect('admin/edit_user/' . $user['id']);
+    }
+
+    private function validateCsrfToken(): bool {
+        $csrfToken = (string)($_POST['csrf_token'] ?? '');
+        $sessionToken = (string)($_SESSION['csrf_token'] ?? '');
+        return $csrfToken !== '' && $sessionToken !== '' && hash_equals($sessionToken, $csrfToken);
     }
 }
